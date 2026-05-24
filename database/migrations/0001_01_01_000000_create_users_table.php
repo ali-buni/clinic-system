@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('fname')->nullable();
             $table->string('lname')->nullable();
-            $table->string('email');
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('phone');
             $table->timestamp('phone_verified_at')->nullable();
             $table->string('password');
@@ -26,11 +24,11 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['email', 'phone'], 'uniq_email_phone');
+            $table->unique(['phone'], 'uniq_phone');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
+            $table->string('phone')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
