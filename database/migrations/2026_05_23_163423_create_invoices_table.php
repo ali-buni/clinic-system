@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('clinic_id')->constrained('clinics', 'id')->cascadeOnDelete();
-            $table->foreignId('patient_id')->constrained('patients', 'id')->nullOnDelete();
+            $table->foreignId('patient_id')->nullable()->constrained('patients', 'id')->nullOnDelete();
             $table->foreignId('appointment_id')->nullable()->constrained('appointments', 'id')->nullOnDelete();
 
             $table->string('invoice_number')->unique();
@@ -27,9 +27,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->timestamps();
             $table->softDeletes();
-
-            $table->index(['patient_id', 'status'], 'idx_invoice_patient_status');
-            $table->index(['clinic_id', 'created_at'], 'idx_invoice_clinic_created');
         });
     }
 

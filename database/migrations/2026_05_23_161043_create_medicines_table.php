@@ -20,8 +20,6 @@ return new class extends Migration
             $table->string('strength')->nullable();
             $table->enum('form', ['tablet', 'capsule', 'syrup', 'injection', 'ointment'])->nullable();
             $table->timestamps();
-
-            $table->index(['name'], 'idx_medicine_name');
         });
     }
 
