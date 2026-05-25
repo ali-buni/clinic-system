@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Doctor extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -58,5 +59,17 @@ class Doctor extends Model
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class, 'room_id', 'id');
+    }
+
+    public function getConsultationFeeAttribute(): ?float
+    {
+        return isset($this->attributes['consultation_fee'])
+            ? (float) $this->attributes['consultation_fee']
+            : null;
+    }
+
+    public function setConsultationFeeAttribute($value): void
+    {
+        $this->attributes['consultation_fee'] = $value;
     }
 }
