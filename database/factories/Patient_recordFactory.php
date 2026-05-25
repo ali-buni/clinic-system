@@ -9,7 +9,7 @@ use App\Models\Patient;
 use App\Models\Patient_record;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class PatientRecordFactory extends Factory
+class Patient_recordFactory extends Factory
 {
     protected $model = Patient_record::class;
 

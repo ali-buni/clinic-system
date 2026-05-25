@@ -54,7 +54,9 @@ class ClinicSystemSeeder extends Seeder
             'phone' => '0951232317',
         ]);
 
-        $rooms = Room::factory()->count(3)->for($clinic)->create();
+        $rooms = Room::factory()->count(3)->for($clinic)->create([
+            'name' => fake()->word(),
+        ]);
 
         $doctors = collect([
             ['fname' => 'Amira', 'lname' => 'Hassan', 'gender' => 'female'],
