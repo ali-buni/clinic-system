@@ -36,6 +36,8 @@ class ClinicSystemSeeder extends Seeder
             ['ar_name' => 'تحويل مصرفي', 'en_name' => 'Bank Transfer', 'is_active' => true],
         ])->map(fn(array $data) => Payment_method::firstOrCreate($data));
 
+
+        // clinic owner /////////////////////////////////////////////
         $owner = User::factory()->create([
             'phone' => '0951232317',
             'fname' => 'Clinic',
@@ -59,7 +61,7 @@ class ClinicSystemSeeder extends Seeder
             ['fname' => 'Layla', 'lname' => 'Farah', 'gender' => 'female'],
         ])->map(function (array $userData, int $index) use ($clinic, $rooms) {
             $user = User::factory()->create([
-                'phone' => '0951232317',
+                'phone' => '095123230' . ($index + 1),
                 'fname' => $userData['fname'],
                 'lname' => $userData['lname'],
                 'gender' => $userData['gender'],
@@ -76,7 +78,7 @@ class ClinicSystemSeeder extends Seeder
         });
 
         $secretaryUser = User::factory()->create([
-            'phone' => '0951232317',
+            'phone' => '0900000000',
             'fname' => 'Sara',
             'lname' => 'Ali',
             'gender' => 'female',
@@ -96,8 +98,9 @@ class ClinicSystemSeeder extends Seeder
             $doctor = $doctors->random();
             $type = $appointmentTypes->random();
 
-            $start = now()->addDays(fake()->numberBetween(1, 20))->setTime(fake()->numberBetween(8, 15), 0, 0);
-            $end = (clone $start)->addMinutes($doctor->appointment_duration);
+            // Generate a random appointment time within the last 20 days, between 8 AM and 3 PM
+            $start = fake()->dateTimeBetween('-20 days', 'now')->setTime(fake()->numberBetween(8, 15), 0);
+            $end = (clone $start)->modify('+' . $doctor->appointment_duration . ' minutes');
 
             $appointments->push(
                 Appointment::factory()->create([
@@ -145,7 +148,7 @@ class ClinicSystemSeeder extends Seeder
                     'invoice_id' => $invoice->id,
                     'payment_method_id' => $paymentMethods->random()->id,
                     'amount' => $invoice->status == 'paid' ? $invoice->total_cost : $invoice->total_cost / 2,
-                    'paid_at' => now()->subDays(fake()->numberBetween(1, 5)),
+                    'paid_at' => now(),
                 ]);
             }
         });
