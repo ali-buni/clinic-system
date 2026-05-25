@@ -46,7 +46,7 @@ class Appointment extends Model
 
     public function type(): BelongsTo
     {
-        return $this->belongsTo(AppointmentType::class, 'appointment_type_id', 'id');
+        return $this->belongsTo(Appointment_type::class, 'appointment_type_id', 'id');
     }
 
     public function record(): HasOne

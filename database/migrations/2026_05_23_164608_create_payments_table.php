@@ -18,6 +18,7 @@ return new class extends Migration
             $table->decimal('amount', 10, 2);
             // $table->enum('status', ['pending', 'paid', 'failed', 'refunded'])->default('paid');
             $table->dateTime('paid_at')->nullable();
+            $table->timestamps();
             $table->softDeletes();
         });
     }

@@ -25,6 +25,7 @@ return new class extends Migration
                 'mental',
                 'other'
             ])->default('other');
+            $table->timestamps();
 
             $table->unique(['code'], 'uniq_disease_code');
             $table->index(['ar_name', 'en_name'], 'idx_disease_name');

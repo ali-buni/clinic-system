@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class AppointmentType extends Model
+class Appointment_type extends Model
 {
     protected $fillable = ['ar_name', 'en_name'];
 
