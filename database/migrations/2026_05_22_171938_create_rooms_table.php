@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->timestamps();
 
-            $table->unique(['clinic_id', 'name']);
+            $table->unique(['name']);
         });
     }
 
