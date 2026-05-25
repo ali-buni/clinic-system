@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Appointment;
+use App\Models\Appointment_type;
 use App\Models\AppointmentType;
 use App\Models\Clinic;
 use App\Models\Doctor;
@@ -28,7 +29,7 @@ class ClinicSystemSeeder extends Seeder
             ['ar_name' => 'استشارة عامة', 'en_name' => 'General Consultation'],
             ['ar_name' => 'متابعة', 'en_name' => 'Follow Up'],
             ['ar_name' => 'طوارئ', 'en_name' => 'Emergency'],
-        ])->map(fn(array $data) => AppointmentType::firstOrCreate($data));
+        ])->map(fn(array $data) => Appointment_type::firstOrCreate($data));
 
         $paymentMethods = collect([
             ['ar_name' => 'نقداً', 'en_name' => 'Cash', 'is_active' => true],
