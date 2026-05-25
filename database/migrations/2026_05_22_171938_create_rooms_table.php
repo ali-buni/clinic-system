@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('clinic_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->timestamps();
+
+            $table->unique(['clinic_id', 'name']);
         });
     }
 

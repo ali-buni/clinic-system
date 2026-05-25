@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('room_id')->nullable()->constrained('rooms')->nullOnDelete();
             $table->text('bio')->nullable();
             $table->integer('appointment_duration')->default(30);
-            $table->decimal('consultaion_fee', 8, 2);
+            $table->decimal('consultation_fee', 8, 2);
             $table->timestamps();
             $table->softDeletes();
 
