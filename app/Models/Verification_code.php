@@ -12,7 +12,6 @@ class Verification_code extends Model
         'type',
         'sent_to',
         'code_hash',
-        'attempts',
         'last_sent_at',
         'expires_at',
         'failed_attempts',
