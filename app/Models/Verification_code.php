@@ -15,13 +15,12 @@ class Verification_code extends Model
         'attempts',
         'last_sent_at',
         'expires_at',
-        'consumed_at'
+        'failed_attempts',
     ];
 
     protected $casts = [
         'last_sent_at' => 'datetime',
         'expires_at' => 'datetime',
-        'consumed_at' => 'datetime',
     ];
 
     public function user(): BelongsTo
