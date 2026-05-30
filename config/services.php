@@ -31,4 +31,9 @@ return [
         ],
     ],
 
+    'traccar' => [
+        'url' => env('traccar_url'),
+        'api' => env('traccar_api_key'),
+    ],
+
 ];
