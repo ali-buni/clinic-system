@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VerificationController;
+use App\Models\User;
+use App\Services\ModelFilter;
+use App\Services\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,4 +28,8 @@ Route::prefix('/clinic-system')->group(function (){
         Route::post('/verify-code', 'verifyCode');
         Route::post('/resend-code', 'resendVerificationCode');
     });
+});
+
+Route::get('/filter', function (Request $request) {
+    return ApiResponse::pagination(ModelFilter::filter(new User(), $request->all()));
 });
