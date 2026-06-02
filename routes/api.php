@@ -58,3 +58,20 @@ Route::prefix('/clinic-system')->group(function (){
 Route::get('/filter', function (Request $request) {
     return ApiResponse::pagination(ModelFilter::filter(new User(), $request->all()));
 });
+
+
+Route::prefix('/clinic-system')->group(function () {
+    Route::get('diseases/search', [DiseaseController::class, 'search']);
+    Route::get('medicines/search', [MedicineController::class, 'search']);
+});
+
+Route::middleware('auth:sanctum')->prefix('/clinic-system')->group(function () {
+
+    Route::apiResource('doctors', DoctorController::class);
+
+    Route::get('clinic/doctors', [DoctorController::class, 'clinicDoctors']);
+    Route::get('rooms/{room}/doctors', [DoctorController::class, 'roomDoctors']);
+
+    Route::apiResource('diseases', DiseaseController::class)->only(['index', 'store']);
+    Route::apiResource('medicines', MedicineController::class)->only(['index', 'store']);
+});
