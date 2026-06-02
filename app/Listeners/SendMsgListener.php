@@ -28,23 +28,30 @@ class SendMsgListener
      */
     public function handle(SendMsgEvent $event): void
     {
+        // Logic to send message
         $phone = $event->phone;
-        // $phone = '+963939688965';
-
         $msg = $event->msg;
 
-        $res = Http::withHeaders([
-            'Authorization' => $this->token,
-            'Accept'        => 'application/json',
-            'Content-Type'  => 'application/json',
-        ])->post($this->url, [
-            "to" => $phone,
-            "message" => $msg,
-        ]);
+        try {
+            $response = Http::asForm()->post($this->url, [
+                'token' => $this->token,
+                'to' => $phone,
+                'body' => $msg
+            ]);
 
-        Log::info('[SMS] Response', [
-            'status' => $res->status(),
-            'body'   => $res->body(),
-        ]);
+            Log::info('[SMS] Response', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
+
+            if ($response->successful()) {
+                echo $response->body();
+            } else {
+                echo 'Unexpected HTTP status: ' . $response->status() . ' ' .
+                    $response->reason();
+            }
+        } catch (\Exception $e) {
+            echo 'Error: ' . $e->getMessage();
+        }
     }
 }
