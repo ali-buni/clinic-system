@@ -20,7 +20,6 @@ return new class extends Migration
             $table->unsignedSmallInteger('attempts')->default(0);
             $table->timestamp('last_sent_at')->nullable();
             $table->timestamp('expires_at');
-            $table->timestamp('consumed_at')->nullable();
             $table->timestamps();
 
             $table->index(['user_id', 'type'], 'idx_verif_user_type');

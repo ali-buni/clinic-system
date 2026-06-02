@@ -13,7 +13,9 @@ class Medicine extends Model
         'generic_name_ar',
         'generic_name_en',
         'strength',
-        'form'
+        'form',
+        'api_medicine_id',
+        'is_custom'
     ];
 
     public function prescriptionItems(): HasMany

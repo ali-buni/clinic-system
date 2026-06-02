@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('strength')->nullable();
             $table->enum('form', ['tablet', 'capsule', 'syrup', 'injection', 'ointment'])->nullable();
             $table->timestamps();
+            $table->string('api_medicine_id')->nullable()->unique();
+            $table->boolean('is_custom')->default(false);
         });
     }
 
