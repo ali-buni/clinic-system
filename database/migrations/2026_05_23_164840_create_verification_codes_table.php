@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('type', ['email', 'phone']);
             $table->string('sent_to');
             $table->string('code_hash');
-            $table->unsignedSmallInteger('attempts')->default(0);
+            $table->unsignedBigInteger('failed_attempts')->default(0);
             $table->timestamp('last_sent_at')->nullable();
             $table->timestamp('expires_at');
             $table->timestamps();
