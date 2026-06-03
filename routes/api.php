@@ -31,6 +31,13 @@ Route::prefix('/clinic-system')->group(function () {
     });
 
     Route::middleware('auth:sanctum')->prefix('/clinic')->group(function () {
+        Route::controller(ClinicController::class)->group(function () {
+            Route::get('/info', 'clinicInfo');
+            Route::post('/update/{clinicId}', 'updateClinic');
+
+            Route::post('doctor/register', 'createDoctor');
+            Route::post('secretary/register', 'createSecretary');
+        });
 
         Route::prefix('/rooms')->controller(RoomController::class)->group(function () {
             Route::get('/{clinicId}', 'index');
