@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('doctor_specialty', function (Blueprint $table) {
             $table->foreignId('doctor_id')->constrained('doctors', 'id')->cascadeOnDelete();
             $table->foreignId('specialty_id')->constrained('specialties', 'id')->cascadeOnDelete();
+            $table->boolean('is_primary')->default(false);
             $table->timestamps();
 
             $table->primary(['doctor_id', 'specialty_id']);
