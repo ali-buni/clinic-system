@@ -18,6 +18,8 @@ class ClinicServices
         $pwd = random_int(10000000, 99999999);
         $roomId = $data['room_id'];
         try {
+            $permission = "view room " . $roomId;
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
             $user = User::query()->create([
                 'fname' => $data['fname'],
                 'lname' => $data['lname'],
