@@ -44,7 +44,15 @@ class ClinicController extends Controller
     public function createDoctor(NewDoctorRequest $request)
     {
         $data = $request->validated();
-        // $data = array_merge($validated, ['clinic_id' => Auth::user()->clinic->id]);
+
+        // Verify clinic belongs to authenticated owner
+        $clinic = \App\Models\Clinic::where('id', $data['clinic_id'])
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (!$clinic) {
+            return ApiResponse::permissionDenied('Clinic not found or access denied.');
+        }
 
         $created = $this->clinicServices->createDoctor($data);
 
@@ -58,7 +66,15 @@ class ClinicController extends Controller
     public function createSecretary(NewSecretaryRequest $request)
     {
         $data = $request->validated();
-        // $data = array_merge($validated, ['clinic_id' => Auth::user()->clinic->id]);
+
+        // Verify clinic belongs to authenticated owner
+        $clinic = \App\Models\Clinic::where('id', $data['clinic_id'])
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (!$clinic) {
+            return ApiResponse::permissionDenied('Clinic not found or access denied.');
+        }
 
         $created = $this->clinicServices->createSecretary($data);
 
