@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\PermissionHelper;
 use App\Http\Requests\RoomRequest;
 use App\Http\Resources\RoomResource;
 use App\Models\Clinic;
@@ -19,11 +20,14 @@ class RoomController extends Controller
         $this->roomServices = $roomServices;
     }
 
+    /**
+     * Get all rooms for a clinic (basic list).
+     */
     public function index($clinicId)
     {
-        $user = Auth::user();
-        if (!$user->hasRole('owner')) {
-            return ApiResponse::permissionDenied('You do not have access to this clinic rooms.');
+        $auth = $this->authorizeRole('owner', 'You do not have access to this clinic rooms.');
+        if ($auth !== true) {
+            return $auth;
         }
 
         return ApiResponse::success($this->roomServices->getRooms($clinicId)->map(function ($room) {
@@ -34,32 +38,49 @@ class RoomController extends Controller
         }));
     }
 
+    /**
+     * Get all rooms for a clinic with detailed information.
+     */
     public function indexWithInfo($clinicId)
     {
-        $user = Auth::user();
-        if (!$user->hasRole('owner')) {
-            return ApiResponse::permissionDenied('You do not have access to this clinic rooms.');
+        $auth = $this->authorizeRole('owner', 'You do not have access to this clinic rooms.');
+        if ($auth !== true) {
+            return $auth;
         }
 
         return ApiResponse::success(RoomResource::collection($this->roomServices->getRooms($clinicId)));
     }
 
+    /**
+     * Get a single room with detailed information.
+     */
     public function get($roomId)
     {
         $user = Auth::user();
-        if (!$user->hasRole('owner') && !$user->can("view room {$roomId}")) {
+
+        // Owner can view any room, others need specific permission
+        if (!$this->isOwner() && !$user->can(PermissionHelper::viewRoom($roomId))) {
             return ApiResponse::permissionDenied('You do not have access to this room.');
         }
 
-        return ApiResponse::success(new RoomResource($this->roomServices->getRoomById($roomId)));
+        $room = $this->roomServices->getRoomById($roomId);
+
+        if (!$room) {
+            return ApiResponse::error('Room not found', 404);
+        }
+
+        return ApiResponse::success(new RoomResource($room));
     }
 
+    /**
+     * Create a new room.
+     */
     public function create(RoomRequest $request)
     {
         $validated = $request->validated();
 
-        $clinic = Clinic::query()
-            ->where('id', $validated['clinic_id'])
+        // Verify user owns this clinic
+        $clinic = Clinic::where('id', $validated['clinic_id'])
             ->where('user_id', Auth::id())
             ->first();
 
@@ -72,11 +93,14 @@ class RoomController extends Controller
         return ApiResponse::success(new RoomResource($room), 'Room created successfully.', 201);
     }
 
+    /**
+     * Update a room.
+     */
     public function update(RoomRequest $request, $roomId)
     {
-        $user = Auth::user();
-        if (!$user->hasRole('owner')) {
-            return ApiResponse::permissionDenied('You do not have access to update this room.');
+        $auth = $this->authorizeRole('owner', 'You do not have access to update this room.');
+        if ($auth !== true) {
+            return $auth;
         }
 
         $validated = $request->validated();
@@ -88,11 +112,14 @@ class RoomController extends Controller
         return ApiResponse::success(null, 'Room updated successfully.');
     }
 
+    /**
+     * Delete a room.
+     */
     public function destroy($roomId)
     {
-        $user = Auth::user();
-        if (!$user->hasRole('owner')) {
-            return ApiResponse::permissionDenied('You do not have access to delete this room.');
+        $auth = $this->authorizeRole('owner', 'You do not have access to delete this room.');
+        if ($auth !== true) {
+            return $auth;
         }
 
         $deleted = $this->roomServices->deleteRoom($roomId);
