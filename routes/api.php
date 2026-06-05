@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\SecretaryController;
 use App\Http\Controllers\VerificationController;
 use App\Models\User;
 use App\Services\ModelFilter;
@@ -46,6 +47,11 @@ Route::prefix('/clinic-system')->group(function () {
             Route::post('/', 'create');
             Route::post('/{roomId}', 'update');
             Route::delete('/{roomId}', 'destroy');
+        });
+
+        Route::prefix('/secretaries')->controller(SecretaryController::class)->group(function () {
+            Route::get('/{id}', 'info');
+            Route::post('/{id}', 'update');
         });
     });
 });
