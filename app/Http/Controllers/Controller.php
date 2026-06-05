@@ -57,4 +57,23 @@ abstract class Controller
         $user = Auth::user();
         return $user && $user->hasRole('secretary');
     }
+
+    /**
+     * Check if the authenticated user has a specific permission.
+     * Returns true if authorized, or ApiResponse error if not.
+     *
+     * @param string $permission Permission to check
+     * @param string $message Error message if unauthorized
+     * @return mixed true if authorized, otherwise ApiResponse error
+     */
+    protected function authorizePermission(string $permission, string $message = 'Unauthorized')
+    {
+        $user = Auth::user();
+
+        if (!$user || !$user->can($permission)) {
+            return \App\Services\ApiResponse::permissionDenied($message);
+        }
+
+        return true;
+    }
 }
