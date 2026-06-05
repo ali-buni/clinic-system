@@ -2,19 +2,22 @@
 
 namespace App\Services;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 
 class ModelFilter
 {
     /**
-     * Filter a model based on the provided filters.
+     * Filter a model or query builder based on the provided filters.
      *
-     * e.g. search, sort, pagination, etc.
+     * Supports search, sort, pagination, etc.
      *
-     * example usage:
-     * ModelFilter::filter(new User(), [
+     * Example usages:
+     * ModelFilter::filter(new User(), [ 'search' => 'John', 'column' => 'name' ]);
+     * ModelFilter::filter(User::query()->whereActive(1), [ 'per_page' => 25 ]);
+     *      * ModelFilter::filter(new User(), [
      *    'search' => 'John',
      *    'column' => 'name',
      *    'sort' => 'created_at',
@@ -23,17 +26,21 @@ class ModelFilter
      *    'page' => 1
      * ]);
      *
-     * @param Model $model
+     * @param Model|Builder $model  Model instance or Eloquent query builder
      * @param array $filters
      * @return LengthAwarePaginator
      */
     public static function filter(
-        Model $model,
+        Model|Builder $model,
         array $filters = []
     ): LengthAwarePaginator {
-        $query = $model->newQuery();
+        $query = $model instanceof Model
+            ? $model->newQuery()
+            : $model;
 
-        $table = $model->getTable();
+        $table = $model instanceof Model
+            ? $model->getTable()
+            : $model->getModel()->getTable();
 
         // Get all columns dynamically from table
         $columns = Schema::getColumnListing($table);
