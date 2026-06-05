@@ -29,7 +29,7 @@ class NewDoctorRequest extends FormRequest
         return [
             'fname' => 'required|string|min:2|max:50',
             'lname' => 'required|string|min:2|max:50',
-            'phone' => 'required|digits:10|starts_with:09,unique:users,phone',
+            'phone' => 'required|digits:10|starts_with:09|unique:users,phone',
             'dob' => 'required|date|before:today',
             'gender' => 'required|in:male,female,unknown',
             'clinic_id' => 'required|exists:clinics,id',

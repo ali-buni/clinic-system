@@ -15,14 +15,17 @@ class ClinicRequest extends FormRequest
     {
         $user = Auth::user();
 
-        if (! $user) {
+        if (!$user) {
             return false;
         }
-        $clinic = Clinic::query()->find($this->route('clinicId'));
-        if (!$clinic) {
-            return false;
-        }
-        return $user->hasRole('owner');
+
+        // Verify clinic belongs to authenticated user
+        $clinic = Clinic::query()
+            ->where('id', $this->route('clinicId'))
+            ->where('user_id', $user->id)
+            ->exists();
+
+        return $user->hasRole('owner') && $clinic;
     }
 
     /**
