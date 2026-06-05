@@ -64,7 +64,7 @@ class AuthService
             DB::commit();
             return $this->apiResponse->success(null, 'the password is reseted');
         } catch (Exception $e) {
-            Db::rollBack();
+            DB::rollBack();
             return $this->apiResponse->error('error ocurred in resest the password. Please try again.');
         }
     }
