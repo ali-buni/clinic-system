@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -67,5 +68,13 @@ class User extends Authenticatable
     public function verificationCodes(): HasMany
     {
         return $this->hasMany(Verification_code::class);
+    }
+
+    /**
+     * Scope: Find user by phone number.
+     */
+    public function scopeByPhone(Builder $query, string $phone): Builder
+    {
+        return $query->where('phone', $phone);
     }
 }

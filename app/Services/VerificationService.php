@@ -88,8 +88,9 @@ class VerificationService
 
         $code = rand(100000, 999999);
 
-        DB::beginTransaction();
         try {
+            DB::beginTransaction();
+
             $verify = new verification_code();
             $verify->user_id = $user_id;
             $verify->type = 'phone';

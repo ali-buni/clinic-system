@@ -20,7 +20,7 @@ Route::prefix('/clinic-system')->group(function () {
         Route::post('/login', 'login');
 
         Route::middleware('auth:sanctum')->group(function () {
-            Route::post('/signout', 'signOUt');
+            Route::post('/signout', 'signOut');
             Route::post('/reset-password', 'resetPassword');
             Route::post('/refresh-token', 'refreshToken');
         });

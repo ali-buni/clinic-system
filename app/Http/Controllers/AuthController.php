@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ResetPasswordRequest;
 use App\Models\User;
 use App\Services\ApiResponse;
 use App\Services\AuthService;
@@ -28,25 +29,11 @@ class AuthController extends Controller
         return $this->authService->refreshToken($request);
     }
 
-    public function resetPassword(Request $request)
+    public function resetPassword(ResetPasswordRequest $request)
     {
-        $validated = $request->validate([
-            'phone' => 'required|string|exists:users,phone',
-            'password' => 'required|string|min:8',
-            'new_password' => 'required|string|min:8',
-        ], [
-            'phone.required' => 'Phone number is required',
-            'phone.string' => 'Phone number must be a string',
-            'phone.exists' => 'Phone number does not exist',
-            'password.required' => 'Current password is required',
-            'password.string' => 'Current password must be a string',
-            'password.min' => 'Current password must be at least 8 characters',
-            'new_password.required' => 'New password is required',
-            'new_password.string' => 'New password must be a string',
-            'new_password.min' => 'New password must be at least 8 characters',
-        ]);
+        $validated = $request->validated();
 
-        $user = User::query()->where('phone', $validated['phone'])->first();
+        $user = User::byPhone($validated['phone'])->first();
         if (!$user) {
             return $this->api->error('no account found!');
         }
@@ -60,16 +47,18 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        $request->validate([
+            'phone' => 'required|string|digits_between:10,13|starts_with:09',
+            'password' => 'required|string|min:8',
+        ]);
+
         $credentials = $request->only('phone', 'password');
 
         if (!Auth::attempt($credentials)) {
             return $this->api->error('invalid credentials.', 401);
         }
 
-        $user = User::query()->where('phone', $request->phone)->first();
-        if (!$user) {
-            return $this->api->error('no user found');
-        }
+        $user = Auth::user();
         return $this->verification->sendVerificationCode($user);
     }
 }
