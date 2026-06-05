@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Http\Resources\RoomResource;
 use App\Models\Doctor;
 use App\Models\Room;
 use App\Models\Secretary;
@@ -32,7 +31,7 @@ class RoomServices
     {
         return Room::query()
             ->where('clinic_id', $clinicId)
-            ->with(['doctors.user', 'secretaries.user'])
+            // ->with(['doctors.user', 'secretaries.user'])
             ->get();
     }
 

@@ -41,6 +41,7 @@ Route::prefix('/clinic-system')->group(function () {
 
         Route::prefix('/rooms')->controller(RoomController::class)->group(function () {
             Route::get('/{clinicId}', 'index');
+            Route::get('/{clinicId}/info', 'indexWithInfo');
             Route::get('/{roomId}/details', 'get');
             Route::post('/', 'create');
             Route::post('/{roomId}', 'update');

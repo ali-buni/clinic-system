@@ -26,6 +26,21 @@ class RoomController extends Controller
             return ApiResponse::permissionDenied('You do not have access to this clinic rooms.');
         }
 
+        return ApiResponse::success($this->roomServices->getRooms($clinicId)->map(function ($room) {
+            return [
+                'id' => $room->id,
+                'name' => $room->name,
+            ];
+        }));
+    }
+
+    public function indexWithInfo($clinicId)
+    {
+        $user = Auth::user();
+        if (!$user->hasRole('owner')) {
+            return ApiResponse::permissionDenied('You do not have access to this clinic rooms.');
+        }
+
         return ApiResponse::success(RoomResource::collection($this->roomServices->getRooms($clinicId)));
     }
 
