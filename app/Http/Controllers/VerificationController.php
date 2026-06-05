@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ResendVerificationRequest;
+use App\Http\Requests\VerifyCodeRequest;
 use App\Models\User;
 use App\Services\ApiResponse;
 use App\Services\VerificationService;
@@ -14,17 +16,11 @@ class VerificationController extends Controller
         private VerificationService $verification
     ) {}
 
-    public function resendVerificationCode(Request $request)
+    public function resendVerificationCode(ResendVerificationRequest $request)
     {
-        $validated = $request->validate([
-            'phone' => 'required|string|exists:users,phone',
-        ], [
-            'phone.required' => 'Phone number is required',
-            'phone.string' => 'Phone number must be a string',
-            'phone.exists' => 'Phone number does not exist',
-        ]);
+        $validated = $request->validated();
+        $user = User::byPhone($validated['phone'])->first();
 
-        $user = User::query()->where('phone', $validated['phone'])->first();
         if (!$user) {
             return $this->api->error('no user found!');
         }
@@ -32,23 +28,11 @@ class VerificationController extends Controller
         return $this->verification->sendVerificationCode($user);
     }
 
-    public function verifyCode(Request $request)
+    public function verifyCode(VerifyCodeRequest $request)
     {
-        $validated = $request->validate([
-            'phone' => 'required|string|exists:users,phone',
-            'code' => 'required|string|digits:6'
-        ], [
-            'phone.required' => 'Phone number is required',
-            'phone.string' => 'Phone number must be a string',
-            'phone.exists' => 'Phone number does not exist',
+        $validated = $request->validated();
+        $user = User::byPhone($validated['phone'])->first();
 
-            'code.required' => 'Code number is required',
-            'code.string' => 'Code number must be a string',
-            'code.digits' => 'Code digits is not 6',
-        ]);
-
-
-        $user = User::query()->where('phone', $validated['phone'])->first();
         if (!$user) {
             return $this->api->error('no user found!');
         }
