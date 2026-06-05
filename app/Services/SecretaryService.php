@@ -2,13 +2,16 @@
 
 namespace App\Services;
 
+use App\Helpers\PermissionHelper;
 use App\Models\Room;
 use App\Models\Secretary;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Permission;
 
 class SecretaryService
 {
+    /**
+     * Get secretary information with eager-loaded relationships.
+     */
     public function info($id): ?Secretary
     {
         return Secretary::query()
@@ -19,67 +22,88 @@ class SecretaryService
     /**
      * Update a secretary's information.
      * Handles room reassignment and updates user permissions accordingly.
-     * Ensures atomicity with database transactions and logs any errors encountered.
+     * Ensures atomicity with database transactions.
      *
      * @param int $id
-     * @param array $data
-     * @return ?Secretary
+     * @param array $data Secretary and user data
+     * @return Secretary|null
      */
     public function update($id, array $data): ?Secretary
     {
-        DB::beginTransaction();
-        try {
+        return DB::transaction(function () use ($id, $data) {
             $secretary = Secretary::with('user')->find($id);
 
             if (!$secretary) {
-                DB::rollBack();
                 return null;
             }
 
+            // Handle room reassignment with permission updates
             if (isset($data['room_id'])) {
-                $newRoomId = $data['room_id'];
-                $oldRoomId = $secretary->room_id;
-
-                if (!Room::where('id', $newRoomId)->exists()) {
-                    DB::rollBack();
-                    return null;
-                }
-                $user = $secretary->user;
-
-                if ($user) {
-                    Permission::firstOrCreate(['name' => "view room {$newRoomId}", 'guard_name' => 'web']);
-                    $user->givePermissionTo("view room {$newRoomId}");
-
-                    if ($oldRoomId) {
-                        $user->revokePermissionTo("view room {$oldRoomId}");
-                    }
-                    if (isset($data['fname'])) {
-                        $user->fname = $data['fname'];
-                    }
-                    if (isset($data['lname'])) {
-                        $user->lname = $data['lname'];
-                    }
-                    if (isset($data['phone'])) {
-                        $user->phone = $data['phone'];
-                    }
-                    if (isset($data['dob'])) {
-                        $user->dob = $data['dob'];
-                    }
-                    if (isset($data['gender'])) {
-                        $user->gender = $data['gender'];
-                    }
-                    $user->save();
-                }
+                $this->handleRoomChange($secretary, $data['room_id']);
             }
-            $secretary->update([
-                'room_id' => $data['room_id'] ?? $secretary->room_id,
-            ]);
 
-            DB::commit();
+            // Update user profile information if provided
+            if ($secretary->user) {
+                $this->updateUserProfile($secretary->user, $data);
+            }
+
+            // Update secretary room_id
+            if (isset($data['room_id'])) {
+                $secretary->room_id = $data['room_id'];
+            }
+
+            $secretary->save();
             return $secretary;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return null;
+        }, attempts: 3);
+    }
+
+    /**
+     * Handle room change with permission updates.
+     *
+     * @param Secretary $secretary
+     * @param int $newRoomId
+     * @return void
+     */
+    private function handleRoomChange(Secretary $secretary, int $newRoomId): void
+    {
+        // Validate new room exists
+        if (!Room::where('id', $newRoomId)->exists()) {
+            throw new \InvalidArgumentException("Room {$newRoomId} does not exist");
         }
+
+        $oldRoomId = $secretary->room_id;
+        $user = $secretary->user;
+
+        if (!$user) {
+            return;
+        }
+
+        // Grant new room permission
+        PermissionHelper::grantRoomPermission($user, $newRoomId);
+
+        // Revoke old room permission if it exists
+        if ($oldRoomId) {
+            PermissionHelper::revokeRoomPermission($user, $oldRoomId);
+        }
+    }
+
+    /**
+     * Update user profile fields from secretary data.
+     *
+     * @param \App\Models\User $user
+     * @param array $data
+     * @return void
+     */
+    private function updateUserProfile($user, array $data): void
+    {
+        $userFields = ['fname', 'lname', 'phone', 'dob', 'gender'];
+
+        foreach ($userFields as $field) {
+            if (isset($data[$field])) {
+                $user->$field = $data[$field];
+            }
+        }
+
+        $user->save();
     }
 }
