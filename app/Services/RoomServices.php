@@ -10,31 +10,61 @@ use Illuminate\Support\Facades\DB;
 
 class RoomServices
 {
+    /**
+     * Create a new room.
+     *
+     * @param array $data Room data
+     * @return Room
+     */
     public function createRoom(array $data): Room
     {
-        return Room::query()->create($data);
+        return Room::create($data);
     }
 
+    /**
+     * Delete a room by ID.
+     *
+     * @param int $id
+     * @return bool
+     */
     public function deleteRoom(int $id): bool
     {
-        return (bool) Room::query()->where('id', $id)->delete();
+        return (bool) Room::where('id', $id)->delete();
     }
 
+    /**
+     * Update a room by ID.
+     *
+     * @param int $id
+     * @param array $data
+     * @return bool
+     */
     public function updateRoom(int $id, array $data): bool
     {
-        return (bool) Room::query()
-            ->where('id', $id)
-            ->update($data);
+        return (bool) Room::where('id', $id)->update($data);
     }
 
+    /**
+     * Get all rooms for a clinic with eager-loaded relationships.
+     * Eager loads doctors and secretaries with their user information to prevent N+1 queries.
+     *
+     * @param int $clinicId
+     * @return Collection
+     */
     public function getRooms(int $clinicId): Collection
     {
         return Room::query()
             ->where('clinic_id', $clinicId)
-            // ->with(['doctors.user', 'secretaries.user'])
+            ->with(['doctors.user', 'secretaries.user'])
             ->get();
     }
 
+    /**
+     * Get a single room by ID with eager-loaded relationships.
+     *
+     * @param int $id
+     * @return Room|null
+     */
     public function getRoomById(int $id): ?Room
     {
         return Room::query()
@@ -42,11 +72,19 @@ class RoomServices
             ->find($id);
     }
 
+    /**
+     * Assign a doctor to a room.
+     * Validates clinic ownership before assignment.
+     *
+     * @param int $roomId
+     * @param int $doctorId
+     * @return Doctor|null
+     */
     public function addDoctorToRoom(int $roomId, int $doctorId): ?Doctor
     {
         return DB::transaction(function () use ($roomId, $doctorId) {
-            $room = Room::query()->find($roomId);
-            $doctor = Doctor::query()->find($doctorId);
+            $room = Room::find($roomId);
+            $doctor = Doctor::find($doctorId);
 
             if (!$room || !$doctor || $room->clinic_id !== $doctor->clinic_id) {
                 return null;
@@ -56,9 +94,16 @@ class RoomServices
             $doctor->save();
 
             return $doctor->fresh();
-        });
+        }, attempts: 3);
     }
 
+    /**
+     * Remove a doctor from a room.
+     *
+     * @param int $roomId
+     * @param int $doctorId
+     * @return bool
+     */
     public function delDoctorFromRoom(int $roomId, int $doctorId): bool
     {
         $doctor = Doctor::query()
@@ -71,15 +116,22 @@ class RoomServices
         }
 
         $doctor->room_id = null;
-
         return $doctor->save();
     }
 
+    /**
+     * Assign a secretary to a room.
+     * Validates clinic ownership before assignment.
+     *
+     * @param int $roomId
+     * @param int $secretaryId
+     * @return Secretary|null
+     */
     public function addSecretaryToRoom(int $roomId, int $secretaryId): ?Secretary
     {
         return DB::transaction(function () use ($roomId, $secretaryId) {
-            $room = Room::query()->find($roomId);
-            $secretary = Secretary::query()->find($secretaryId);
+            $room = Room::find($roomId);
+            $secretary = Secretary::find($secretaryId);
 
             if (!$room || !$secretary || $room->clinic_id !== $secretary->clinic_id) {
                 return null;
@@ -89,9 +141,16 @@ class RoomServices
             $secretary->save();
 
             return $secretary->fresh();
-        });
+        }, attempts: 3);
     }
 
+    /**
+     * Remove a secretary from a room.
+     *
+     * @param int $roomId
+     * @param int $secretaryId
+     * @return bool
+     */
     public function delSecretaryFromRoom(int $roomId, int $secretaryId): bool
     {
         $secretary = Secretary::query()
@@ -104,7 +163,6 @@ class RoomServices
         }
 
         $secretary->room_id = null;
-
         return $secretary->save();
     }
 }

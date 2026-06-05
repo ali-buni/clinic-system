@@ -6,7 +6,6 @@ use App\Http\Requests\ClinicRequest;
 use App\Http\Requests\NewDoctorRequest;
 use App\Http\Requests\NewSecretaryRequest;
 use App\Http\Resources\ClinicResource;
-use App\Models\Clinic;
 use App\Services\ApiResponse;
 use App\Services\ClinicServices;
 use Illuminate\Support\Facades\Auth;
