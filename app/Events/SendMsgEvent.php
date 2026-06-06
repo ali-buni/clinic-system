@@ -19,7 +19,7 @@ class SendMsgEvent
 
     public function __construct(string $phone, string $msg)
     {
-        $this->phone = '$phone';
+        $this->phone = $phone;
         $this->msg = $msg;
     }
     /**
