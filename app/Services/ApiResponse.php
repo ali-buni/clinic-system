@@ -63,12 +63,16 @@ class ApiResponse
      * @param int $statusCode
      * @return \Illuminate\Http\JsonResponse
      */
-    public static function pagination(LengthAwarePaginator $data, $message = 'Success', $statusCode = 200)
-    {
+    public static function pagination(
+        LengthAwarePaginator $data,
+        $dataModified = null,
+        $message = 'Success',
+        $statusCode = 200
+    ) {
         return response()->json([
             'success' => true,
             'message' => $message,
-            'data' => $data->items(),
+            'data' => $dataModified ?? $data->items(),
             'pagination' => [
                 'total' => $data->total(),
                 'count' => $data->count(),

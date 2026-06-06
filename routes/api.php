@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClinicController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\SecretaryController;
 use App\Http\Controllers\VerificationController;
@@ -52,6 +53,16 @@ Route::prefix('/clinic-system')->group(function () {
         Route::prefix('/secretaries')->controller(SecretaryController::class)->group(function () {
             Route::get('/{id}', 'info');
             Route::post('/{id}', 'update');
+        });
+
+        Route::prefix('/patients')->controller(PatientController::class)->group(function () {
+            Route::get('/', 'index');
+            Route::get('/trashed', 'indexTrashed');
+            Route::get('/{patientId}/show', 'show');
+            Route::post('/create', 'store');
+            Route::post('/update', 'update');
+            Route::delete('/delete', 'destroy');
+            Route::get('/restore', 'restore');
         });
     });
 });

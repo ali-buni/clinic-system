@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\Patient;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 
 class PatientService
 {
@@ -31,19 +29,6 @@ class PatientService
     }
 
     /**
-     * Get all patients for a clinic.
-     *
-     * @param int $clinicId
-     * @return Collection
-     */
-    public function getByClinic(int $clinicId): Collection
-    {
-        return Patient::where('clinic_id', $clinicId)
-            // ->with(['appointments', 'records'])
-            ->get();
-    }
-
-    /**
      * Update patient information.
      *
      * @param int $id
@@ -63,7 +48,7 @@ class PatientService
      */
     public function softDelete(int $id): bool
     {
-        return (bool) Patient::where('id', $id)->softDelete();
+        return (bool) Patient::where('id', $id)->delete();
     }
 
     /**
@@ -74,9 +59,13 @@ class PatientService
      */
     public function restore(int $id): bool
     {
-        return (bool) Patient::withTrashed()
-            ->where('id', $id)
-            ->restore();
+        $patient = Patient::withTrashed()->find($id);
+
+        if (!$patient || !$patient->trashed()) {
+            return false;
+        }
+
+        return $patient->restore();
     }
 
     /**
