@@ -90,7 +90,7 @@ class RoomController extends Controller
 
         $room = $this->roomServices->createRoom($validated);
 
-        return ApiResponse::success(new RoomResource($room), 'Room created successfully.', 201);
+        return ApiResponse::success(null, 'Room created successfully.', 201);
     }
 
     /**
