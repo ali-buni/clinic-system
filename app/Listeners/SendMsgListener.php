@@ -9,6 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 class SendMsgListener
 {
@@ -47,11 +48,10 @@ class SendMsgListener
             if ($response->successful()) {
                 echo $response->body();
             } else {
-                echo 'Unexpected HTTP status: ' . $response->status() . ' ' .
-                    $response->reason();
+                throw new RuntimeException('SMS failed: ' . $response->reason());
             }
         } catch (\Exception $e) {
-            echo 'Error: ' . $e->getMessage();
+            throw $e;
         }
     }
 }

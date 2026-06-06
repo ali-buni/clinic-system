@@ -9,6 +9,7 @@ use App\Models\Doctor;
 use App\Models\Secretary;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class ClinicServices
 {
@@ -51,12 +52,15 @@ class ClinicServices
             // Assign specialties
             $doctor->specialities()->syncWithoutDetaching($data['speciality_ids']);
 
-            // Send credential via SMS
-            event(new SendMsgEvent(
-                $user->phone,
-                config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
-            ));
-
+            try {
+                // Send credential via SMS
+                event(new SendMsgEvent(
+                    $user->phone,
+                    config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
+                ));
+            } catch (\Exception $e) {
+                throw new RuntimeException('Failed to send SMS: ' . $e->getMessage());
+            }
             return true;
         }, attempts: 3);
     }
@@ -93,12 +97,15 @@ class ClinicServices
                 'clinic_id' => $data['clinic_id'],
                 'room_id' => $roomId,
             ]);
-
-            // Send credential via SMS
-            event(new SendMsgEvent(
-                $user->phone,
-                config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
-            ));
+            // Send credential via SMS (synchronous)
+            try {
+                event(new SendMsgEvent(
+                    $user->phone,
+                    config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
+                ));
+            } catch (\Exception $e) {
+                throw new RuntimeException('Failed to send SMS: ' . $e->getMessage());
+            }
 
             return true;
         }, attempts: 3);
