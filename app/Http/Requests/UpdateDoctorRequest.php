@@ -26,6 +26,8 @@ class UpdateDoctorRequest extends FormRequest
             'appointment_duration' => 'nullable|integer|min:5|max:120',
             'bio'                  => 'nullable|string',
             'consultation_fee'     => 'nullable|numeric|min:0',
+            'specialties'          => ['sometimes', 'nullable', 'array'],
+            'specialties.*'        => ['integer', 'exists:specialties,id'],
         ];
     }
 }

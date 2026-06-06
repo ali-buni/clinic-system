@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Doctor\CreateDoctorAction;
 use App\Actions\Doctor\UpdateDoctorAction;
 use App\Actions\Doctor\DeleteDoctorAction;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreDoctorRequest;
 use App\Http\Requests\UpdateDoctorRequest;
 use App\Http\Resources\DoctorResource;
 use App\Models\Doctor;
@@ -18,6 +16,7 @@ use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Http\Request;
 use App\Services\ModelFilter;
+use App\Services\ApiResponse;
 
 class DoctorController extends Controller implements HasMiddleware
 {
@@ -26,38 +25,6 @@ class DoctorController extends Controller implements HasMiddleware
         return [
             new Middleware('auth:sanctum'),
         ];
-    }
-    public function store(StoreDoctorRequest $request, CreateDoctorAction $action): JsonResponse
-    {
-        $owner = $request->user();
-
-        if (!$owner->clinicOwner?->id) {
-            return response()->json([
-                'message' => 'The current account is not associated with any clinic.'
-            ], 400);
-        }
-
-        try {
-            $doctor = $action->execute(
-                $request->validated(),
-                $owner->clinicOwner->id
-            );
-
-            return response()->json([
-                'message' => 'Doctor created successfully.',
-                'doctor'  => new DoctorResource($doctor->load('user'))
-            ], 201);
-
-        } catch (\Exception $e) {
-            Log::error('Failed to create doctor', [
-                'user_id'=> $owner->id,
-                'error'=> $e->getMessage()
-            ]);
-
-            return response()->json([
-                'message'=> 'Failed to create doctor.',
-                'error'=> config('app.debug') ? $e->getMessage() : null,], 500);
-        }
     }
 
     public function update(UpdateDoctorRequest $request, Doctor $doctor, UpdateDoctorAction $action): JsonResponse
@@ -70,10 +37,12 @@ class DoctorController extends Controller implements HasMiddleware
                 $request->validated()
             );
 
-            return response()->json([
-                'message' => 'Your profile has been updated successfully.',
-                'doctor'  => new DoctorResource($updatedDoctor->load('user'))
-            ], 200);
+
+            return ApiResponse::success(
+                new DoctorResource($updatedDoctor->load('user')),
+                'Your profile has been updated successfully.',
+                200
+            );
 
         } catch (\Exception $e) {
             Log::error('Failed to update doctor', [
@@ -81,12 +50,15 @@ class DoctorController extends Controller implements HasMiddleware
                 'error'     => $e->getMessage()
             ]);
 
-            return response()->json([
-                'message' => 'Failed to update doctor.',
-                'error'   => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
+
+            return ApiResponse::error(
+                'Failed to update doctor.',
+                500,
+                config('app.debug') ? ['error' => $e->getMessage()] : null
+            );
         }
     }
+
     public function destroy(Doctor $doctor, DeleteDoctorAction $action): JsonResponse
     {
         Gate::authorize('delete', $doctor);
@@ -94,12 +66,13 @@ class DoctorController extends Controller implements HasMiddleware
         try {
             $action->execute($doctor);
 
-            return response()->json([
-             'message' => 'The doctor has successfully left the clinic.'
-            ], 200);
+            return ApiResponse::success(
+                null,
+                'The doctor has successfully left the clinic.',
+                200
+            );
 
         } catch (\Exception $e) {
-
             Log::error('Failed to remove doctor', [
                 'doctor_id' => $doctor->id,
                 'user_id'   => request()->user()->id,
@@ -109,9 +82,10 @@ class DoctorController extends Controller implements HasMiddleware
 
             $status = $e->getCode() == 400 ? 400 : 500;
 
-            return response()->json([
-                'message' => $e->getMessage() ?: 'Failed to remove doctor.',
-            ], $status);
+            return ApiResponse::error(
+                $e->getMessage() ?: 'Failed to remove doctor.',
+                $status
+            );
         }
     }
 
@@ -121,18 +95,20 @@ class DoctorController extends Controller implements HasMiddleware
 
         $doctor->restore();
 
-        return response()->json([
-            'message' => 'Doctor restored successfully.',
-            'doctor'  => new DoctorResource($doctor->load('user'))
-        ]);
+        return ApiResponse::success(
+            new DoctorResource($doctor->load('user')),
+            'Doctor restored successfully.',
+            200
+        );
     }
 
     public function show(Doctor $doctor): JsonResponse
     {
-
-        return response()->json([
-            'doctor'=> new DoctorResource($doctor->load('user'))
-        ], 200);
+        return ApiResponse::success(
+            new DoctorResource($doctor->load('user')),
+            'Doctor details retrieved successfully.',
+            200
+        );
     }
 
     public function roomDoctors(Request $request, Room $room): JsonResponse
@@ -141,18 +117,29 @@ class DoctorController extends Controller implements HasMiddleware
         $clinicId = $owner->clinicOwner?->id;
 
         if ($room->clinic_id !== $clinicId) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+
+            return ApiResponse::permissionDenied('Unauthorized', 403);
         }
 
         $doctors = Doctor::where('room_id', $room->id)
-            ->with(['user', 'specialties'])
+            ->with(['user'])
+            ->select('id', 'user_id')
             ->get();
 
-        return response()->json([
+        $doctorsData = $doctors->map(function ($doctor) {
+            $user = $doctor->user;
+            return [
+                'id'        => $doctor->id,
+                'full_name' => trim(($user->fname ?? '') . ' ' . ($user->lname ?? '')) ?: null,
+            ];
+        });
+
+        return ApiResponse::success([
             'room' => $room->only(['id', 'name', 'number']),
-            'doctors' => DoctorResource::collection($doctors)
-        ]);
+            'doctors' => $doctorsData
+        ], 'Room doctors retrieved successfully.', 200);
     }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -160,35 +147,32 @@ class DoctorController extends Controller implements HasMiddleware
         if ($user->clinicOwner?->id) {
             $clinicId = $user->clinicOwner->id;
 
-        $query = Doctor::where('clinic_id', $clinicId)
-            ->with(['user', 'specialties', 'room'])
-            ->withTrashed(); // اختياري: إظهار المحذوفين
+            $query = Doctor::where('clinic_id', $clinicId)
+                ->with(['user', 'specialties', 'room'])
+                ->withTrashed();
 
-        $result = ModelFilter::filter($query, $request->all());
+            $result = ModelFilter::filter($query, $request->all());
 
-        return response()->json([
-            'doctors' => DoctorResource::collection($result->items()),
-            'meta' => [
-                'current_page' => $result->currentPage(),
-                'last_page'    => $result->lastPage(),
-                'total'        => $result->total(),
-                'per_page'     => $result->perPage(),
-            ]
-        ], 200);
+
+            return ApiResponse::pagination(
+                $result,
+                'Doctors collection retrieved successfully.'
+            );
         }
 
         $doctor = $user->doctor;
 
         if ($doctor) {
-        return response()->json([
-            'doctor' => new DoctorResource($doctor->load(['user', 'specialties', 'room']))
-        ], 200);
+            return ApiResponse::success(
+                new DoctorResource($doctor->load(['user', 'specialties', 'room'])),
+                'Doctor profile retrieved successfully.',
+                200
+            );
         }
 
-        return response()->json([
-        'message' => 'Not associated with any clinic.'
-        ], 403);
+        return ApiResponse::permissionDenied('Not associated with any clinic.', 403);
     }
+
     public function forceDelete(Doctor $doctor): JsonResponse
     {
         Gate::authorize('forceDelete', $doctor);
@@ -196,21 +180,24 @@ class DoctorController extends Controller implements HasMiddleware
         try {
             $doctor->forceDelete();
 
-        return response()->json([
-            'message' => 'The doctor has been permanently deleted from the system.'
-        ], 200);
+            return ApiResponse::success(
+                null,
+                'The doctor has been permanently deleted from the system.',
+                200
+            );
 
         } catch (\Exception $e) {
             Log::error('Failed to force delete doctor', [
-            'doctor_id' => $doctor->id,
-            'user_id'   => request()->user()->id,
-            'error'     => $e->getMessage()
+                'doctor_id' => $doctor->id,
+                'user_id'   => request()->user()->id,
+                'error'     => $e->getMessage()
             ]);
 
-        return response()->json([
-            'message' => 'Failed to permanently delete doctor.',
-            'error'   => config('app.debug') ? $e->getMessage() : null,
-        ], 500);
+            return ApiResponse::error(
+                'Failed to permanently delete doctor.',
+                500,
+                config('app.debug') ? ['error' => $e->getMessage()] : null
+            );
         }
     }
 }

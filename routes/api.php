@@ -66,23 +66,20 @@ Route::prefix('/clinic-system')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->prefix('/clinic-system')->group(function () {
-    Route::put('doctors/{doctor}', [DoctorController::class, 'update'])
+    Route::put('doctors/{id}', [DoctorController::class, 'update'])
         ->name('doctors.update');
 
-        Route::apiResource('doctors', DoctorController::class)
-        ->except(['destroy']);
-
-    Route::get('rooms/{room}/doctors', [DoctorController::class, 'roomDoctors'])
+    Route::get('rooms/{room_id}/doctors', [DoctorController::class, 'roomDoctors'])
          ->name('rooms.doctors');
 
-    Route::delete('doctors/{doctor}/leave', [DoctorController::class, 'destroy'])
+    Route::delete('doctors/{id}/leave', [DoctorController::class, 'destroy'])
          ->name('doctors.leave');
 
-    Route::post('doctors/{doctor}/restore', [DoctorController::class, 'restore'])
+    Route::post('doctors/{id}/restore', [DoctorController::class, 'restore'])
          ->name('doctors.restore')
          ->withTrashed();
 
-    Route::delete('doctors/{doctor}/force', [DoctorController::class, 'forceDelete'])
+    Route::delete('doctors/{id}/force', [DoctorController::class, 'forceDelete'])
          ->name('doctors.force-delete')
          ->withTrashed();
 

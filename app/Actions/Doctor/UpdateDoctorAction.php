@@ -15,11 +15,6 @@ class UpdateDoctorAction
                 $doctor->specialties()->sync($data['specialties']);
                 unset($data['specialties']);
             }
-
-            if (isset($data['work_hours'])) {
-                unset($data['work_hours']);
-            }
-
             $doctor->update($data);
 
 

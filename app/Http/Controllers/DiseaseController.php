@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\DiseaseApiService;
 use App\Services\ModelFilter;
-
+use App\Services\ApiResponse;
 class DiseaseController extends Controller
 {
     public function search(Request $request, DiseaseApiService $apiService): JsonResponse
@@ -20,9 +20,7 @@ class DiseaseController extends Controller
 
         $results = $apiService->searchDiseases($request->query('query'));
 
-        return response()->json([
-            'data'=> $results
-            ], 200);
+        return ApiResponse::success($results, 'Diseases search results retrieved successfully.');
     }
 
     public function store(StoreDiseaseRequest $request, GetOrCreateDiseaseAction $action): JsonResponse
@@ -30,16 +28,18 @@ class DiseaseController extends Controller
         try {
             $disease = $action->execute($request->validated());
 
-            return response()->json([
-                'message' => 'Disease processed successfully.',
-                'disease' => new DiseaseResource($disease)
-            ], 201);
+            return ApiResponse::success(
+                new DiseaseResource($disease),
+                'Disease processed successfully.',
+                201
+            );
 
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to process disease records.',
-                'error'   => config('app.debug') ? $e->getMessage() : null
-            ], 500);
+            return ApiResponse::error(
+                'Failed to process disease records.',
+                500,
+                config('app.debug') ? ['error' => $e->getMessage()] : null
+            );
         }
     }
 
@@ -47,13 +47,6 @@ class DiseaseController extends Controller
     {
         $paginatedDiseases = ModelFilter::filter(new Disease(), $request->all());
 
-        return response()->json([
-            'diseases' => DiseaseResource::collection($paginatedDiseases->items()),
-            'meta' => [
-                'current_page' => $paginatedDiseases->currentPage(),
-                'last_page'    => $paginatedDiseases->lastPage(),
-                'total'        => $paginatedDiseases->total(),
-            ]
-        ], 200);
+        return ApiResponse::pagination($paginatedDiseases, 'Diseases collection retrieved successfully.');
     }
 }

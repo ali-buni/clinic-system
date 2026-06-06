@@ -22,14 +22,8 @@ class DeleteDoctorAction
         }
 
         DB::transaction(function () use ($doctor) {
-
-            if ($doctor->user) {
-                $doctor->user->removeRole('doctor');
-            }
-
-            $doctor->delete();
-
             $doctor->update(['room_id' => null]);
+            $doctor->delete();
         });
     }
 }

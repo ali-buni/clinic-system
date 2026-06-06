@@ -21,13 +21,16 @@ class GetOrCreateDiseaseAction
             );
         }
 
-        return Disease::create([
-            'code'           => null,
-            'ar_name'        => $data['ar_name'],
-            'en_name'        => $data['en_name'],
-            'description'    => $data['description'] ?? null,
-            'disease_nature' => $data['disease_nature'] ?? 'other',
-            'is_custom'      => true
-        ]);
+                return Disease::firstOrCreate(
+            [
+                'ar_name' => $data['ar_name'],
+                'en_name' => $data['en_name'],
+            ],
+            [
+                'code'           => null,
+                'description'    => $data['description'] ?? null,
+                'disease_nature' => $data['disease_nature'] ?? 'other',
+                'is_custom'      => true             ]
+        );
     }
 }
