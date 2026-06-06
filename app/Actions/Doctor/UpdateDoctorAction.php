@@ -9,25 +9,26 @@ class UpdateDoctorAction
 {
     public function execute(Doctor $doctor, array $data): Doctor
     {
-        DB::beginTransaction();
-        try {
-            if ($userData = array_intersect_key($data, array_flip(['fname', 'lname', 'phone', 'dob', 'gender']))) {
-                $doctor->user->update($userData);
+        return DB::transaction(function () use ($doctor, $data) {
+
+            if (isset($data['specialties'])) {
+                $doctor->specialties()->sync($data['specialties']);
+                unset($data['specialties']);
             }
 
-            $doctorData = array_intersect_key($data, array_flip([
-                'room_id', 'appointment_duration', 'bio', 'consultation_fee'
-            ]));
+            if (isset($data['work_hours'])) {
+                unset($data['work_hours']);
+            }
 
-            $doctor->update($doctorData);
+            $doctor->update($data);
 
-            DB::commit();
 
-            return $doctor->fresh();
+            if (isset($data['room_id'])) {
+                $doctor->room_id = $data['room_id'];
+                $doctor->save();
+            }
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+            return $doctor->fresh(['user', 'specialties', 'room']);
+        });
     }
 }

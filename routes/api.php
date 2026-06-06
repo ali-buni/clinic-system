@@ -66,11 +66,28 @@ Route::prefix('/clinic-system')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->prefix('/clinic-system')->group(function () {
+    Route::put('doctors/{doctor}', [DoctorController::class, 'update'])
+        ->name('doctors.update');
 
-    Route::apiResource('doctors', DoctorController::class);
+        Route::apiResource('doctors', DoctorController::class)
+        ->except(['destroy']);
 
-    Route::get('clinic/doctors', [DoctorController::class, 'clinicDoctors']);
-    Route::get('rooms/{room}/doctors', [DoctorController::class, 'roomDoctors']);
+    Route::get('rooms/{room}/doctors', [DoctorController::class, 'roomDoctors'])
+         ->name('rooms.doctors');
+
+    Route::delete('doctors/{doctor}/leave', [DoctorController::class, 'destroy'])
+         ->name('doctors.leave');
+
+    Route::post('doctors/{doctor}/restore', [DoctorController::class, 'restore'])
+         ->name('doctors.restore')
+         ->withTrashed();
+
+    Route::delete('doctors/{doctor}/force', [DoctorController::class, 'forceDelete'])
+         ->name('doctors.force-delete')
+         ->withTrashed();
+
+    Route::get('doctors', [DoctorController::class, 'index'])
+         ->name('doctors.index');
 
     Route::apiResource('diseases', DiseaseController::class)->only(['index', 'store']);
     Route::apiResource('medicines', MedicineController::class)->only(['index', 'store']);

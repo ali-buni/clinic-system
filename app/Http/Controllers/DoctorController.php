@@ -62,7 +62,7 @@ class DoctorController extends Controller implements HasMiddleware
 
     public function update(UpdateDoctorRequest $request, Doctor $doctor, UpdateDoctorAction $action): JsonResponse
     {
-        //Gate::authorize('update', $doctor);
+        Gate::authorize('update', $doctor);
 
         try {
             $updatedDoctor = $action->execute(
@@ -89,53 +89,49 @@ class DoctorController extends Controller implements HasMiddleware
     }
     public function destroy(Doctor $doctor, DeleteDoctorAction $action): JsonResponse
     {
-        //Gate::authorize('delete', $doctor);
+        Gate::authorize('delete', $doctor);
 
         try {
             $action->execute($doctor);
 
             return response()->json([
-                'message' => 'The doctor has successfully left the clinic, and their profile has been removed.'
+             'message' => 'The doctor has successfully left the clinic.'
             ], 200);
 
         } catch (\Exception $e) {
-            Log::error('Failed to delete doctor', [
-                'doctor_id'=> $doctor->id,
-                'error'=> $e->getMessage()
+
+            Log::error('Failed to remove doctor', [
+                'doctor_id' => $doctor->id,
+                'user_id'   => request()->user()->id,
+                'error'     => $e->getMessage(),
+                'trace'     => config('app.debug') ? $e->getTraceAsString() : null
             ]);
 
+            $status = $e->getCode() == 400 ? 400 : 500;
+
             return response()->json([
-                'message'=> $e->getMessage() ?: 'Failed to complete the action.',
-            ], 500);
+                'message' => $e->getMessage() ?: 'Failed to remove doctor.',
+            ], $status);
         }
+    }
+
+    public function restore(Doctor $doctor): JsonResponse
+    {
+        Gate::authorize('restore', $doctor);
+
+        $doctor->restore();
+
+        return response()->json([
+            'message' => 'Doctor restored successfully.',
+            'doctor'  => new DoctorResource($doctor->load('user'))
+        ]);
     }
 
     public function show(Doctor $doctor): JsonResponse
     {
-        Gate::authorize('view', $doctor);
 
         return response()->json([
             'doctor'=> new DoctorResource($doctor->load('user'))
-        ], 200);
-    }
-
-    public function clinicDoctors(Request $request): JsonResponse
-    {
-        $owner = $request->user();
-        $clinicId = $owner->clinicOwner?->id;
-
-        if (!$clinicId) {
-            return response()->json([
-                'message'=> 'The current account is not associated with any clinic.'
-            ], 400);
-        }
-
-        $doctors = Doctor::where('clinic_id', $clinicId)
-            ->with('user')
-            ->get();
-
-        return response()->json([
-            'doctors'=> DoctorResource::collection($doctors)
         ], 200);
     }
 
@@ -145,34 +141,30 @@ class DoctorController extends Controller implements HasMiddleware
         $clinicId = $owner->clinicOwner?->id;
 
         if ($room->clinic_id !== $clinicId) {
-            return response()->json([
-                'message'=> 'Unauthorized. This room does not belong to your clinic.'
-            ], 403);
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $doctors = Doctor::where('room_id', $room->id)
-            ->with('user')
+            ->with(['user', 'specialties'])
             ->get();
 
         return response()->json([
-            'room_name'=> $room->name ?? "Room #{$room->id}",
-            'doctors'=> DoctorResource::collection($doctors)
-        ], 200);
+            'room' => $room->only(['id', 'name', 'number']),
+            'doctors' => DoctorResource::collection($doctors)
+        ]);
     }
     public function index(Request $request): JsonResponse
     {
-        $owner = $request->user();
-        $clinicId = $owner->clinicOwner?->id;
+        $user = $request->user();
 
-        if (!$clinicId) {
-            return response()->json([
-                'message' => 'The current account is not associated with any clinic.'
-            ], 400);
-        }
+        if ($user->clinicOwner?->id) {
+            $clinicId = $user->clinicOwner->id;
 
-        $secureQuery = Doctor::where('clinic_id', $clinicId)->with('user');
+        $query = Doctor::where('clinic_id', $clinicId)
+            ->with(['user', 'specialties', 'room'])
+            ->withTrashed(); // اختياري: إظهار المحذوفين
 
-        $result = ModelFilter::filter($secureQuery, $request->all());
+        $result = ModelFilter::filter($query, $request->all());
 
         return response()->json([
             'doctors' => DoctorResource::collection($result->items()),
@@ -180,7 +172,45 @@ class DoctorController extends Controller implements HasMiddleware
                 'current_page' => $result->currentPage(),
                 'last_page'    => $result->lastPage(),
                 'total'        => $result->total(),
+                'per_page'     => $result->perPage(),
             ]
         ], 200);
+        }
+
+        $doctor = $user->doctor;
+
+        if ($doctor) {
+        return response()->json([
+            'doctor' => new DoctorResource($doctor->load(['user', 'specialties', 'room']))
+        ], 200);
+        }
+
+        return response()->json([
+        'message' => 'Not associated with any clinic.'
+        ], 403);
+    }
+    public function forceDelete(Doctor $doctor): JsonResponse
+    {
+        Gate::authorize('forceDelete', $doctor);
+
+        try {
+            $doctor->forceDelete();
+
+        return response()->json([
+            'message' => 'The doctor has been permanently deleted from the system.'
+        ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to force delete doctor', [
+            'doctor_id' => $doctor->id,
+            'user_id'   => request()->user()->id,
+            'error'     => $e->getMessage()
+            ]);
+
+        return response()->json([
+            'message' => 'Failed to permanently delete doctor.',
+            'error'   => config('app.debug') ? $e->getMessage() : null,
+        ], 500);
+        }
     }
 }

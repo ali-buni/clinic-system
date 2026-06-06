@@ -10,23 +10,26 @@ class DeleteDoctorAction
     public function execute(Doctor $doctor): void
     {
         $hasUpcomingAppointments = $doctor->appointments()
-            ->where('appointment_date', '>=', now()->toDateString())
-            ->where('status', '!=', 'cancelled')
+            ->where('start_time', '>=', now())
+            ->whereNotIn('status', ['cancelled', 'completed'])
             ->exists();
 
         if ($hasUpcomingAppointments) {
-            throw new \Exception('Cannot remove the doctor. There are active upcoming appointments scheduled for this doctor.', 400);
+            throw new \Exception(
+                'Cannot remove the doctor. There are active upcoming appointments scheduled for this doctor.',
+                400
+            );
         }
 
-        DB::beginTransaction();
-        try {
-            $doctor->user->removeRole('doctor');
+        DB::transaction(function () use ($doctor) {
+
+            if ($doctor->user) {
+                $doctor->user->removeRole('doctor');
+            }
+
             $doctor->delete();
 
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+            $doctor->update(['room_id' => null]);
+        });
     }
 }

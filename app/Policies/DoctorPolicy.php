@@ -4,22 +4,16 @@ namespace App\Policies;
 
 use App\Models\Doctor;
 use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class DoctorPolicy
 {
-    public function viewAny(User $user): bool
-    {
-        return true;
-    }
+    use HandlesAuthorization;
+
     public function view(User $user, Doctor $doctor): bool
     {
-        return $user->id === $doctor->user_id ||
-               $user->clinicOwner?->id === $doctor->clinic_id;
-    }
 
-    public function create(User $user): bool
-    {
-        return $user->clinicOwner?->id !== null;
+        return $user->id === $doctor->user_id;
     }
 
     public function update(User $user, Doctor $doctor): bool
@@ -29,9 +23,16 @@ class DoctorPolicy
 
     public function delete(User $user, Doctor $doctor): bool
     {
-        $isDoctor = ($user->id === $doctor->user_id);
-        $isClinicOwner      = ($user->clinicOwner?->id === $doctor->clinic_id);
 
-        return $isDoctor || $isClinicOwner;
+        return $user->clinicOwner?->id === $doctor->clinic_id;
+    }
+
+    public function restore(User $user, Doctor $doctor): bool
+    {
+        return $user->clinicOwner?->id === $doctor->clinic_id;
+    }
+    public function forceDelete(User $user, Doctor $doctor): bool
+    {
+        return $user->clinicOwner?->id === $doctor->clinic_id;
     }
 }

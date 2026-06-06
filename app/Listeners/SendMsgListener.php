@@ -14,13 +14,13 @@ class SendMsgListener
 {
     use InteractsWithQueue, Queueable, SerializesModels;
 
-    private string $url;
-    private string $token;
+    private ?string $url;
+    private ?string $token;
 
     public function __construct()
     {
-        $this->url = config('services.traccar.url');
-        $this->token = config('services.traccar.api');
+        $this->url = config('services.traccar.url', 'https://fallback-url.com');
+        $this->token = config('services.traccar.api', '');
     }
 
     /**
@@ -28,6 +28,10 @@ class SendMsgListener
      */
     public function handle(SendMsgEvent $event): void
     {
+        if (!$this->url || !$this->token) {
+        Log::error('[SMS] Traccar URL or Token is missing in configuration.');
+        return;
+    }
         $phone = $event->phone;
         // $phone = '+963939688965';
 
