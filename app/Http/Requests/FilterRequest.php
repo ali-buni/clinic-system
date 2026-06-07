@@ -13,6 +13,12 @@ class FilterRequest extends FormRequest
 
     public function rules(): array
     {
+        $route = request()->route();
+        $action = $route->getActionMethod();
+        $data = [];
+        if ($action == 'searchDisease' || $action == 'searchMedicine') {
+            $data = ['query' => 'required|string|min:2'];
+        }
         return [
             'search' => 'nullable|string|max:255',
             'column' => 'nullable|string|max:100',
@@ -21,6 +27,7 @@ class FilterRequest extends FormRequest
             'per_page' => 'nullable|integer|min:1|max:100',
             'page' => 'nullable|integer|min:1',
             'clinic_id' => 'nullable|integer|exists:clinics,id',
+            ...$data,
         ];
     }
 

@@ -6,45 +6,30 @@ use App\Http\Controllers\Controller;
 use App\Models\Medicine;
 use App\Services\MedicineApiService;
 use App\Actions\Medicine\GetOrCreateMedicineAction;
+use App\Http\Requests\FilterRequest;
 use App\Http\Resources\MedicineResource;
 use App\Http\Requests\StoreMedicineRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use App\Services\ModelFilter;
 use App\Services\ApiResponse;
+use App\Services\ModelFilter;
 
 class MedicineController extends Controller
 {
-    public function search(Request $request, MedicineApiService $apiService): JsonResponse
+    public function searchMedicine(FilterRequest $request, MedicineApiService $apiService): JsonResponse
     {
-        $request->validate(['query' => 'required|string|min:2']);
-        $query = $request->query('query');
+        $filters = $request->validated();
+        $query = Medicine::query();
 
-        $localResults = Medicine::where('en_name', 'LIKE', "%{$query}%")
-            ->orWhere('ar_name', 'LIKE', "%{$query}%")
-            ->orWhere('generic_name_en', 'LIKE', "%{$query}%")
-            ->orWhere('generic_name_ar', 'LIKE', "%{$query}%")
-            ->limit(10)
-            ->get();
+        $local = ModelFilter::filter($query, $filters);
 
-        $formattedLocal = $localResults->map(function ($medicine) {
-            return [
-                'api_medicine_id' => $medicine->api_medicine_id,
-                'en_name'         => $medicine->en_name,
-                'ar_name'         => $medicine->ar_name,
-                'generic_name_en' => $medicine->generic_name_en,
-                'generic_name_ar' => $medicine->generic_name_ar,
-                'strength'        => $medicine->strength,
-                'form'            => $medicine->form,
-                'is_local'        => true
-            ];
-        })->toArray();
+        $apiResults = $apiService->searchMedicines($request->query('query'));
 
-        $apiResults = $apiService->searchMedicines($query);
-        $mergedResults = array_merge($formattedLocal, $apiResults);
-        $uniqueResults = array_values(collect($mergedResults)->unique('en_name')->toArray());
+        if (empty($apiResults) && empty($local->items())) {
+            return ApiResponse::error('no medicines found');
+        }
 
-        return ApiResponse::success($uniqueResults, 'Medicines search results retrieved successfully.');
+        return ApiResponse::success(array_merge($local->items(), $apiResults), 'Medicines search results retrieved successfully.');
     }
 
     public function store(StoreMedicineRequest $request, GetOrCreateMedicineAction $action): JsonResponse
