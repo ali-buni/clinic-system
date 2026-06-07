@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Disease extends Model
 {
-    protected $fillable = ['code', 'ar_name', 'en_name', 'description', 'disease_nature'];
+    protected $fillable = ['code', 'ar_name', 'en_name', 'description', 'disease_nature',
+        'is_custom'];
 
     public function patientRecords(): BelongsToMany
     {

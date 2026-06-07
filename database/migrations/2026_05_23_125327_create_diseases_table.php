@@ -29,6 +29,7 @@ return new class extends Migration
 
             $table->unique(['code'], 'uniq_disease_code');
             $table->index(['ar_name', 'en_name'], 'idx_disease_name');
+            $table->boolean('is_custom')->default(false);
         });
     }
 
