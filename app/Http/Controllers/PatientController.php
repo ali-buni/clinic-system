@@ -48,7 +48,7 @@ class PatientController extends Controller
         $query->where('clinic_id', $filters['clinic_id']);
         $patients = ModelFilter::filter($query, $filters);
 
-        return ApiResponse::pagination($patients, PatientResource::collection($patients));
+        return ApiResponse::pagination($patients, 'success', PatientResource::collection($patients));
     }
 
     public function store(PatientRequest $request)

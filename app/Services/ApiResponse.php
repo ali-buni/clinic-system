@@ -65,8 +65,8 @@ class ApiResponse
      */
     public static function pagination(
         LengthAwarePaginator $data,
-        $dataModified = null,
         $message = 'Success',
+        $dataModified = null,
         $statusCode = 200
     ) {
         return response()->json([
