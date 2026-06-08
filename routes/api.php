@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\DiseaseController;
 use App\Http\Controllers\MedicineController;
+use App\Http\Controllers\userController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -67,6 +68,10 @@ Route::prefix('/clinic-system')->group(function () {
             Route::post('/update', 'update');
             Route::delete('/delete', 'destroy');
             Route::get('/restore', 'restore');
+        });
+
+        Route::prefix('/users')->controller(userController::class)->group(function () {
+            Route::get('/info', 'info');
         });
     });
 });
