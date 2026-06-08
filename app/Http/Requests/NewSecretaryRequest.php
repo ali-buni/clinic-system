@@ -33,7 +33,7 @@ class NewSecretaryRequest extends FormRequest
             'dob' => 'required|date|before:today',
             'gender' => 'required|in:male,female,unknown',
             'clinic_id' => 'required|exists:clinics,id',
-            'room_ids' => 'requried|array',
+            'room_ids' => 'required|array|min:1',
             'room_ids.*' => 'integer|exists:rooms,id',
         ];
     }

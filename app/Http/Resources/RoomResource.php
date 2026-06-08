@@ -21,7 +21,7 @@ class RoomResource extends JsonResource
             'id' => $this->id,
             'clinic_id' => $this->clinic_id,
             'name' => $this->name,
-            'created_at' => $this->created_at ? $this->created_at->format('Y-m-d') : null,
+            'created' => $this->created_at ? $this->created_at->format('Y-m-d') : null,
             'doctors' => $this->doctors->map(function ($doctor) use ($action) {
                 $data = [
                     'id' => $doctor->id,
@@ -32,6 +32,7 @@ class RoomResource extends JsonResource
                     $data['created'] = $doctor->created_at ? $doctor->created_at->format('Y-m-d') : null;
                     $data['gender'] = $doctor->user->gender;
                     $data['bio'] = $doctor->bio;
+                    $data['specialties'] = $doctor->specialties->pluck('name');
                 }
 
                 return $data;
