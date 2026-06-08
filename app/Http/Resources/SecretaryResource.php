@@ -24,8 +24,13 @@ class SecretaryResource extends JsonResource
             $data['gender'] = $this->user->gender;
         });
 
-        $this->whenLoaded('room', function () use (&$data) {
-            $data['room'] = $this->room->name;
+        $this->whenLoaded('rooms', function () use (&$data) {
+            $data['rooms'] = $this->rooms->map(function ($room) {
+                return [
+                    'id' => $room->id,
+                    'name' => $room->name,
+                ];
+            })->values();
         });
 
         // $this->whenLoaded('clinic', function () use (&$data) {
@@ -35,7 +40,6 @@ class SecretaryResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
-            'room_id' => $this->room_id,
             'clinic_id' => $this->clinic_id,
             'created_at' => $this->created_at->format('Y-m-d'),
             ...$data,

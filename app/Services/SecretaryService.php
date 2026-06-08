@@ -15,7 +15,7 @@ class SecretaryService
     public function info($id): ?Secretary
     {
         return Secretary::query()
-            ->with(['user', 'room'])
+            ->with(['user', 'rooms'])
             ->find($id);
     }
 
@@ -37,9 +37,9 @@ class SecretaryService
                 return null;
             }
 
-            // Handle room reassignment with permission updates
-            if (isset($data['room_id'])) {
-                $this->handleRoomChange($secretary, $data['room_id']);
+            // Handle rooms reassignment with permission updates
+            if (isset($data['room_ids'])) {
+                $this->handleRoomsChange($secretary, $data['room_ids']);
             }
 
             // Update user profile information if provided
@@ -47,11 +47,7 @@ class SecretaryService
                 $this->updateUserProfile($secretary->user, $data);
             }
 
-            // Update secretary room_id
-            if (isset($data['room_id'])) {
-                $secretary->room_id = $data['room_id'];
-            }
-
+            // persist changes to secretary base fields
             $secretary->save();
             return $secretary;
         }, attempts: 3);
@@ -61,29 +57,41 @@ class SecretaryService
      * Handle room change with permission updates.
      *
      * @param Secretary $secretary
-     * @param int $newRoomId
+     * @param array $newRoomIds
      * @return void
      */
-    private function handleRoomChange(Secretary $secretary, int $newRoomId): void
+    private function handleRoomsChange(Secretary $secretary, array $newRoomIds): void
     {
-        // Validate new room exists
-        if (!Room::where('id', $newRoomId)->exists()) {
-            throw new \InvalidArgumentException("Room {$newRoomId} does not exist");
+        $newRoomIds = array_values(array_filter(array_map('intval', $newRoomIds)));
+
+        // Validate rooms exist
+        $existingRoomIds = Room::whereIn('id', $newRoomIds)->pluck('id')->toArray();
+        if (count($existingRoomIds) < count($newRoomIds)) {
+            throw new \InvalidArgumentException('One or more room_ids are invalid');
         }
 
-        $oldRoomId = $secretary->room_id;
         $user = $secretary->user;
-
         if (!$user) {
             return;
         }
 
-        // Grant new room permission
-        PermissionHelper::grantRoomPermission($user, $newRoomId);
+        $currentRoomIds = $secretary->rooms()->pluck('rooms.id')->toArray();
 
-        // Revoke old room permission if it exists
-        if ($oldRoomId) {
-            PermissionHelper::revokeRoomPermission($user, $oldRoomId);
+        $toAttach = array_values(array_diff($newRoomIds, $currentRoomIds));
+        $toDetach = array_values(array_diff($currentRoomIds, $newRoomIds));
+
+        if (!empty($toAttach)) {
+            $secretary->rooms()->attach($toAttach);
+            foreach ($toAttach as $roomId) {
+                PermissionHelper::grantRoomPermission($user, $roomId);
+            }
+        }
+
+        if (!empty($toDetach)) {
+            $secretary->rooms()->detach($toDetach);
+            foreach ($toDetach as $roomId) {
+                PermissionHelper::revokeRoomPermission($user, $roomId);
+            }
         }
     }
 

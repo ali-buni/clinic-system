@@ -33,7 +33,8 @@ class NewSecretaryRequest extends FormRequest
             'dob' => 'required|date|before:today',
             'gender' => 'required|in:male,female,unknown',
             'clinic_id' => 'required|exists:clinics,id',
-            'room_id' => 'required|exists:rooms,id',
+            'room_ids' => 'requried|array',
+            'room_ids.*' => 'integer|exists:rooms,id',
         ];
     }
 
@@ -71,8 +72,8 @@ class NewSecretaryRequest extends FormRequest
             'clinic_id.exists' => 'Selected clinic does not exist.',
 
             // room_id validation messages
-            'room_id.required' => 'Please select a room.',
-            'room_id.exists' => 'Selected room does not exist.',
+            'room_ids.required' => 'Please select a room.',
+            'room_ids.*.exists' => 'Selected room does not exist.',
         ];
     }
 }

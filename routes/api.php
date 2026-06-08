@@ -76,31 +76,28 @@ Route::get('/filter', function (Request $request) {
 
 
 Route::prefix('/clinic-system')->group(function () {
-    Route::get('diseases/search', [DiseaseController::class, 'search']);
     Route::get('medicines/search', [MedicineController::class, 'search']);
+    Route::prefix('diseases')->controller(DiseaseController::class)->group(function () {
+        Route::get('search', 'searchDisease');
+        Route::post('store', 'store');
+    });
 });
 
 Route::middleware('auth:sanctum')->prefix('/clinic-system')->group(function () {
-    Route::put('doctors/{id}', [DoctorController::class, 'update'])
-        ->name('doctors.update');
+    Route::put('doctors/{id}', [DoctorController::class, 'update']);
 
-    Route::get('rooms/{room_id}/doctors', [DoctorController::class, 'roomDoctors'])
-        ->name('rooms.doctors');
+    Route::get('rooms/{room_id}/doctors', [DoctorController::class, 'roomDoctors']);
 
-    Route::delete('doctors/{id}/leave', [DoctorController::class, 'destroy'])
-        ->name('doctors.leave');
+    Route::delete('doctors/{id}/leave', [DoctorController::class, 'destroy']);
 
     Route::post('doctors/{id}/restore', [DoctorController::class, 'restore'])
-        ->name('doctors.restore')
         ->withTrashed();
 
     Route::delete('doctors/{id}/force', [DoctorController::class, 'forceDelete'])
-        ->name('doctors.force-delete')
         ->withTrashed();
 
     Route::get('doctors', [DoctorController::class, 'index'])
         ->name('doctors.index');
 
-    Route::apiResource('diseases', DiseaseController::class)->only(['index', 'store']);
     Route::post('medicines/store', [MedicineController::class, 'store']);
 });

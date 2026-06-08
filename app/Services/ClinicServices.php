@@ -75,7 +75,7 @@ class ClinicServices
     {
         return DB::transaction(function () use ($data) {
             $temporaryPassword = random_int(10000000, 99999999);
-            $roomId = $data['room_id'];
+            $roomIds = $data['room_ids'];
 
             // Create user account
             $user = User::create([
@@ -89,14 +89,21 @@ class ClinicServices
 
             // Assign role and permissions
             $user->assignRole('secretary');
-            PermissionHelper::grantRoomPermission($user, $roomId);
 
             // Create secretary profile
-            Secretary::create([
+            $secretary = Secretary::create([
                 'user_id' => $user->id,
                 'clinic_id' => $data['clinic_id'],
-                'room_id' => $roomId,
             ]);
+
+            // Attach rooms and grant permissions
+            $roomIds = array_values(array_filter(array_map('intval', $roomIds)));
+            if (!empty($roomIds)) {
+                $secretary->rooms()->sync($roomIds);
+                foreach ($roomIds as $rId) {
+                    PermissionHelper::grantRoomPermission($user, $rId);
+                }
+            }
             // Send credential via SMS (synchronous)
             try {
                 event(new SendMsgEvent(

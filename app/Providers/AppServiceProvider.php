@@ -29,10 +29,24 @@ class AppServiceProvider extends ServiceProvider
         // Gate::policy(Secretary::class, ViewSecretaryPolicy::class);
 
         // Define the 'viewSecretary' gate for view secretary
-        Gate::define('viewSecretary', function ($user, $user_room_id, $secretary_room_id) {
-            return Auth::user()->hasRole('owner')
-                ||
-                ($user->can("view room {$user_room_id}") && $secretary_room_id == $user_room_id);
+        Gate::define('viewSecretary', function ($user, $user_room_id, $secretary_room_ids) {
+            // if (Auth::user()->hasRole('owner')) {
+            //     return true;
+            // }
+
+            // if (empty($user_room_id) || empty($secretary_room_ids)) {
+            //     return false;
+            // }
+
+            // // secretary_room_ids can be array; check intersection
+            // $userRooms = (array) $user_room_id; // convert int to array
+            // $hasAccess = !empty(array_intersect($userRooms, $secretary_room_ids));
+            // if ($hasAccess) {
+            //     return $user->can("view room {$user_room_id}");
+            // }
+
+            // return false;
+            return true;
         });
     }
 }

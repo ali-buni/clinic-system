@@ -137,10 +137,10 @@ class RoomServices
                 return null;
             }
 
-            $secretary->room_id = $roomId;
-            $secretary->save();
+            // attach to pivot
+            $secretary->rooms()->syncWithoutDetaching([$roomId]);
 
-            return $secretary->fresh();
+            return $secretary->fresh(['rooms']);
         }, attempts: 3);
     }
 
@@ -153,16 +153,13 @@ class RoomServices
      */
     public function delSecretaryFromRoom(int $roomId, int $secretaryId): bool
     {
-        $secretary = Secretary::query()
-            ->where('id', $secretaryId)
-            ->where('room_id', $roomId)
-            ->first();
+        $secretary = Secretary::query()->find($secretaryId);
 
         if (!$secretary) {
             return false;
         }
 
-        $secretary->room_id = null;
-        return $secretary->save();
+        $secretary->rooms()->detach($roomId);
+        return true;
     }
 }

@@ -30,7 +30,8 @@ class SecretaryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'room_id' => 'sometimes|exists:rooms,id',
+            'room_ids' => 'sometimes|array',
+            'room_ids.*' => 'integer|exists:rooms,id',
             // 'clinic_id' => 'sometimes|exists:clinics,id',
             'fname' => 'sometimes|string|max:255',
             'lname' => 'sometimes|string|max:255',

@@ -21,9 +21,9 @@ class SecretaryController extends Controller
     {
         $user = Auth::user();
 
-        // Get user's room ID
+        // Get user's room ID (if user is assigned to a room)
         $user_room_id = $user->doctorProfile?->room_id
-            ?? $user->secretaryProfile?->room_id
+            ?? ($user->secretaryProfile?->rooms()->pluck('rooms.id')->first() ?? null)
             ?? null;
 
         $secretary = $this->secretary_service->info($id);
@@ -33,7 +33,8 @@ class SecretaryController extends Controller
         }
         // Authorize using policy
         try {
-            Gate::authorize('viewSecretary', [$user, $user_room_id, $secretary->room_id]);
+            $secretaryRoomIds = $secretary->rooms->pluck('id')->toArray();
+            Gate::authorize('viewSecretary', [$user, $user_room_id, $secretaryRoomIds]);
             return ApiResponse::success(new SecretaryResource($secretary));
         } catch (AuthorizationException $e) {
             return ApiResponse::error('Unauthorized: ' . $e->getMessage(), 403);
