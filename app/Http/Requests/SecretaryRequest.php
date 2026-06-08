@@ -13,13 +13,13 @@ class SecretaryRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        // Only allow if user is authenticated and has a secretary profile
         $user = Auth::user();
-        $secretary_id = $this->route('id');
-        $secretary = Secretary::query()->find($secretary_id);
-        if (!$user || !$secretary) {
+        if (!$user) {
             return false;
         }
-        return $user->id == $secretary->user_id;
+        $secretaryProfile = $user->secretaryProfile;
+        return $secretaryProfile !== null;
     }
 
     /**
@@ -30,12 +30,9 @@ class SecretaryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'room_ids' => 'sometimes|array',
-            'room_ids.*' => 'integer|exists:rooms,id',
             // 'clinic_id' => 'sometimes|exists:clinics,id',
             'fname' => 'sometimes|string|max:255',
             'lname' => 'sometimes|string|max:255',
-            'phone' => 'sometimes|string|digits_between:10,15|starts_with:09',
             'dob' => 'sometimes|date|before:today',
             'gender' => 'sometimes|in:male,female,unknown'
         ];

@@ -37,62 +37,14 @@ class SecretaryService
                 return null;
             }
 
-            // Handle rooms reassignment with permission updates
-            if (isset($data['room_ids'])) {
-                $this->handleRoomsChange($secretary, $data['room_ids']);
-            }
-
             // Update user profile information if provided
             if ($secretary->user) {
                 $this->updateUserProfile($secretary->user, $data);
             }
 
-            // persist changes to secretary base fields
             $secretary->save();
             return $secretary;
         }, attempts: 3);
-    }
-
-    /**
-     * Handle room change with permission updates.
-     *
-     * @param Secretary $secretary
-     * @param array $newRoomIds
-     * @return void
-     */
-    private function handleRoomsChange(Secretary $secretary, array $newRoomIds): void
-    {
-        $newRoomIds = array_values(array_filter(array_map('intval', $newRoomIds)));
-
-        // Validate rooms exist
-        $existingRoomIds = Room::whereIn('id', $newRoomIds)->pluck('id')->toArray();
-        if (count($existingRoomIds) < count($newRoomIds)) {
-            throw new \InvalidArgumentException('One or more room_ids are invalid');
-        }
-
-        $user = $secretary->user;
-        if (!$user) {
-            return;
-        }
-
-        $currentRoomIds = $secretary->rooms()->pluck('rooms.id')->toArray();
-
-        $toAttach = array_values(array_diff($newRoomIds, $currentRoomIds));
-        $toDetach = array_values(array_diff($currentRoomIds, $newRoomIds));
-
-        if (!empty($toAttach)) {
-            $secretary->rooms()->attach($toAttach);
-            foreach ($toAttach as $roomId) {
-                PermissionHelper::grantRoomPermission($user, $roomId);
-            }
-        }
-
-        if (!empty($toDetach)) {
-            $secretary->rooms()->detach($toDetach);
-            foreach ($toDetach as $roomId) {
-                PermissionHelper::revokeRoomPermission($user, $roomId);
-            }
-        }
     }
 
     /**

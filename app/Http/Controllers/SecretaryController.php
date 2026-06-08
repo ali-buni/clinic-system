@@ -17,36 +17,26 @@ class SecretaryController extends Controller
 {
     public function __construct(private SecretaryService $secretary_service) {}
 
-    public function info(Request $request, $id)
+    public function info($id)
     {
-        $user = Auth::user();
-
-        // Get user's room ID (if user is assigned to a room)
-        $user_room_id = $user->doctorProfile?->room_id
-            ?? ($user->secretaryProfile?->rooms()->pluck('rooms.id')->first() ?? null)
-            ?? null;
-
         $secretary = $this->secretary_service->info($id);
 
         if (!$secretary) {
             return ApiResponse::error('Secretary not found', 404);
         }
-        // Authorize using policy
-        try {
-            $secretaryRoomIds = $secretary->rooms->pluck('id')->toArray();
-            Gate::authorize('viewSecretary', [$user, $user_room_id, $secretaryRoomIds]);
-            return ApiResponse::success(new SecretaryResource($secretary));
-        } catch (AuthorizationException $e) {
-            return ApiResponse::error('Unauthorized: ' . $e->getMessage(), 403);
-        }
+        return ApiResponse::success(new SecretaryResource($secretary));
     }
 
-    public function update(SecretaryRequest $request, $id)
+    public function update(SecretaryRequest $request)
     {
         $data = $request->validated();
-        $secretary = $this->secretary_service->update($id, $data);
+        $user = Auth::user();
+        if (!$user) {
+            return ApiResponse::error('no user found.');
+        }
+        $secretary = $this->secretary_service->update($user->secretaryProfile->id, $data);
 
-        if (!$secretary) {
+        if (! $secretary) {
             return ApiResponse::error('Secretary not found', 404);
         }
         return ApiResponse::success();

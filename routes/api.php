@@ -57,7 +57,7 @@ Route::prefix('/clinic-system')->group(function () {
 
         Route::prefix('/secretaries')->controller(SecretaryController::class)->group(function () {
             Route::get('/{id}', 'info');
-            Route::post('/{id}', 'update');
+            Route::post('/update', 'update');
         });
 
         Route::prefix('/patients')->controller(PatientController::class)->group(function () {
