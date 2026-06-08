@@ -50,9 +50,28 @@ class VerificationService
         }
         $this->verifyPhone($user);
 
+        $role = '';
+        $id = 0;
+        if ($user->hasRole('doctor')) {
+            $role = 'doctor';
+            $id = $user->doctorProfile->id;
+        } else if ($user->hasRole('owner')) {
+            $role = 'owner';
+        } else {
+            $role = 'secretary';
+            $id = $user->secretaryProfile->id;
+        }
+
         $verification->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
-        return $this->apiResponse->success(['token' => $token], 'Phone number verified successfully.');
+        return $this->apiResponse->success(
+            [
+                'token' => $token,
+                'id' => $id,
+                'role' => $role,
+            ],
+            'Phone number verified successfully.'
+        );
     }
 
     /**
