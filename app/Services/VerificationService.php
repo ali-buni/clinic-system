@@ -50,18 +50,13 @@ class VerificationService
         }
         $this->verifyPhone($user);
 
-        $role = '';
-        $id = 0;
+        $role = 'secretary';
+        $id = $user->id;
         if ($user->hasRole('doctor')) {
             $role = 'doctor';
-            $id = $user->doctorProfile->id;
         } else if ($user->hasRole('owner')) {
             $role = 'owner';
-        } else {
-            $role = 'secretary';
-            $id = $user->secretaryProfile->id;
         }
-
         $verification->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
         return $this->apiResponse->success(
@@ -69,6 +64,7 @@ class VerificationService
                 'token' => $token,
                 'id' => $id,
                 'role' => $role,
+                'name' => $user->fname . ' ' . $user->lname,
             ],
             'Phone number verified successfully.'
         );
@@ -118,7 +114,7 @@ class VerificationService
             $verify->expires_at = now()->addMinutes(15);
             $verify->save();
 
-            event(new SendMsgEvent($user->phone, config('app.name') . ": Your verification code is: {$code}."));
+            // event(new SendMsgEvent($user->phone, config('app.name') . ": Your verification code is: {$code}."));
             logger()->info("Sent verification code {$code} to phone {$user->phone}");
 
             DB::commit();
