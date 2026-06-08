@@ -162,4 +162,19 @@ class RoomServices
         $secretary->rooms()->detach($roomId);
         return true;
     }
+
+    public function usersRooms(int $userId): Collection
+    {
+        return Room::query()
+            ->whereHas('doctors', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->orWhereHas('secretaries', function ($query) use ($userId) {
+                $query->whereHas('user', function ($q) use ($userId) {
+                    $q->where('id', $userId);
+                });
+            })
+            ->with(['doctors.user', 'secretaries.user'])
+            ->get();
+    }
 }

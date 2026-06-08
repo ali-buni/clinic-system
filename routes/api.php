@@ -48,6 +48,7 @@ Route::prefix('/clinic-system')->group(function () {
             Route::get('/{clinicId}', 'index');
             Route::get('/{clinicId}/info', 'indexWithInfo');
             Route::get('/{roomId}/details', 'get');
+            Route::get('/userRooms/get', 'userRooms');
             Route::post('/', 'create');
             Route::post('/{roomId}', 'update');
             Route::delete('/{roomId}', 'destroy');

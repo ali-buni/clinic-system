@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Helpers\PermissionHelper;
 use App\Http\Requests\RoomRequest;
 use App\Http\Resources\RoomResource;
+use App\Http\Resources\userRoomsResource;
 use App\Models\Clinic;
-use App\Models\Room;
 use App\Services\ApiResponse;
 use App\Services\RoomServices;
 use Illuminate\Support\Facades\Auth;
@@ -88,7 +88,7 @@ class RoomController extends Controller
             return ApiResponse::permissionDenied('Clinic not found or access denied.');
         }
 
-        $room = $this->roomServices->createRoom($validated);
+        $this->roomServices->createRoom($validated);
 
         return ApiResponse::success(null, 'Room created successfully.', 201);
     }
@@ -128,5 +128,17 @@ class RoomController extends Controller
             return ApiResponse::error('Room deletion failed.', 422);
         }
         return ApiResponse::success(null, 'Room removed successfully.');
+    }
+
+    public function userRooms()
+    {
+        $user = Auth::user();
+        $userId = $user->id;
+
+        $rooms = $this->roomServices->usersRooms($userId);
+        if (count($rooms) == 0) {
+            return ApiResponse::error('No rooms found for the user.', 404);
+        }
+        return ApiResponse::success(userRoomsResource::collection($rooms));
     }
 }
