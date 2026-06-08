@@ -27,6 +27,10 @@ class UpdateDoctorRequest extends FormRequest
             'consultation_fee'     => 'nullable|numeric|min:0',
             'specialties'          => ['sometimes', 'nullable', 'array'],
             'specialties.*'        => ['integer', 'exists:specialties,id'],
+            'fname' => 'sometimes|string|max:255',
+            'lname' => 'sometimes|string|max:255',
+            'dob' => 'sometimes|date|before:today',
+            'gender' => 'sometimes|in:male,female,unknown'
         ];
     }
 }

@@ -73,6 +73,15 @@ Route::prefix('/clinic-system')->group(function () {
         Route::prefix('/users')->controller(userController::class)->group(function () {
             Route::get('/info', 'info');
         });
+
+        Route::prefix('/doctors')->controller(DoctorController::class)->group(function () {
+            Route::post('/update', 'update');
+            Route::get('/{id}/info', 'info');
+            Route::get('filter', 'index');
+            Route::delete('/{id}/leave', 'destroy');
+            Route::post('/{id}/restore', 'restore')->withTrashed();
+            Route::delete('/{id}/force', 'forceDelete')->withTrashed();
+        });
     });
 });
 
@@ -82,28 +91,13 @@ Route::get('/filter', function (Request $request) {
 
 
 Route::prefix('/clinic-system')->group(function () {
-    Route::get('medicines/search', [MedicineController::class, 'search']);
+
+    Route::prefix('medicines')->controller(MedicineController::class)->group(function () {
+        Route::get('search', 'searchMedicine');
+        Route::post('store', 'store');
+    });
     Route::prefix('diseases')->controller(DiseaseController::class)->group(function () {
         Route::get('search', 'searchDisease');
         Route::post('store', 'store');
     });
-});
-
-Route::middleware('auth:sanctum')->prefix('/clinic-system')->group(function () {
-    Route::put('doctors/{id}', [DoctorController::class, 'update']);
-
-    Route::get('rooms/{room_id}/doctors', [DoctorController::class, 'roomDoctors']);
-
-    Route::delete('doctors/{id}/leave', [DoctorController::class, 'destroy']);
-
-    Route::post('doctors/{id}/restore', [DoctorController::class, 'restore'])
-        ->withTrashed();
-
-    Route::delete('doctors/{id}/force', [DoctorController::class, 'forceDelete'])
-        ->withTrashed();
-
-    Route::get('doctors', [DoctorController::class, 'index'])
-        ->name('doctors.index');
-
-    Route::post('medicines/store', [MedicineController::class, 'store']);
 });

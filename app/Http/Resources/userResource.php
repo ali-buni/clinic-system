@@ -19,14 +19,13 @@ class userResource extends JsonResource
         $user = Auth::user();
         $data = [];
         if ($user->hasRole('doctor')) {
-            $this->doctors->map(function ($doctor) use (&$data) {
-                return [
-                    $data['specialities'] = $doctor->specialities()->pluck('name'),
-                    $data['appointment_duration'] = $doctor->appointment_duration,
-                    $data['bio'] = $doctor->bio,
-                    $data['consultation_fee'] = $doctor->consultation_fee,
-                ];
-            });
+            $doctor = $user->doctorProfile;
+            $data['specialities'] = $doctor->specialties->map(function ($specialty) {
+                return $specialty->only(['ar_name', 'en_name']);
+            })->values();
+            $data['appointment_duration'] = $doctor->appointment_duration;
+            $data['bio'] = $doctor->bio;
+            $data['consultation_fee'] = $doctor->consultation_fee;
         }
         return [
             'id' => $this->id,

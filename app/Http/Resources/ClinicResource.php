@@ -35,7 +35,9 @@ class ClinicResource extends JsonResource
             'doctors' => $this->doctors->map(function ($doctor) {
                 return [
                     'name' => $doctor->user->fname . ' ' . $doctor->user->lname,
-                    'specialities' => $doctor->specialities,
+                    'specialities' => $doctor->specialties->map(function ($specialty) {
+                        return $specialty->only(['ar_name', 'en_name']);
+                    })->values(),
                     'phone' => $doctor->user->phone,
                     'room_id' => $doctor->room_id,
                 ];

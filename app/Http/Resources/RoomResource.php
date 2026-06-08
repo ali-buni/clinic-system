@@ -32,7 +32,9 @@ class RoomResource extends JsonResource
                     $data['created'] = $doctor->created_at ? $doctor->created_at->format('Y-m-d') : null;
                     $data['gender'] = $doctor->user->gender;
                     $data['bio'] = $doctor->bio;
-                    $data['specialties'] = $doctor->specialties->pluck('name');
+                    $data['specialties'] = $doctor->specialties->map(function ($specialty) {
+                        return $specialty->only(['ar_name', 'en_name']);
+                    })->values();
                 }
 
                 return $data;

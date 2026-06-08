@@ -5,18 +5,17 @@ namespace App\Http\Controllers;
 use App\Actions\Doctor\UpdateDoctorAction;
 use App\Actions\Doctor\DeleteDoctorAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\FilterRequest;
 use App\Http\Requests\UpdateDoctorRequest;
 use App\Http\Resources\DoctorResource;
 use App\Models\Doctor;
-use App\Models\Room;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
-use Illuminate\Http\Request;
 use App\Services\ModelFilter;
 use App\Services\ApiResponse;
+use Illuminate\Support\Facades\Auth;
 
 class DoctorController extends Controller implements HasMiddleware
 {
@@ -27,42 +26,42 @@ class DoctorController extends Controller implements HasMiddleware
         ];
     }
 
-    public function update(UpdateDoctorRequest $request, Doctor $doctor, UpdateDoctorAction $action): JsonResponse
+    public function info($id): JsonResponse
     {
-        Gate::authorize('update', $doctor);
+        $Doctor = Doctor::query()
+            ->with(['user', 'room'])
+            ->find($id);
 
+        if (!$Doctor) {
+            return ApiResponse::error('Doctor not found', 404);
+        }
+        return ApiResponse::success(new DoctorResource($Doctor));
+    }
+
+    public function update(UpdateDoctorRequest $request, UpdateDoctorAction $action): JsonResponse
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return ApiResponse::error('no user found.');
+        }
         try {
             $updatedDoctor = $action->execute(
-                $doctor,
+                $user->doctorProfile?->id,
                 $request->validated()
             );
-
-
-            return ApiResponse::success(
-                new DoctorResource($updatedDoctor->load('user')),
-                'Your profile has been updated successfully.',
-                200
-            );
-
+            if (!$updatedDoctor) ApiResponse::error('the doctor in not updated');
+            return ApiResponse::success(null, 'Your profile has been updated successfully.', 200);
         } catch (\Exception $e) {
-            Log::error('Failed to update doctor', [
-                'doctor_id' => $doctor->id,
-                'error'     => $e->getMessage()
-            ]);
-
-
             return ApiResponse::error(
                 'Failed to update doctor.',
                 500,
-                config('app.debug') ? ['error' => $e->getMessage()] : null
+                ['error' => $e->getMessage() ?? null]
             );
         }
     }
 
     public function destroy(Doctor $doctor, DeleteDoctorAction $action): JsonResponse
     {
-        Gate::authorize('delete', $doctor);
-
         try {
             $action->execute($doctor);
 
@@ -71,7 +70,6 @@ class DoctorController extends Controller implements HasMiddleware
                 'The doctor has successfully left the clinic.',
                 200
             );
-
         } catch (\Exception $e) {
             Log::error('Failed to remove doctor', [
                 'doctor_id' => $doctor->id,
@@ -91,8 +89,6 @@ class DoctorController extends Controller implements HasMiddleware
 
     public function restore(Doctor $doctor): JsonResponse
     {
-        Gate::authorize('restore', $doctor);
-
         $doctor->restore();
 
         return ApiResponse::success(
@@ -102,81 +98,32 @@ class DoctorController extends Controller implements HasMiddleware
         );
     }
 
-    public function show(Doctor $doctor): JsonResponse
+    public function index(FilterRequest $request): JsonResponse
     {
-        return ApiResponse::success(
-            new DoctorResource($doctor->load('user')),
-            'Doctor details retrieved successfully.',
-            200
-        );
-    }
-
-    public function roomDoctors(Request $request, Room $room): JsonResponse
-    {
-        $owner = $request->user();
-        $clinicId = $owner->clinicOwner?->id;
-
-        if ($room->clinic_id !== $clinicId) {
-
-            return ApiResponse::permissionDenied('Unauthorized', 403);
-        }
-
-        $doctors = Doctor::where('room_id', $room->id)
-            ->with(['user'])
-            ->select('id', 'user_id')
-            ->get();
-
-        $doctorsData = $doctors->map(function ($doctor) {
-            $user = $doctor->user;
-            return [
-                'id'        => $doctor->id,
-                'full_name' => trim(($user->fname ?? '') . ' ' . ($user->lname ?? '')) ?: null,
-            ];
-        });
-
-        return ApiResponse::success([
-            'room' => $room->only(['id', 'name', 'number']),
-            'doctors' => $doctorsData
-        ], 'Room doctors retrieved successfully.', 200);
-    }
-
-    public function index(Request $request): JsonResponse
-    {
-        $user = $request->user();
+        $user = Auth::user();
+        $validated = $request->validated();
 
         if ($user->clinicOwner?->id) {
             $clinicId = $user->clinicOwner->id;
 
             $query = Doctor::where('clinic_id', $clinicId)
-                ->with(['user', 'specialties', 'room'])
+                ->with(['user', 'specialties'])
                 ->withTrashed();
 
-            $result = ModelFilter::filter($query, $request->all());
+            $result = ModelFilter::filter($query, $validated);
 
 
             return ApiResponse::pagination(
                 $result,
-                'Doctors collection retrieved successfully.'
+                'Doctors collection retrieved successfully.',
+                DoctorResource::collection($result)
             );
         }
-
-        $doctor = $user->doctor;
-
-        if ($doctor) {
-            return ApiResponse::success(
-                new DoctorResource($doctor->load(['user', 'specialties', 'room'])),
-                'Doctor profile retrieved successfully.',
-                200
-            );
-        }
-
         return ApiResponse::permissionDenied('Not associated with any clinic.', 403);
     }
 
     public function forceDelete(Doctor $doctor): JsonResponse
     {
-        Gate::authorize('forceDelete', $doctor);
-
         try {
             $doctor->forceDelete();
 
@@ -185,14 +132,7 @@ class DoctorController extends Controller implements HasMiddleware
                 'The doctor has been permanently deleted from the system.',
                 200
             );
-
         } catch (\Exception $e) {
-            Log::error('Failed to force delete doctor', [
-                'doctor_id' => $doctor->id,
-                'user_id'   => request()->user()->id,
-                'error'     => $e->getMessage()
-            ]);
-
             return ApiResponse::error(
                 'Failed to permanently delete doctor.',
                 500,

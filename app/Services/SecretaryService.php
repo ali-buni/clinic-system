@@ -56,7 +56,7 @@ class SecretaryService
      */
     private function updateUserProfile($user, array $data): void
     {
-        $userFields = ['fname', 'lname', 'phone', 'dob', 'gender'];
+        $userFields = ['fname', 'lname', 'dob', 'gender'];
 
         foreach ($userFields as $field) {
             if (isset($data[$field])) {
