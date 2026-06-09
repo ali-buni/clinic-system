@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\PermissionHelper;
 use App\Models\Doctor;
 use App\Models\Room;
 use App\Models\Secretary;
@@ -80,7 +81,7 @@ class RoomServices
      * @param int $doctorId
      * @return Doctor|null
      */
-    public function addDoctorToRoom(int $roomId, int $doctorId): ?Doctor
+    public function addDoctorToRoom(int $roomId, int $doctorId): bool
     {
         return DB::transaction(function () use ($roomId, $doctorId) {
             $room = Room::find($roomId);
@@ -93,7 +94,9 @@ class RoomServices
             $doctor->room_id = $roomId;
             $doctor->save();
 
-            return $doctor->fresh();
+            PermissionHelper::grantRoomPermission($doctor->user, $roomId);
+
+            return true;
         }, attempts: 3);
     }
 
@@ -106,61 +109,99 @@ class RoomServices
      */
     public function delDoctorFromRoom(int $roomId, int $doctorId): bool
     {
-        $doctor = Doctor::query()
-            ->where('id', $doctorId)
-            ->where('room_id', $roomId)
-            ->first();
+        return DB::transaction(function () use ($roomId, $doctorId) {
+            $doctor = Doctor::query()
+                ->where('id', $doctorId)
+                ->where('room_id', $roomId)
+                ->first();
 
-        if (!$doctor) {
-            return false;
-        }
-
-        $doctor->room_id = null;
-        return $doctor->save();
-    }
-
-    /**
-     * Assign a secretary to a room.
-     * Validates clinic ownership before assignment.
-     *
-     * @param int $roomId
-     * @param int $secretaryId
-     * @return Secretary|null
-     */
-    public function addSecretaryToRoom(int $roomId, int $secretaryId): ?Secretary
-    {
-        return DB::transaction(function () use ($roomId, $secretaryId) {
-            $room = Room::find($roomId);
-            $secretary = Secretary::find($secretaryId);
-
-            if (!$room || !$secretary || $room->clinic_id !== $secretary->clinic_id) {
-                return null;
+            if (!$doctor) {
+                return false;
             }
 
-            // attach to pivot
-            $secretary->rooms()->syncWithoutDetaching([$roomId]);
+            $doctor->room_id = null;
+            $doctor->save();
 
-            return $secretary->fresh(['rooms']);
+            PermissionHelper::revokeRoomPermission($doctor->user, $roomId);
+
+            return true;
         }, attempts: 3);
     }
 
     /**
-     * Remove a secretary from a room.
+     * Assign a secretary to multiple rooms.
+     * Validates clinic ownership before assignment.
      *
-     * @param int $roomId
+     * @param array $roomIds
      * @param int $secretaryId
      * @return bool
      */
-    public function delSecretaryFromRoom(int $roomId, int $secretaryId): bool
+    public function addSecretaryToRoom(array $roomIds, int $secretaryId): bool
     {
-        $secretary = Secretary::query()->find($secretaryId);
+        return DB::transaction(function () use ($roomIds, $secretaryId) {
+            $secretary = Secretary::find($secretaryId);
 
-        if (!$secretary) {
-            return false;
-        }
+            if (!$secretary) {
+                return false;
+            }
 
-        $secretary->rooms()->detach($roomId);
-        return true;
+            // Get all valid rooms that belong to the same clinic
+            $validRooms = Room::whereIn('id', $roomIds)
+                ->where('clinic_id', $secretary->clinic_id)
+                ->pluck('id')
+                ->toArray();
+
+            if (empty($validRooms)) {
+                return false;
+            }
+
+            $secretary->rooms()->syncWithoutDetaching($validRooms);
+
+            foreach ($validRooms as $roomId) {
+                PermissionHelper::grantRoomPermission($secretary->user, $roomId);
+            }
+
+            return true;
+        }, attempts: 3);
+    }
+
+    /**
+     * Remove a secretary from multiple rooms.
+     * Validates clinic ownership before removal.
+     *
+     * @param array $roomIds
+     * @param int $secretaryId
+     * @return bool
+     */
+    public function delSecretaryFromRoom(array $roomIds, int $secretaryId): bool
+    {
+        return DB::transaction(function () use ($roomIds, $secretaryId) {
+            $secretary = Secretary::find($secretaryId);
+
+            if (!$secretary) {
+                return false;
+            }
+
+            // Get rooms that belong to the same clinic
+            $validRooms = Room::whereIn('id', $roomIds)
+                ->where('clinic_id', $secretary->clinic_id)
+                ->pluck('id')
+                ->toArray();
+
+            if (empty($validRooms)) {
+                return false;
+            }
+
+            // Detach from pivot for all valid rooms
+            $secretary->rooms()->detach($validRooms);
+
+            // Remove permissions
+            foreach ($validRooms as $roomId) {
+                PermissionHelper::revokeRoomPermission($secretary->user, $roomId);
+            }
+
+            return true;
+        }, attempts: 3);
     }
 
     public function usersRooms(int $userId): Collection

@@ -9,6 +9,7 @@ use App\Http\Resources\userRoomsResource;
 use App\Models\Clinic;
 use App\Services\ApiResponse;
 use App\Services\RoomServices;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RoomController extends Controller
@@ -140,5 +141,75 @@ class RoomController extends Controller
             return ApiResponse::error('No rooms found for the user.', 404);
         }
         return ApiResponse::success(userRoomsResource::collection($rooms));
+    }
+
+    public function addDoctorToRoom(Request $request)
+    {
+        $validated = $request->validate([
+            'room_id' => 'required|exists:rooms,id',
+            'doctor_id' => 'required|exists:doctors,id'
+        ]);
+        if (!$this->isOwner()) {
+            return ApiResponse::error('Permission Dendied');
+        }
+        $updated = $this->roomServices->addDoctorToRoom($validated['room_id'], $validated['doctor_id']);
+
+        if ($updated) {
+            return ApiResponse::success(null, 'The doctor changes the room successfuly');
+        }
+        return ApiResponse::error('Error in doctor change room.');
+    }
+
+    public function delDoctorFromRoom(Request $request)
+    {
+        $validated = $request->validate([
+            'room_id' => 'required|exists:rooms,id',
+            'doctor_id' => 'required|exists:doctors,id'
+        ]);
+        if (!$this->isOwner()) {
+            return ApiResponse::error('Permission Dendied');
+        }
+        $updated = $this->roomServices->delDoctorFromRoom($validated['room_id'], $validated['doctor_id']);
+
+        if ($updated) {
+            return ApiResponse::success(null, 'The doctor detach the room successfuly');
+        }
+        return ApiResponse::error('Error in delete the doctor from the room.');
+    }
+
+    public function addSecToRoom(Request $request)
+    {
+        $validated = $request->validate([
+            'room_ids' => 'required|array|min:1',
+            'room_ids.*' => 'required|exists:rooms,id',
+            'secretary_id' => 'required|exists:secretaries,id'
+        ]);
+        if (!$this->isOwner()) {
+            return ApiResponse::error('Permission Dendied');
+        }
+        $updated = $this->roomServices->addSecretaryToRoom($validated['room_ids'], $validated['secretary_id']);
+
+        if ($updated) {
+            return ApiResponse::success(null, 'The secretary changes the room successfuly');
+        }
+        return ApiResponse::error('Error in delete the secretary from the room.');
+    }
+
+    public function delSecFromRoom(Request $request)
+    {
+        $validated = $request->validate([
+            'room_ids' => 'required|array|min:1',
+            'room_ids.*' => 'required|exists:rooms,id',
+            'secretary_id' => 'required|exists:secretaries,id'
+        ]);
+        if (!$this->isOwner()) {
+            return ApiResponse::error('Permission Dendied');
+        }
+        $updated = $this->roomServices->delSecretaryFromRoom($validated['room_ids'], $validated['secretary_id']);
+
+        if ($updated) {
+            return ApiResponse::success(null, 'The secretary detach the room successfuly');
+        }
+        return ApiResponse::error('Error in delete the secretary from the room.');
     }
 }

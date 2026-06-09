@@ -53,6 +53,10 @@ Route::prefix('/clinic-system')->group(function () {
             Route::post('/', 'create');
             Route::post('/{roomId}', 'update');
             Route::delete('/{roomId}', 'destroy');
+            Route::post('/sync/doctorRoom', 'addDoctorToRoom');
+            Route::post('/sync/secRooms', 'addSecToRoom');
+            Route::delete('/detach/doctorRoom', 'delDoctorFromRoom');
+            Route::delete('/detach/secRooms', 'delSecFromRoom');
         });
 
         Route::prefix('/secretaries')->controller(SecretaryController::class)->group(function () {
