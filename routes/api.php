@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PatientRecordController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\SecretaryController;
 use App\Http\Controllers\VerificationController;
@@ -87,7 +88,6 @@ Route::prefix('/clinic-system')->group(function () {
             Route::delete('/{id}/force', 'forceDelete')->withTrashed();
         });
     });
-});
 
 Route::get('/filter', function (Request $request) {
     return ApiResponse::pagination(ModelFilter::filter(new User(), $request->all()));
@@ -104,4 +104,22 @@ Route::prefix('/clinic-system')->group(function () {
         Route::get('search', 'searchDisease');
         Route::post('store', 'store');
     });
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::prefix('patient-records')->controller(PatientRecordController::class)->group(function () {
+
+        // CRUD Operations
+        Route::post('/', 'createPatientRecord');
+        Route::put('/{record_id}', 'updatePatientRecord');
+        Route::delete('/{record_id}', 'deletePatientRecord');
+
+        // Custom GET Routes
+        Route::get('/filtered', 'getAllRecordsFiltered');
+        Route::get('/patient/{patient_id}/history', 'getPatientHistory');
+        Route::get('/patient/{patient_id}/doctor/{doctor_id}', 'getPatientRecordsByDoctor');
+        Route::get('/room/{room_id}', 'getRecordsByRoom');
+    });
+});
 });

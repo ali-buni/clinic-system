@@ -38,7 +38,7 @@ class NewDoctorRequest extends FormRequest
             'bio' => 'nullable|string|max:1000',
             'consultation_fee' => 'required|numeric|min:0',
             'speciality_ids' => 'required|array|min:1',
-            'speciality_ids.*' => 'exists:specialities,id',
+            'speciality_ids.*' => 'exists:specialties,id',
         ];
     }
 

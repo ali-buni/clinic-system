@@ -51,7 +51,7 @@ class ClinicServices
             ]);
 
             // Assign specialties
-            $doctor->specialities()->syncWithoutDetaching($data['speciality_ids']);
+            $doctor->specialties()->syncWithoutDetaching($data['speciality_ids']);
 
             try {
                 // Send credential via SMS
