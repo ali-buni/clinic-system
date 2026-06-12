@@ -25,12 +25,6 @@ class ClinicSystemSeeder extends Seeder
      */
     public function run(): void
     {
-        $appointmentTypes = collect([
-            ['ar_name' => 'استشارة عامة', 'en_name' => 'General Consultation'],
-            ['ar_name' => 'متابعة', 'en_name' => 'Follow Up'],
-            ['ar_name' => 'طوارئ', 'en_name' => 'Emergency'],
-        ])->map(fn(array $data) => Appointment_type::firstOrCreate($data));
-
         $paymentMethods = collect([
             ['ar_name' => 'نقداً', 'en_name' => 'Cash', 'is_active' => true],
             ['ar_name' => 'بطاقة', 'en_name' => 'Card', 'is_active' => true],
@@ -94,15 +88,15 @@ class ClinicSystemSeeder extends Seeder
         Secretary::factory()->create([
             'user_id' => $secretaryUser->id,
             'clinic_id' => $clinic->id,
-            'room_id' => $rooms->first()->id,
         ]);
 
-        $patients = Patient::factory()->count(12)->for($clinic)->create();
+        $patients = Patient::factory()->count(20)->for($clinic)->create();
 
         $appointments = collect();
         foreach ($patients as $patient) {
             $doctor = $doctors->random();
-            $type = $appointmentTypes->random();
+            $types = Appointment_type::query()->get();
+            $type = $types->random();
 
             // Generate a random appointment time within the last 20 days, between 8 AM and 3 PM
             $start = fake()->dateTimeBetween('-20 days', 'now')->setTime(fake()->numberBetween(8, 15), 0);
@@ -116,7 +110,7 @@ class ClinicSystemSeeder extends Seeder
                     'appointment_type_id' => $type->id,
                     'start_time' => $start,
                     'end_time' => $end,
-                    'status' => fake()->randomElement(['scheduled', 'confirmed', 'completed']),
+                    'status' => fake()->randomElement(['scheduled', 'completed', 'cancelled', 'no_show']),
                     'visit_reason' => fake()->sentence(),
                     'visit_in_time' => fake()->boolean(80),
                     'requires_followup' => fake()->boolean(25),

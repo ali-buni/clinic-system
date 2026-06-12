@@ -15,6 +15,7 @@ class Appointment extends Model
     protected $fillable = [
         'clinic_id',
         'doctor_id',
+        'room_id',
         'patient_id',
         'appointment_type_id',
         'start_time',
@@ -35,6 +36,10 @@ class Appointment extends Model
     public function clinic(): BelongsTo
     {
         return $this->belongsTo(Clinic::class, 'clinic_id', 'id');
+    }
+    public function room(): BelongsTo
+    {
+        return $this->belongsTo(Room::class, 'room_id', 'id');
     }
     public function doctor(): BelongsTo
     {
