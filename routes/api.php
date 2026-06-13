@@ -15,6 +15,7 @@ use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\DiseaseController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\userController;
+use App\Http\Controllers\AppointmentTypeController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -103,5 +104,10 @@ Route::prefix('/clinic-system')->group(function () {
     Route::prefix('diseases')->controller(DiseaseController::class)->group(function () {
         Route::get('search', 'searchDisease');
         Route::post('store', 'store');
+    });
+    Route::prefix('appointment-types')->controller(AppointmentTypeController::class)->group(function () {
+        Route::get('/', 'index');
+        Route::post('/', 'add');
+        Route::delete('/{id}', 'delete');
     });
 });
