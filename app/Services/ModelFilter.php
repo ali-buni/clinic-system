@@ -12,16 +12,16 @@ class ModelFilter
     /**
      * Filter a model or query builder based on the provided filters.
      *
-     * Supports search, sort, pagination, and multi-column search.
+     * Supports search, sort, pagination, multi-column search, and relationship columns.
      *
      * Example usages:
      * ModelFilter::filter(new User(), [ 'search' => 'John', 'column' => 'name' ]);
      * ModelFilter::filter(new User(), [ 'search' => 'John', 'column' => 'name,email,phone' ]);
      * ModelFilter::filter(User::query()->whereActive(1), [ 'per_page' => 25 ]);
-     * ModelFilter::filter(new User(), [
+     * ModelFilter::filter(new Appointment(), [
      *    'search' => 'John',
-     *    'column' => 'name,email',
-     *    'sort' => 'created_at',
+     *    'column' => 'doctor.name,patient.fname', // Relationship columns
+     *    'sort' => 'doctor.id',
      *    'direction' => 'desc',
      *    'per_page' => 15,
      *    'page' => 1
@@ -39,38 +39,45 @@ class ModelFilter
             ? $model->newQuery()
             : $model;
 
-        $table = $model instanceof Model
-            ? $model->getTable()
-            : $model->getModel()->getTable();
+        $baseModel = $model instanceof Model
+            ? $model
+            : $model->getModel();
 
-        // Get all columns dynamically from table
-        $columns = Schema::getColumnListing($table);
+        $table = $baseModel->getTable();
+
+        // Get all columns dynamically from base table
+        $baseColumns = Schema::getColumnListing($table);
 
         $search = $filters['search'] ?? null;
         $column = $filters['column'] ?? null;
 
-        // Handle search with multiple columns
+        // Handle search with multiple columns (including relationships)
         if ($search && $column) {
             // Split columns by comma and trim whitespace
             $searchColumns = array_map('trim', explode(',', $column));
 
-            // Filter to only valid columns that exist in the table
-            $validColumns = array_filter($searchColumns, function ($col) use ($columns) {
-                return in_array($col, $columns);
-            });
+            $query->where(function ($q) use ($searchColumns, $search, $baseColumns, $baseModel) {
+                foreach ($searchColumns as $searchColumn) {
+                    // Check if it's a relationship column (contains dot)
+                    if (str_contains($searchColumn, '.')) {
+                        [$relation, $relationColumn] = explode('.', $searchColumn, 2);
 
-            if (!empty($validColumns)) {
-                $query->where(function ($q) use ($validColumns, $search) {
-                    foreach ($validColumns as $index => $col) {
-                        if ($index === 0) {
-                            $q->where($col, 'LIKE', "%{$search}%");
-                        } else {
-                            $q->orWhere($col, 'LIKE', "%{$search}%");
+                        // Check if relation exists
+                        if (method_exists($baseModel, $relation)) {
+                            $q->orWhereHas($relation, function ($relQuery) use ($relationColumn, $search) {
+                                $relQuery->where($relationColumn, 'LIKE', "%{$search}%");
+                            });
+                        }
+                    } else {
+                        // Regular column - check if exists in base table
+                        if (in_array($searchColumn, $baseColumns)) {
+                            $q->orWhere($searchColumn, 'LIKE', "%{$search}%");
                         }
                     }
-                });
-            }
+                }
+            });
         }
+
 
         // Handle sorting (also supports multiple columns)
         $sort = $filters['sort'] ?? 'id';
@@ -82,13 +89,13 @@ class ModelFilter
             $sortColumns = array_map('trim', explode(',', $sort));
 
             foreach ($sortColumns as $sortColumn) {
-                if (in_array($sortColumn, $columns)) {
+                if (in_array($sortColumn, $baseColumns)) {
                     $query->orderBy($sortColumn, $direction);
                 }
             }
         } else {
             // Single column sort
-            if (in_array($sort, $columns)) {
+            if (in_array($sort, $baseColumns)) {
                 $query->orderBy($sort, $direction);
             }
         }

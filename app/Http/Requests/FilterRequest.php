@@ -18,6 +18,9 @@ class FilterRequest extends FormRequest
         $data = [];
         if ($action == 'searchDisease' || $action == 'searchMedicine') {
             $data = ['query' => 'required|string|min:2'];
+        } else if ($action == 'roomAppointments') {
+            $data['roomIds'] = ['required', 'array', 'min:1'];
+            $data['roomIds.*'] = ['exists:rooms,id', 'integer'];
         }
         return [
             'search' => 'nullable|string|max:255',
