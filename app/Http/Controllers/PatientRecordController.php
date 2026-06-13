@@ -2,147 +2,164 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\PatientRecord\CreatePatientRecordAction;
-use App\Actions\PatientRecord\UpdatePatientRecordAction;
-use App\Http\Requests\PatientRecord\{
-    CreatePatientRecordRequest,
-    UpdatePatientRecordRequest,
-    DeletePatientRecordRequest,
-    GetAllRecordsFilteredRequest
-};
+use App\Services\PatientRecordService;
+use App\Services\ApiResponse;
+use App\Actions\PatientRecord\{CreatePatientRecordAction, UpdatePatientRecordAction};
 use App\Http\Resources\PatientRecordResource;
+use App\Http\Requests\PatientRecord\{CreatePatientRecordRequest, UpdatePatientRecordRequest, GetAllRecordsFilteredRequest};
 use App\Models\Patient_record;
+use App\Models\Patient;
+use App\Models\Doctor;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\Request;
+use App\Http\Requests\FilterRequest;
+use Exception;
+
 
 class PatientRecordController extends Controller
 {
-    public function createPatientRecord(
-        CreatePatientRecordRequest $request,
-        CreatePatientRecordAction $action
-    ): JsonResponse {
-        try {
-            $record = $action->execute($request->validated());
+    public function __construct(protected PatientRecordService $service) {}
 
-            return response()->json([
-                'status'  => 'success',
-                'message' => 'Patient record created successfully.',
-                'data'    => new PatientRecordResource($record),
-            ], 201);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Failed to create patient record.',
-                'error'   => config('app.debug') ? $e->getMessage() : null,
-            ], 422);
-        }
+    public function store(CreatePatientRecordRequest $request, CreatePatientRecordAction $action): JsonResponse
+    {
+        $record = $action->execute($request->validated());
+        return ApiResponse::success(new PatientRecordResource($record), 'Record created successfully', 201);
     }
 
-
-    public function updatePatientRecord(
-        UpdatePatientRecordRequest $request,
-        UpdatePatientRecordAction $action,
-        $record_id
-    ): JsonResponse {
+    public function update(UpdatePatientRecordRequest $request, UpdatePatientRecordAction $action, int $id): JsonResponse
+    {
         try {
-            $data = $request->validated();
-
-            $data['record_id'] = $record_id;
-
+            $data = array_merge($request->validated(), ['record_id' => $id]);
             $record = $action->execute($data);
 
-            return response()->json([
-                'status'  => 'success',
-                'message' => 'Patient record updated successfully.',
-                'data'    => new PatientRecordResource($record),
-            ]);
+            return ApiResponse::success(
+                new PatientRecordResource($record),
+                'Record updated successfully'
+            );
+        } catch (Exception $e) {
+            if (str_contains($e->getMessage(), 'not found')) {
+                return ApiResponse::error(
+                    'Patient record not found',
+                    404
+                );
+            }
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Failed to update patient record.',
-                'error'   => config('app.debug') ? $e->getMessage() : null,
-            ], 422);
-        }
-    }
-
-
-    public function deletePatientRecord(Request $request, $record_id): JsonResponse
-    {
-        try {
-            $record = Patient_record::findOrFail($record_id);
-            $record->delete();
-
-            return response()->json([
-                'status'  => 'success',
-                'message' => 'Patient record deleted successfully.',
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Failed to delete patient record.',
-                'error'   => config('app.debug') ? $e->getMessage() : null,
-            ], 422);
-        }
-    }
-
-
-    public function getAllRecordsFiltered(GetAllRecordsFilteredRequest $request): AnonymousResourceCollection
-    {
-        $query = Patient_record::query()
-            ->with(['diseases', 'prescriptions.items', 'patient', 'doctor']);
-
-        if ($request->filled('disease_code')) {
-            $query->whereHas('diseases', fn($q) =>
-                $q->where('code', $request->disease_code)
+            return ApiResponse::error(
+                'Failed to update record',
+                500,
+                config('app.debug') ? ['error' => $e->getMessage()] : null
             );
         }
+    }
 
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $record = Patient_record::find($id);
+
+            if (!$record) {
+                return ApiResponse::error('Patient record not found', 404);
+            }
+
+            $record->delete();
+
+            return ApiResponse::success(null, 'Record deleted successfully');
+        } catch (Exception $e) {
+            return ApiResponse::error(
+                'Failed to delete record',
+                500,
+                config('app.debug') ? ['error' => $e->getMessage()] : null
+            );
+        }
+    }
+
+    public function index(GetAllRecordsFilteredRequest $request): JsonResponse
+    {
+        $records = $this->service->getAllFiltered(
+            $request->validated()
+        );
+
+        if ($records->isEmpty()) {
+            return ApiResponse::error('No patient records found', 404);
         }
 
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
+        return ApiResponse::pagination(
+            $records,
+            'Records retrieved successfully'
+        );
+    }
+
+    public function history(int $patientId): JsonResponse
+    {
+        if (!Patient::find($patientId)) {
+            return ApiResponse::error('Patient not found', 404);
         }
 
-        $records = $query->latest()->paginate(15);
+        $history = $this->service->getPatientHistory($patientId);
 
-        return PatientRecordResource::collection($records);
+        if ($history->isEmpty()) {
+            return ApiResponse::error('No medical records found for this patient', 404);
+        }
+
+        return ApiResponse::success(
+            PatientRecordResource::collection($history),
+            'Patient history retrieved successfully'
+        );
     }
 
-
-    public function getPatientHistory(int $patient_id): AnonymousResourceCollection
+    public function getByDoctor(int $patientId, int $doctorId): JsonResponse
     {
-        $records = Patient_record::with(['diseases', 'prescriptions.items', 'doctor'])
-            ->where('patient_id', $patient_id)
-            ->latest()
-            ->get();
+        if (!Patient::find($patientId)) {
+            return ApiResponse::error('Patient not found', 404);
+        }
 
-        return PatientRecordResource::collection($records);
+        if (!Doctor::find($doctorId)) {
+            return ApiResponse::error('Doctor not found', 404);
+        }
+
+        $records = $this->service->getRecordsByDoctor($patientId, $doctorId);
+
+        if ($records->isEmpty()) {
+            return ApiResponse::error('No records found for this doctor and patient', 404);
+        }
+
+        return ApiResponse::success(
+            PatientRecordResource::collection($records),
+            'Records retrieved successfully'
+        );
     }
 
-    public function getPatientRecordsByDoctor(int $patient_id, int $doctor_id): AnonymousResourceCollection
+    public function getByRoom(Request $request): JsonResponse
     {
-        $records = Patient_record::with(['diseases', 'prescriptions'])
-            ->where('patient_id', $patient_id)
-            ->where('doctor_id', $doctor_id)
-            ->latest()
-            ->get();
+        $validated = $request->validate([
+            'room_ids' => 'required|array|min:1',
+            'room_ids.*' => 'integer|exists:rooms,id'
+        ]);
 
-        return PatientRecordResource::collection($records);
+        $records = $this->service->getRecordsByRoom($validated['room_ids']);
+
+        if ($records->isEmpty()) {
+            return ApiResponse::error('No records found for the specified rooms', 404);
+        }
+
+        return ApiResponse::success(
+            PatientRecordResource::collection($records),
+            'Records retrieved successfully'
+        );
     }
 
-    public function getRecordsByRoom(int $room_id): AnonymousResourceCollection
+    public function getAllByDoctor(int $doctorId): JsonResponse
     {
-        $records = Patient_record::with(['patient', 'doctor', 'diseases'])
-            ->whereHas('doctor', fn($q) => $q->where('room_id', $room_id))
-            ->latest()
-            ->get();
+        if (!\App\Models\Doctor::find($doctorId)) {
+            return ApiResponse::error('Doctor not found', 404);
+        }
 
-        return PatientRecordResource::collection($records);
+        $records = $this->service->getAllByDoctor($doctorId);
+
+        if ($records->isEmpty()) {
+            return ApiResponse::error('No medical records found for this doctor', 404);
+        }
+
+        return ApiResponse::success(PatientRecordResource::collection($records), 'Doctor records retrieved successfully');
     }
 }

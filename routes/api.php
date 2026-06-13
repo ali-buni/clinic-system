@@ -110,16 +110,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('patient-records')->controller(PatientRecordController::class)->group(function () {
 
-        // CRUD Operations
-        Route::post('/', 'createPatientRecord');
-        Route::put('/{record_id}', 'updatePatientRecord');
-        Route::delete('/{record_id}', 'deletePatientRecord');
 
-        // Custom GET Routes
-        Route::get('/filtered', 'getAllRecordsFiltered');
-        Route::get('/patient/{patient_id}/history', 'getPatientHistory');
-        Route::get('/patient/{patient_id}/doctor/{doctor_id}', 'getPatientRecordsByDoctor');
-        Route::get('/room/{room_id}', 'getRecordsByRoom');
+    Route::post('/', 'store');
+    Route::put('/{id}', 'update');
+    Route::delete('/{id}', 'destroy');
+    Route::get('/filtered', 'index');
+    Route::get('/patient/{patientId}/history', 'history');
+    Route::get('/patient/{patientId}/doctor/{doctorId}', 'getByDoctor');
+    Route::post('/rooms/search', 'getByRoom');
+    Route::get('/doctor/{doctorId}/all', 'getAllByDoctor');
     });
 });
 });

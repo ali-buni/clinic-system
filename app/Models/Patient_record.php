@@ -49,4 +49,5 @@ class Patient_record extends Model
     {
         return $this->hasMany(Prescription::class, 'patient_record_id', 'id');
     }
+    
 }

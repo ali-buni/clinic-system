@@ -29,6 +29,7 @@ class PatientRecordResource extends JsonResource
 
             'prescriptions'     => $this->whenLoaded('prescriptions', fn() => $this->prescriptions->map(fn($p) => [
                 'id'         => $p->id,
+                'cost'       => $p->cost,
                 'issued_at'  => $p->issued_at,
                 'valid_until'=> $p->valid_until,
                 'items'      => $p->items->map(fn($item) => [
@@ -40,7 +41,6 @@ class PatientRecordResource extends JsonResource
             ])),
 
             'created_at' => $this->created_at?->toDateTimeString(),
-            'updated_at' => $this->updated_at?->toDateTimeString(),
         ];
     }
 }
