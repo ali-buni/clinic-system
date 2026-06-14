@@ -70,6 +70,8 @@ class AuthController extends Controller
         if (!$user) {
             return $this->api->error('no user found');
         }
-        return $this->verification->sendVerificationCode($user);
+        // return $this->verification->sendVerificationCode($user);
+        $token = $user->createToken('auth_token')->plainTextToken;
+        return $this->api->success(['token' => $token], 'Phone number verified successfully.');
     }
 }

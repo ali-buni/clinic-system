@@ -58,7 +58,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(Doctor::class);
     }
-
+    
     public function secretaryProfile(): HasOne
     {
         return $this->hasOne(Secretary::class);
