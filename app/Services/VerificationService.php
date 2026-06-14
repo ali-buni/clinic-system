@@ -90,7 +90,7 @@ class VerificationService
             return $this->apiResponse->error(
                 'to many attemps. Please try again later.',
                 429,
-                ['retry_after_minutes' => $remainingTime]
+                ['retry_after_minut es' => $remainingTime]
             );
         }
 

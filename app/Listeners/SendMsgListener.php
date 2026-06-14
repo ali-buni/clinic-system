@@ -41,7 +41,7 @@ class SendMsgListener
             ]);
 
             Log::info('[SMS] Response', [
-                'status' => $response->status(),
+                'satus' => $response->status(),
                 'body'   => $response->body(),
             ]);
 

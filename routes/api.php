@@ -5,10 +5,12 @@ use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\SecretaryController;
+use App\Http\Controllers\DoctorScheduleController;
+use App\Http\Controllers\DoctorSpecialtyController;
 use App\Http\Controllers\VerificationController;
 use App\Models\User;
-use App\Services\ModelFilter;
 use App\Services\ApiResponse;
+use App\Services\ModelFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DoctorController;
@@ -19,6 +21,7 @@ use App\Http\Controllers\userController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
 
 Route::prefix('/clinic-system')->group(function () {
     Route::controller(AuthController::class)->group(function () {
@@ -34,6 +37,30 @@ Route::prefix('/clinic-system')->group(function () {
     Route::controller(VerificationController::class)->group(function () {
         Route::post('/verify-code', 'verifyCode');
         Route::post('/resend-code', 'resendVerificationCode');
+    });
+
+    Route::prefix('/clinic')->group(function () {
+        Route::prefix('/specialty')->controller(DoctorSpecialtyController::class)->group(function () {
+            Route::middleware('auth:sanctum')->group(function () {
+                Route::post('/add', 'attachSpecialties');
+                Route::delete('/delete/{specialId}', 'detachSpecialty');
+                Route::post('/changePrimary/{specialtyId}', 'changePrimary');
+                Route::get('showPrimary/{doctorId}', 'showPrimary');
+                Route::get('getAll', 'showDoctorSpecialties');
+            });
+            Route::get('index', 'index');
+            // store
+            // delete
+        });
+        Route::prefix('/schedule')->controller(DoctorScheduleController::class)->group(function () {
+            Route::middleware('auth:sanctum')->group(function () {
+                Route::post('/add', 'store');
+                Route::put('/edit', 'update');
+                Route::delete('/delete/{dayOfWeek}', 'destroy');
+            });
+            Route::get('/get-weekly/{doctorId}', 'getWeeklySchedule');
+            Route::get('/work-hour/{doctorId}', 'getWorkHourByDate');
+        });
     });
 
     Route::middleware('auth:sanctum')->prefix('/clinic')->group(function () {
