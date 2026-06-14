@@ -11,31 +11,27 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('/clinic-system')->group(function () {
-    Route::prefix('/doctor')->group(function () {
-        Route::prefix('/specialty')->group(function () {
-            Route::controller(DoctorSpecialtyController::class)->group(function () {
-                Route::middleware('auth:sanctum', 'role:doctor')->group(function () {
-                    Route::post('/add', 'attachSpecialties');
-                    Route::put('/edit', 'syncSpecialties');
-                    Route::delete('/delete/{specialty}', 'detachSpecialty');
-
-                    Route::put('/changePrimary/{specialtyId}', 'changePrimary');
-                });
-                Route::get('showPrimary/{userId}', 'showPrimary');
-                Route::get('getAll/{userId}', 'showDoctorSpecialties');
+    Route::prefix('/clinic')->group(function () {
+        Route::prefix('/specialty')->controller(DoctorSpecialtyController::class)->group(function () {
+            Route::middleware('auth:sanctum')->group(function () {
+                Route::post('/add', 'attachSpecialties');
+                Route::delete('/delete/{specialId}', 'detachSpecialty');
+                Route::post('/changePrimary/{specialtyId}', 'changePrimary');
+                Route::get('showPrimary/{doctorId}', 'showPrimary');
+                Route::get('getAll', 'showDoctorSpecialties');
             });
+            Route::get('index', 'index');
+            // store
+            // delete
         });
-        Route::prefix('/schedule')->group(function () {
-            Route::controller(DoctorScheduleController::class)->group(function () {
-                Route::middleware('auth:sanctum', 'role:doctor')->group(function () {
-                    Route::post('/add', 'store');
-                    Route::put('/edit/{id}', 'update');
-                    Route::delete('/delete/{id}', 'destroy');
-                });
-                Route::get('/get-weekly/{userId}', [DoctorScheduleController::class, 'getWeeklySchedule']);
-                Route::get('/work-hour/{userId}', [DoctorScheduleController::class, 'getWorkHourByDate']);
-                Route::get('/working-days/{userId}', [DoctorScheduleController::class, 'getWorkingDays']);
+        Route::prefix('/schedule')->controller(DoctorScheduleController::class)->group(function () {
+            Route::middleware('auth:sanctum')->group(function () {
+                Route::post('/add', 'store');
+                Route::put('/edit', 'update');
+                Route::delete('/delete/{dayOfWeek}', 'destroy');
             });
+            Route::get('/get-weekly/{doctorId}', 'getWeeklySchedule');
+            Route::get('/work-hour/{doctorId}', 'getWorkHourByDate');
         });
     });
     Route::controller(AuthController::class)->group(function () {

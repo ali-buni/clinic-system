@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 use App\Models\Specialty;
@@ -47,6 +48,5 @@ class SpecialtySeeder extends Seeder
             ['ar_name' => 'الأشعة والتصوير الطبي', 'en_name' => 'Radiology'],
             ['ar_name' => 'التخدير وتدبير الألم', 'en_name' => 'Anesthesiology'],
         ])->map(fn(array $data) => Specialty::firstOrCreate($data));
-       
     }
 }
