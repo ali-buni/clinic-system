@@ -7,9 +7,7 @@ use App\Models\Appointment_type;
 class AppointmentTypeService
 {
     /**
-     * Return list of appointment types, paginated when `per_page` provided.
-     *
-     * @param array $data
+     * Return list of appointment.
      */
     public function index()
     {

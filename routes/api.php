@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClinicController;
 use App\Http\Controllers\PatientController;
@@ -113,6 +114,22 @@ Route::prefix('/clinic-system')->group(function () {
             Route::delete('/{id}/leave', 'destroy');
             Route::post('/{id}/restore', 'restore')->withTrashed();
             Route::delete('/{id}/force', 'forceDelete')->withTrashed();
+        });
+
+        Route::prefix('/appointments')->controller(AppointmentController::class)->group(function () {
+            Route::post('/book', 'book');
+            Route::post('/{id}/reschedule', 'reschedule');
+            Route::post('/{id}/cancel', 'cancel');
+            Route::post('/{id}/complete', 'complete');
+            Route::post('/{id}/confirmed', 'markConfirmed');
+            Route::get('/{id}', 'show');
+            Route::get('/patient/{patientId}', 'patientAppointments');
+            Route::get('/doctor/{doctorId}', 'doctorAppointments');
+            Route::get('/clinic/{clinicId}', 'clinicAppointments');
+            Route::get('/room/appo', 'roomAppointments');
+            Route::get('/doctor/{doctorId}/schedule', 'doctorSchedule');
+            Route::get('/clinic/{clinicId}/schedule', 'clinicSchedule');
+            Route::get('/available-slots', 'availableSlots');
         });
     });
 });

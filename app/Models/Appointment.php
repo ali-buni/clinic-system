@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -32,6 +33,24 @@ class Appointment extends Model
         'start_time' => 'datetime',
         'end_time' => 'datetime',
     ];
+
+    /**
+     * scope for the scheduled appointment in day
+     */
+    public function scopeScheduledInDate(Builder $query, int $doctorId, string $date): Builder
+    {
+        return $query->where('doctor_id', $doctorId)->whereDate('start_time', $date)
+            ->whereNotIn('status', ['cancelled', 'completed', 'no_show']);
+    }
+
+    /**
+     * scope for the all valid appointments in day
+     */
+    public function scopeALLValidInDate(Builder $query, int $doctorId, string $date): Builder
+    {
+        return $query->where('doctor_id', $doctorId)->whereDate('start_time', $date)
+            ->whereNotIn('status', ['cancelled', 'no_show']);
+    }
 
     public function clinic(): BelongsTo
     {

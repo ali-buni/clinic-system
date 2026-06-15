@@ -20,7 +20,8 @@ return new class extends Migration
             $table->dateTime('start_time');
             $table->dateTime('end_time');
 
-            $table->enum('status', ['scheduled', 'completed', 'cancelled', 'no_show'])
+            // TODO: make the status confirmed when the patient get in room
+            $table->enum('status', ['scheduled', 'completed', 'cancelled', 'no_show', 'confirmed'])
                 ->default('scheduled');
             $table->text('cancel_reason')->nullable();
             $table->text('visit_reason')->nullable();
