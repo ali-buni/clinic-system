@@ -16,6 +16,7 @@ class NewDoctorRequest extends FormRequest
         if (!$user) {
             return false;
         }
+        // TODO: permission for user to create doctor
         return $user->hasRole('owner');
     }
 

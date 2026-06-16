@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('doctor_id')->constrained('doctors')->cascadeOnDelete();
             $table->date('override_date');
-            $table->string('override_type')->nullable();
+            $table->string('override_type')->nullable(); // TODO: from string to enum and new column reason (string)
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
             $table->string('reason')->nullable();

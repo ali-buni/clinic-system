@@ -16,6 +16,7 @@ class NewSecretaryRequest extends FormRequest
         if (!$user) {
             return false;
         }
+        // TODO: permission to create secretary
         return $user->hasRole('owner');
     }
 

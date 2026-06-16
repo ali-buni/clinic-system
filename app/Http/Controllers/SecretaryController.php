@@ -21,6 +21,7 @@ class SecretaryController extends Controller
     {
         $secretary = $this->secretary_service->info($id);
 
+        // TODO: authorize
         if (!$secretary) {
             return ApiResponse::error('Secretary not found', 404);
         }
