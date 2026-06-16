@@ -28,7 +28,7 @@ class CreatePatientRecordRequest extends FormRequest
             'prescription_items' => 'nullable|array',
             'prescription_items.*.en_name' => 'required|string|max:255',
             'prescription_items.*.form'    => 'nullable|string',
-            'prescription_items.*.strength'=> 'nullable|string',
+            'prescription_items.*.strength' => 'nullable|string',
             'prescription_items.*.dosage_instruction' => 'nullable|string|max:500',
             'prescription_items.*.frequency'         => 'nullable|string|max:100',
             'prescription_items.*.duration'          => 'nullable|string|max:100',
@@ -39,6 +39,7 @@ class CreatePatientRecordRequest extends FormRequest
     {
         return [
             'diagnosis_summary.required' => 'Diagnosis summary is required.',
-            'status.in'                  => 'Status must be one of: open, closed, follow-up.',        ];
+            'status.in'                  => 'Status must be one of: open, closed, follow-up.',
+        ];
     }
 }

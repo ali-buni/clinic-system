@@ -31,7 +31,7 @@ class PatientRecordResource extends JsonResource
                 'id'         => $p->id,
                 'cost'       => $p->cost,
                 'issued_at'  => $p->issued_at,
-                'valid_until'=> $p->valid_until,
+                'valid_until' => $p->valid_until,
                 'items'      => $p->items->map(fn($item) => [
                     'medicine_id'        => $item->medicine_id,
                     'dosage_instruction' => $item->dosage_instruction,

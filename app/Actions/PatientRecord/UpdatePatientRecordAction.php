@@ -51,8 +51,8 @@ class UpdatePatientRecordAction
                         ['patient_record_id' => $record->id],
                         [
                             'doctor_id'   => $data['doctor_id'] ?? $record->doctor_id,
-                            'cost'        => $data['cost'] ?? 0.00,
-                            'issued_at'   => now(),
+                            // 'cost'        => $data['cost'] ?? 0.00,
+                            // 'issued_at'   => now(),
                             'valid_until' => $data['valid_until'] ?? null,
                             'notes'       => $data['notes'] ?? null,
                         ]
@@ -83,12 +83,12 @@ class UpdatePatientRecordAction
                 }
 
                 return $record->load(['diseases', 'prescriptions.items']);
-
             } catch (Exception $e) {
                 if ($e->getCode() === 404) {
-                    throw $e;
-                throw new Exception("An error occurred while updating the record: " . $e->getMessage());
-            }}
+                    // throw $e;
+                    throw new Exception("An error occurred while updating the record: " . $e->getMessage());
+                }
+            }
         });
     }
 }
