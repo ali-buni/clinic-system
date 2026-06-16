@@ -129,7 +129,7 @@ Route::prefix('/clinic-system')->group(function () {
             Route::get('/room/appo', 'roomAppointments');
             Route::get('/doctor/{doctorId}/schedule', 'doctorSchedule');
             Route::get('/clinic/{clinicId}/schedule', 'clinicSchedule');
-            Route::get('/available-slots', 'availableSlots');
+            Route::get('/get/available-slots', 'availableSlots');
         });
     });
 });

@@ -110,9 +110,12 @@ class AppointmentService
     public function getClinicDailySchedule(int $clinicId, $date = null)
     {
         $date = $date ? Carbon::parse($date)->toDateString() : Carbon::today()->toDateString();
-        return Appointment::where('clinic_id', $clinicId)
+        $appointments = Appointment::where('clinic_id', $clinicId)
             ->with(['doctor', 'patient', 'room', 'type'])
             ->whereDate('start_time', $date)
-            ->orderBy('start_time', 'asc')->get();
+            ->orderBy('start_time', 'asc')
+            ->get();
+
+            return $appointments;
     }
 }

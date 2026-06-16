@@ -14,8 +14,8 @@ class RescheduleAppointmentRequest extends FormRequest
     public function rules()
     {
         return [
-            'start_time' => 'required|date|date_format:H:i',
-            'date' => 'nullable|date|date_format:Y-m-d',
+            'start_time' => 'required|date_format:H:i',
+            'date' => 'required|date|date_format:Y-m-d',
             'type_id' => 'sometimes|exists:appointment_types,id'
         ];
     }

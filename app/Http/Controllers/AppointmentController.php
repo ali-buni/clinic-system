@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class AppointmentController extends Controller
@@ -35,7 +36,10 @@ class AppointmentController extends Controller
         try {
             $type = Appointment_type::findOrFail($validated['appointment_type_id']);
             $doctor = Doctor::findOrFail($validated['doctor_id']);
-
+            $room_id = $doctor->room_id;
+            if ($room_id == null) {
+                return ApiResponse::error('This doctor is invalid');
+            }
             $slotsCount = $type->types;
             $slotMinutes = $doctor->appointment_duration ?? 30;
 
@@ -45,12 +49,12 @@ class AppointmentController extends Controller
 
             $data = $request->only([
                 'clinic_id',
-                'room_id',
                 'appointment_type_id',
                 'patient_id',
                 'visit_reason',
                 'notes',
             ]);
+            $data['room_id'] = $room_id;
 
             $appointment = $this->appointmentService->bookAppointment(
                 $validated['doctor_id'],
@@ -70,27 +74,30 @@ class AppointmentController extends Controller
         }
     }
 
-    public function reschedule(int $id, RescheduleAppointmentRequest $request)
+    public function reschedule($id, RescheduleAppointmentRequest $request)
     {
         $validated = $request->validated();
 
         try {
-            $appointment = Appointment::findOrFail($id);
+            $appointment = Appointment::findOrFail((int)$id);
+            $type = Appointment_type::findOrFail($validated['type_id'] ?? $appointment->appointment_type_id);
+            $doctor = Doctor::findOrFail($appointment->doctor_id);
 
-            $date = $validated['date'] ?? Carbon::parse($appointment->start_time)->format('Y-m-d');
-            $startTime = $validated['start_time'] ?? Carbon::parse($appointment->start_time)->format('H:i');
+            $date = Carbon::parse($validated['date'])->format('Y-m-d');
+            $start = Carbon::parse($appointment->start_time)->format('H:i');
 
-            $durationMinutes = Carbon::parse($appointment->start_time)->diffInMinutes(Carbon::parse($appointment->end_time));
+            $slotsCount = $type->types;
+            $slotMinutes = $doctor->appointment_duration ?? 30;
 
-            $endTime = Carbon::parse($date . ' ' . $startTime)
-                ->addMinutes($durationMinutes)
-                ->format('H:i:s');
+            $end = Carbon::parse($validated['date'] . ' ' . $validated['start_time'])
+                ->addMinutes($slotMinutes * $slotsCount)
+                ->format('H:i');
 
             $updatedAppointment = $this->appointmentService->updateAppointment(
                 $id,
                 $date,
-                $startTime,
-                $endTime,
+                $start,
+                $end,
             );
 
             return ApiResponse::success(new AppointmentResource($updatedAppointment), 'Appointment updated successfully');
@@ -103,7 +110,7 @@ class AppointmentController extends Controller
         }
     }
 
-    public function cancel(int $id, CancelAppointmentRequest $request)
+    public function cancel($id, CancelAppointmentRequest $request)
     {
         $validated = $request->validated();
         try {
@@ -118,7 +125,7 @@ class AppointmentController extends Controller
         }
     }
 
-    public function complete(int $id)
+    public function complete($id)
     {
         try {
             $this->appointmentService->completeAppointment((int)$id);
@@ -132,7 +139,7 @@ class AppointmentController extends Controller
         }
     }
 
-    public function markConfirmed(int $id)
+    public function markConfirmed($id)
     {
         try {
             $appointment = $this->appointmentService->markConfirmed((int)$id);
@@ -146,7 +153,7 @@ class AppointmentController extends Controller
         }
     }
 
-    public function show(int $id)
+    public function show($id)
     {
         try {
             $appointment = $this->appointmentService->getAppointment((int)$id);
@@ -158,7 +165,7 @@ class AppointmentController extends Controller
         }
     }
 
-    public function patientAppointments(int $patientId, FilterRequest $request)
+    public function patientAppointments($patientId, FilterRequest $request)
     {
         $validated = $request->validated();
         try {
@@ -169,7 +176,7 @@ class AppointmentController extends Controller
         }
     }
 
-    public function doctorAppointments(int $doctorId, FilterRequest $request)
+    public function doctorAppointments($doctorId, FilterRequest $request)
     {
         $validated = $request->validated();
         try {
@@ -180,7 +187,7 @@ class AppointmentController extends Controller
         }
     }
 
-    public function clinicAppointments(int $clinicId, FilterRequest $request)
+    public function clinicAppointments($clinicId, FilterRequest $request)
     {
         $validated = $request->validated();
         try {
@@ -208,21 +215,21 @@ class AppointmentController extends Controller
     {
         $request->validate([
             'doctor_id' => 'required|integer|exists:doctors,id',
-            'date' => 'required|date|date_format:Y-m-d|after:now',
+            'date' => 'required|date|date_format:Y-m-d',
         ]);
 
         try {
             $slots = $this->appointmentService->getAvailableSlots((int)$request->doctor_id, $request->date);
             if (! $slots) {
-                return ApiResponse::error('No slots found for this day or no work day exists');
+                return ApiResponse::error('No slots found for this day or no work day exists', 400);
             }
-            // Manual structure if additional() gives trouble
             $data = [
                 'data' => SlotResource::collection($slots),
                 'meta' => [
                     'date' => Carbon::parse($request->date)->format("Y-m-d"),
                     'dayOfWeek' => Carbon::parse($request->date)->dayOfWeek,
-                    'nums' => count($slots),
+                    'dayOfWeekEN' => Carbon::parse($request->date)->englishDayOfWeek,
+                    'count' => count($slots),
                 ]
             ];
             return ApiResponse::success($data);
@@ -231,7 +238,7 @@ class AppointmentController extends Controller
         }
     }
 
-    public function doctorSchedule(int $doctorId, Request $request)
+    public function doctorSchedule($doctorId, Request $request)
     {
         $request->validate([
             'date' => 'nullable|date|date_format:Y-m-d'
@@ -249,7 +256,7 @@ class AppointmentController extends Controller
         }
     }
 
-    public function clinicSchedule(int $clinicId, Request $request)
+    public function clinicSchedule($clinicId, Request $request)
     {
         $request->validate([
             'date' => 'nullable|date|date_format:Y-m-d'

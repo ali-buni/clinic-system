@@ -124,12 +124,15 @@ trait BookingTrait
                 throw new Exception("Booking failed: The selected time frame is unavailable or overlaps with an existing appointment.");
             }
 
-            return Appointment::create(array_merge([
-                'doctor_id'  => $doctorId,
-                'start_time' => $start,
-                'end_time'   => $end,
-                // 'status'     => 'scheduled'
-            ], $attributes));
+            $appointment = Appointment::create(
+                array_merge([
+                    'doctor_id'  => $doctorId,
+                    'start_time' => $start,
+                    'end_time'   => $end,
+                    'status'     => 'scheduled'
+                ], $attributes)
+            )->load(['type', 'room', 'patient', 'doctor']);
+            return $appointment;
         }, attempts: 3);
     }
 
@@ -165,7 +168,7 @@ trait BookingTrait
                 'end_time'   => $end,
             ], $attributes));
 
-            return $appointment;
+            return $appointment->load(['type', 'room', 'patient', 'doctor']);
         }, attempts: 3);
     }
 
