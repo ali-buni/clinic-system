@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Appointment;
 use App\Models\Appointment_type;
-use App\Models\AppointmentType;
 use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\Invoice;
@@ -91,15 +90,32 @@ class ClinicSystemSeeder extends Seeder
         ]);
 
         $patients = Patient::factory()->count(20)->for($clinic)->create();
-
         $appointments = collect();
+        $usedSlots = []; // Track used time slots
+
         foreach ($patients as $patient) {
             $doctor = $doctors->random();
             $types = Appointment_type::query()->get();
             $type = $types->random();
 
-            // Generate a random appointment time within the last 20 days, between 8 AM and 3 PM
-            $start = fake()->dateTimeBetween('-20 days', 'now')->setTime(fake()->numberBetween(8, 15), 0);
+            // Generate unique start time
+            $start = null;
+            $attempts = 0;
+            $maxAttempts = 100;
+
+            do {
+                $start = fake()->dateTimeBetween('-20 days', 'now')
+                    ->setTime(fake()->numberBetween(8, 15), 0);
+                $key = $clinic->id . '_' . $doctor->id . '_' . $start->format('Y-m-d H:i:s');
+                $attempts++;
+            } while (isset($usedSlots[$key]) && $attempts < $maxAttempts);
+
+            // If max attempts reached, skip this patient or handle differently
+            if ($attempts >= $maxAttempts) {
+                continue; // Skip this patient
+            }
+
+            $usedSlots[$key] = true;
             $end = (clone $start)->modify('+' . $doctor->appointment_duration . ' minutes');
 
             $appointments->push(
