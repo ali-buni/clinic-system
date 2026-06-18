@@ -9,30 +9,13 @@ class PatientRecordService
 
     public function getAllFiltered(array $filters)
     {
-        $query = Patient_record::query()
-            ->with([
-                'diseases',
-                'prescriptions.items',
-                'patient',
-                'doctor',
-            ]);
-
-        if (!empty($filters['doctor_id'])) {
-            $query->where('doctor_id', $filters['doctor_id']);
-        }
-
-        if (!empty($filters['patient_id'])) {
-            $query->where('patient_id', $filters['patient_id']);
-        }
-
+        $query = Patient_record::with([
+            'patient',
+            'doctor',
+        ]);
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
-
-        if (!empty($filters['clinic_id'])) {
-            $query->where('clinic_id', $filters['clinic_id']);
-        }
-
         if (!empty($filters['date_from'])) {
             $query->whereDate(
                 'created_at',
@@ -40,7 +23,6 @@ class PatientRecordService
                 $filters['date_from']
             );
         }
-
         if (!empty($filters['date_to'])) {
             $query->whereDate(
                 'created_at',
@@ -48,16 +30,6 @@ class PatientRecordService
                 $filters['date_to']
             );
         }
-
-        if (!empty($filters['disease_code'])) {
-            $query->whereHas('diseases', function ($q) use ($filters) {
-                $q->where(
-                    'code',
-                    $filters['disease_code']
-                );
-            });
-        }
-
         return ModelFilter::filter(
             $query,
             $filters
@@ -66,15 +38,15 @@ class PatientRecordService
 
     public function getPatientHistory(int $patientId)
     {
-        return Patient_record::with(['diseases', 'prescriptions.items', 'doctor'])
+        return Patient_record::with(['doctor', 'patient',])
             ->where('patient_id', $patientId)
-            ->latest()
+            // ->latest()
             ->get();
     }
 
     public function getRecordsByDoctor(int $patientId, int $doctorId)
     {
-        return Patient_record::with(['diseases', 'prescriptions'])
+        return Patient_record::with(['doctor', 'patient'])
             ->where('patient_id', $patientId)
             ->where('doctor_id', $doctorId)
             ->latest()
@@ -83,7 +55,7 @@ class PatientRecordService
 
     public function getRecordsByRoom(array $roomIds)
     {
-        return Patient_record::with(['patient', 'doctor', 'diseases'])
+        return Patient_record::with(['patient', 'doctor'])
             ->whereHas('doctor', fn($q) => $q->whereIn('room_id', $roomIds))
             ->latest()
             ->get();
@@ -91,9 +63,16 @@ class PatientRecordService
 
     public function getAllByDoctor(int $doctorId)
     {
-        return Patient_record::with(['diseases', 'prescriptions.items', 'patient', 'doctor'])
+        return Patient_record::with(['doctor', 'patient'])
             ->where('doctor_id', $doctorId)
             ->latest()
             ->get();
+    }
+
+    public function show(int $id)
+    {
+        return Patient_record::with(['diseases', 'prescriptions.items', 'doctor', 'patient'])
+            ->where('id', $id)
+            ->first();
     }
 }

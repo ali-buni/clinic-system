@@ -6,6 +6,7 @@ use App\Models\Patient_record;
 use App\Models\Prescription;
 use App\Models\Disease;
 use App\Models\Medicine;
+use App\Models\Prescription_item;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
@@ -29,65 +30,83 @@ class UpdatePatientRecordAction
                 ]);
 
                 if (isset($data['diseases']) && count($data['diseases']) > 0) {
-                    $diseaseIds = [];
                     foreach ($data['diseases'] as $diseaseData) {
-                        $disease = Disease::firstOrCreate(
-                            ['code' => $diseaseData['code'] ?? null],
-                            [
-                                'ar_name'        => $diseaseData['ar_name'] ?? $diseaseData['name'] ?? 'غير معروف',
-                                'en_name'        => $diseaseData['name'] ?? $diseaseData['en_name'] ?? 'Unknown',
-                                'disease_nature' => $diseaseData['disease_nature'] ?? 'other',
-                                'description'    => $diseaseData['description'] ?? 'Updated from record',
-                                'is_custom'      => true
+
+                        if (!empty($diseaseData['id'])) {
+                            $diseaseId = $diseaseData['id'];
+                        } else {
+                            $disease = Disease::firstOrCreate(
+                                ['code' => $diseaseData['code']],
+                                [
+                                    'ar_name'        => $diseaseData['ar_name'] ?? null,
+                                    'en_name'        => $diseaseData['en_name'] ?? 'Unknown',
+                                    'disease_nature' => $diseaseData['disease_nature'] ?? 'other',
+                                    'description'    => $diseaseData['description'] ?? null,
+                                    'is_custom'      => false
+                                ]
+                            );
+                            $diseaseId = $disease->id;
+                        }
+
+                        $record->diseases()->sync([
+                            $diseaseId => [
+                                'status'   => $diseaseData['status'] ?? 'active',
+                                'severity' => $diseaseData['severity'] ?? 'mild'
                             ]
-                        );
-                        $diseaseIds[] = $disease->id;
-                    }
-                    $record->diseases()->sync($diseaseIds);
-                }
-
-                if (isset($data['prescription_items']) && count($data['prescription_items']) > 0) {
-                    $prescription = $record->prescriptions()->firstOrCreate(
-                        ['patient_record_id' => $record->id],
-                        [
-                            'doctor_id'   => $data['doctor_id'] ?? $record->doctor_id,
-                            // 'cost'        => $data['cost'] ?? 0.00,
-                            // 'issued_at'   => now(),
-                            'valid_until' => $data['valid_until'] ?? null,
-                            'notes'       => $data['notes'] ?? null,
-                        ]
-                    );
-
-                    $prescription->items()->delete();
-
-                    foreach ($data['prescription_items'] as $item) {
-                        $medicine = Medicine::firstOrCreate(
-                            ['en_name' => $item['en_name']],
-                            [
-                                'ar_name'         => $item['ar_name'] ?? null,
-                                'generic_name_en' => $item['generic_name_en'] ?? null,
-                                'generic_name_ar' => $item['generic_name_ar'] ?? null,
-                                'strength'        => $item['strength'] ?? null,
-                                'form'            => $item['form'] ?? 'tablet',
-                                'is_custom'       => true
-                            ]
-                        );
-
-                        $prescription->items()->create([
-                            'medicine_id'        => $medicine->id,
-                            'dosage_instruction' => $item['dosage_instruction'] ?? null,
-                            'frequency'          => $item['frequency'] ?? null,
-                            'duration'           => $item['duration'] ?? null,
                         ]);
                     }
                 }
 
-                return $record->load(['diseases', 'prescriptions.items']);
-            } catch (Exception $e) {
-                if ($e->getCode() === 404) {
-                    // throw $e;
-                    throw new Exception("An error occurred while updating the record: " . $e->getMessage());
+                if (isset($data['prescription_items']) && count($data['prescription_items']) > 0) {
+                    $prescription = $record->prescriptions()
+                        ->where('patient_record_id', $record->id)
+                        ->where('id', $data['preid'])
+                        ->first();
+
+                    if (! $prescription) {
+                        $prescription = $prescription = Prescription::create([
+                            'patient_record_id' => $record->id,
+                            'doctor_id'         => $record->doctor_id,
+                        ]);
+                    }
+                    $syncData = [];
+
+                    foreach ($data['prescription_items'] as $item) {
+                        if (!empty($item['id'])) {
+                            $medicineId = $item['id'];
+                        } else {
+                            $medicine = Medicine::firstOrCreate(
+                                ['api_medicine_id' => $item['api_medicine_id']],
+                                [
+                                    'en_name'         => $item['en_name'] ?? null,
+                                    'ar_name'         => $item['ar_name'] ?? null,
+                                    'generic_name_en' => $item['generic_name_en'] ?? null,
+                                    'generic_name_ar' => $item['generic_name_ar'] ?? null,
+                                    'form'            => $item['form'] ?? 'tablet',
+                                    'strength'        => $item['strength'] ?? null,
+                                    'is_custom'       => false,
+                                ]
+                            );
+                            $medicineId = $medicine->id;
+                        }
+                        $syncData[] = $medicineId;
+                        $prescription->items()->updateOrCreate(
+                            [
+                                'medicine_id' => $medicineId
+                            ],
+                            [
+                                'dosage_instruction' => $item['dosage_instruction'] ?? null,
+                                'frequency'          => $item['frequency'] ?? null,
+                                'duration'           => $item['duration'] ?? null,
+                            ]
+                        );
+                    }
+                    $prescription->items()->whereNotIn('medicine_id', $syncData)->delete();
                 }
+
+                return $record->load(['diseases', 'prescriptions.items', 'doctor', 'patient']);
+            } catch (Exception $e) {;
+                throw new Exception("An error occurred while updating the record: " . $e->getMessage());
             }
         });
     }

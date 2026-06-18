@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="Rmt9GSh-MGt3KWQna_jI" name="clinic-system-erd">
-        <mxGraphModel dx="474" dy="557" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1184" pageHeight="957" background="light-dark(#FFFFFF,#666666)" math="0" shadow="1">
+        <mxGraphModel dx="754" dy="571" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1184" pageHeight="957" background="light-dark(#FFFFFF,#666666)" math="0" shadow="1">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -23,7 +23,7 @@
                     <mxGeometry x="720" y="320" width="280" height="279" as="geometry"/>
                 </mxCell>
                 <mxCell id="15" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;gradientColor=#97d077;strokeColor=#82b366;shadow=1;swimlaneLine=1;" parent="1" vertex="1">
-                    <mxGeometry x="1013" y="1173" width="1270" height="661" as="geometry"/>
+                    <mxGeometry x="1014" y="1173" width="1270" height="661" as="geometry"/>
                 </mxCell>
                 <mxCell id="7" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fad7ac;strokeColor=#b46504;shadow=1;swimlaneLine=1;" parent="1" vertex="1">
                     <mxGeometry x="60" y="504" width="550" height="781" as="geometry"/>

@@ -17,8 +17,6 @@ class GetAllRecordsFilteredRequest extends FormRequest
             'disease_code' => 'nullable|string',
             'date_from'    => 'nullable|date',
             'date_to'      => 'nullable|date|after_or_equal:date_from',
-            'patient_id'   => 'nullable|integer|exists:patients,id',
-            'doctor_id'    => 'nullable|integer|exists:doctors,id',
             'status'       => 'nullable|in:open,closed,follow-up',
             'clinic_id'    => 'nullable|integer|exists:clinics,id',
 

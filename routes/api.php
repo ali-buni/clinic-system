@@ -37,6 +37,16 @@ Route::prefix('/clinic-system')->group(function () {
         Route::post('/resend-code', 'resendVerificationCode');
     });
 
+    // no auth
+    Route::prefix('medicines')->controller(MedicineController::class)->group(function () {
+        Route::get('search', 'searchMedicine');
+        Route::post('store', 'store');
+    });
+    Route::prefix('diseases')->controller(DiseaseController::class)->group(function () {
+        Route::get('search', 'searchDisease');
+        Route::post('store', 'store');
+    });
+
     Route::middleware('auth:sanctum')->prefix('/clinic')->group(function () {
         Route::controller(ClinicController::class)->group(function () {
             Route::get('/info', 'clinicInfo');
@@ -87,38 +97,22 @@ Route::prefix('/clinic-system')->group(function () {
             Route::post('/{id}/restore', 'restore')->withTrashed();
             Route::delete('/{id}/force', 'forceDelete')->withTrashed();
         });
+
+        Route::prefix('patient-records')->controller(PatientRecordController::class)->group(function () {
+            Route::post('/', 'store');
+            Route::put('/{id}', 'update');
+            Route::delete('/{id}', 'destroy');
+            Route::get('/show/{id}', 'show');
+            Route::get('/filtered', 'index');
+            Route::get('/patient/{patientId}/history', 'history');
+            Route::get('/patient/{patientId}/doctor/{doctorId}', 'getByDoctor');
+            Route::post('/rooms/search', 'getByRoom');
+            Route::get('/doctor/{doctorId}/all', 'getAllByDoctor');
+        });
     });
 
-Route::get('/filter', function (Request $request) {
-    return ApiResponse::pagination(ModelFilter::filter(new User(), $request->all()));
-});
-
-
-Route::prefix('/clinic-system')->group(function () {
-
-    Route::prefix('medicines')->controller(MedicineController::class)->group(function () {
-        Route::get('search', 'searchMedicine');
-        Route::post('store', 'store');
+    // no auth
+    Route::get('/filter', function (Request $request) {
+        return ApiResponse::pagination(ModelFilter::filter(new User(), $request->all()));
     });
-    Route::prefix('diseases')->controller(DiseaseController::class)->group(function () {
-        Route::get('search', 'searchDisease');
-        Route::post('store', 'store');
-    });
-});
-
-Route::middleware('auth:sanctum')->group(function () {
-
-    Route::prefix('patient-records')->controller(PatientRecordController::class)->group(function () {
-
-
-    Route::post('/', 'store');
-    Route::put('/{id}', 'update');
-    Route::delete('/{id}', 'destroy');
-    Route::get('/filtered', 'index');
-    Route::get('/patient/{patientId}/history', 'history');
-    Route::get('/patient/{patientId}/doctor/{doctorId}', 'getByDoctor');
-    Route::post('/rooms/search', 'getByRoom');
-    Route::get('/doctor/{doctorId}/all', 'getAllByDoctor');
-    });
-});
 });

@@ -22,14 +22,24 @@ class PatientRecordController extends Controller
 
     public function store(CreatePatientRecordRequest $request, CreatePatientRecordAction $action): JsonResponse
     {
-        $record = $action->execute($request->validated());
-        return ApiResponse::success(new PatientRecordResource($record), 'Record created successfully', 201);
+        try {
+            $record = $action->execute($request->validated());
+            return ApiResponse::success(
+                // new PatientRecordResource($record),
+                null,
+                'Record created successfully',
+                201
+            );
+        } catch (\Exception $e) {
+            info($e->getMessage());
+            return ApiResponse::error("failed to create a record");
+        }
     }
 
-    public function update(UpdatePatientRecordRequest $request, UpdatePatientRecordAction $action, int $id): JsonResponse
+    public function update(UpdatePatientRecordRequest $request, UpdatePatientRecordAction $action, $id): JsonResponse
     {
         try {
-            $data = array_merge($request->validated(), ['record_id' => $id]);
+            $data = array_merge($request->validated(), ['record_id' => (int)$id]);
             $record = $action->execute($data);
 
             return ApiResponse::success(
@@ -37,17 +47,10 @@ class PatientRecordController extends Controller
                 'Record updated successfully'
             );
         } catch (Exception $e) {
-            if (str_contains($e->getMessage(), 'not found')) {
-                return ApiResponse::error(
-                    'Patient record not found',
-                    404
-                );
-            }
-
+            info($e->getMessage());
             return ApiResponse::error(
-                'Failed to update record',
-                500,
-                config('app.debug') ? ['error' => $e->getMessage()] : null
+                $e->getMessage(),
+                str_contains($e->getMessage(), 'not found') ? 404 : 500
             );
         }
     }
@@ -85,22 +88,21 @@ class PatientRecordController extends Controller
 
         return ApiResponse::pagination(
             $records,
-            'Records retrieved successfully'
+            'Records retrieved successfully',
+            PatientRecordResource::collection($records)
         );
     }
 
     public function history(int $patientId): JsonResponse
     {
-        if (!Patient::find($patientId)) {
+        if (!Patient::where('id', $patientId)->exists()) {
             return ApiResponse::error('Patient not found', 404);
         }
-
         $history = $this->service->getPatientHistory($patientId);
 
         if ($history->isEmpty()) {
             return ApiResponse::error('No medical records found for this patient', 404);
         }
-
         return ApiResponse::success(
             PatientRecordResource::collection($history),
             'Patient history retrieved successfully'
@@ -109,20 +111,17 @@ class PatientRecordController extends Controller
 
     public function getByDoctor(int $patientId, int $doctorId): JsonResponse
     {
-        if (!Patient::find($patientId)) {
+        if (!Patient::where('id', $patientId)->exists()) {
             return ApiResponse::error('Patient not found', 404);
         }
-
-        if (!Doctor::find($doctorId)) {
+        if (!Doctor::where('id', $doctorId)->exists()) {
             return ApiResponse::error('Doctor not found', 404);
         }
-
         $records = $this->service->getRecordsByDoctor($patientId, $doctorId);
 
         if ($records->isEmpty()) {
             return ApiResponse::error('No records found for this doctor and patient', 404);
         }
-
         return ApiResponse::success(
             PatientRecordResource::collection($records),
             'Records retrieved successfully'
@@ -150,7 +149,7 @@ class PatientRecordController extends Controller
 
     public function getAllByDoctor(int $doctorId): JsonResponse
     {
-        if (!\App\Models\Doctor::find($doctorId)) {
+        if (!Doctor::where("id", $doctorId)->exists()) {
             return ApiResponse::error('Doctor not found', 404);
         }
 
@@ -161,5 +160,18 @@ class PatientRecordController extends Controller
         }
 
         return ApiResponse::success(PatientRecordResource::collection($records), 'Doctor records retrieved successfully');
+    }
+
+    public function show(int $id)
+    {
+        if (! Patient_record::where('id', $id)->exists()) {
+            return ApiResponse::error('no record found', 404);
+        }
+        try {
+            $record = $this->service->show($id);
+            return ApiResponse::success(new PatientRecordResource($record), 'the record found');
+        } catch (\Exception $e) {
+            return ApiResponse::error($e->getMessage());
+        }
     }
 }
