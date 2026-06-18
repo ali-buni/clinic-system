@@ -44,7 +44,7 @@ Route::prefix('/clinic-system')->group(function () {
 
     Route::prefix('/clinic')->group(function () {
 
-    // no auth
+        // no auth
         Route::prefix('/specialty')->controller(DoctorSpecialtyController::class)->group(function () {
             Route::middleware('auth:sanctum')->group(function () {
                 Route::post('/add', 'attachSpecialties');
@@ -76,6 +76,7 @@ Route::prefix('/clinic-system')->group(function () {
             Route::post('store', 'store');
         });
 
+        // auth
         Route::middleware('auth:sanctum')->prefix('/clinic')->group(function () {
             Route::controller(ClinicController::class)->group(function () {
                 Route::get('/info', 'clinicInfo');
