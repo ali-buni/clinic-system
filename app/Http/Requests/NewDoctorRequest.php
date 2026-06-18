@@ -95,11 +95,11 @@ class NewDoctorRequest extends FormRequest
             'consultation_fee.numeric' => 'Consultation fee must be a valid number.',
             'consultation_fee.min' => 'Consultation fee cannot be negative.',
 
-            // speciality_ids validation messages
-            'speciality_ids.required' => 'At least one speciality must be selected.',
-            'speciality_ids.array' => 'Specialities must be provided as an array.',
-            'speciality_ids.min' => 'Please select at least one speciality.',
-            'speciality_ids.*.exists' => 'One or more selected specialities do not exist.',
+            // specialty_ids validation messages
+            'specialty_ids.required' => 'At least one specialty must be selected.',
+            'specialty_ids.array' => 'Specialties must be provided as an array.',
+            'specialty_ids.min' => 'Please select at least one specialty.',
+            'specialty_ids.*.exists' => 'One or more selected specialities do not exist.',
         ];
     }
 }

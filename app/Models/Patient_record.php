@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -40,9 +39,14 @@ class Patient_record extends Model
     {
         return $this->belongsTo(Appointment::class, 'appointment_id');
     }
-    public function diseases(): BelongsToMany
+
+    public function diseases()
     {
-        return $this->belongsToMany(Disease::class, 'patient_record_disease')->withTimestamps();
+        return $this->belongsToMany(Disease::class, 'patient_record_disease')
+            ->withPivot([
+                'status',
+                'severity',
+            ]);
     }
 
     public function prescriptions(): HasMany

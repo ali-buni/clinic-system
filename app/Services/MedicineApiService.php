@@ -12,8 +12,8 @@ class MedicineApiService
         try {
             $response = Http::timeout(5)
                 ->get('https://api.fda.gov/drug/ndc.json', [
-                    'search'=> "brand_name:\"{$query}\" OR generic_name:\"{$query}\"",
-                    'limit'=> 15
+                    'search' => "brand_name:\"{$query}\" OR generic_name:\"{$query}\"",
+                    'limit' => 15
                 ]);
 
             if ($response->successful()) {
@@ -22,13 +22,13 @@ class MedicineApiService
                 $results = [];
                 foreach ($data as $drug) {
                     $results[] = [
-                        'api_medicine_id'=> $drug['product_id'] ?? null,
-                        'en_name'=> $drug['brand_name'] ?? 'Unknown',
-                        'ar_name'=> $drug['brand_name'] ?? null,
-                        'generic_name_en'=> is_array($drug['generic_name'] ?? null) ? implode(', ', $drug['generic_name']) : ($drug['generic_name'] ?? null),
-                        'generic_name_ar'=> null,
-                        'strength'=> isset($drug['active_ingredients'][0]['strength']) ? $drug['active_ingredients'][0]['strength'] : null,
-                        'form'=> $this->mapRouteToForm($drug['route'] ?? null),
+                        'api_medicine_id' => $drug['product_id'] ?? null,
+                        'en_name' => $drug['brand_name'] ?? 'Unknown',
+                        'ar_name' => null,
+                        'generic_name_en' => is_array($drug['generic_name'] ?? null) ? implode(', ', $drug['generic_name']) : ($drug['generic_name'] ?? null),
+                        'generic_name_ar' => null,
+                        'strength' => isset($drug['active_ingredients'][0]['strength']) ? $drug['active_ingredients'][0]['strength'] : null,
+                        'form' => $this->mapRouteToForm($drug['route'] ?? null),
                     ];
                 }
                 return $results;

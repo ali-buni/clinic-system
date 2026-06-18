@@ -20,9 +20,7 @@ class DiseaseController extends Controller
         $filters = $request->validated();
         $query = Disease::query();
 
-        // database
         $diseases = ModelFilter::filter($query, $filters);
-        // external resource
         $results = $apiService->searchDiseases($request->query('query'));
 
         if (empty($results) && empty($diseases->items())) {
