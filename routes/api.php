@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\FcmTokenController;
+use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClinicController;
