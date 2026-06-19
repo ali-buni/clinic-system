@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\FcmTokenController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClinicController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\DiseaseController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\userController;
 use App\Http\Controllers\AppointmentTypeController;
+use App\Notifications\MobileNotification;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -27,6 +29,8 @@ Route::get('/user', function (Request $request) {
 
 
 Route::prefix('/clinic-system')->group(function () {
+    Route::post('/devices/register-token', [FcmTokenController::class, 'registerDeviceToken'])->middleware('auth:sanctum');
+
     Route::controller(AuthController::class)->group(function () {
         Route::post('/login', 'login');
 
@@ -44,7 +48,6 @@ Route::prefix('/clinic-system')->group(function () {
 
     Route::prefix('/clinic')->group(function () {
 
-        // no auth
         Route::prefix('/specialty')->controller(DoctorSpecialtyController::class)->group(function () {
             Route::middleware('auth:sanctum')->group(function () {
                 Route::post('/add', 'attachSpecialties');
@@ -53,6 +56,7 @@ Route::prefix('/clinic-system')->group(function () {
                 Route::get('showPrimary/{doctorId}', 'showPrimary');
                 Route::get('getAll', 'showDoctorSpecialties');
             });
+            // no auth
             Route::get('index', 'index');
             // store
             // delete
@@ -63,10 +67,12 @@ Route::prefix('/clinic-system')->group(function () {
                 Route::put('/edit', 'update');
                 Route::delete('/delete/{dayOfWeek}', 'destroy');
             });
+            // no auth
             Route::get('/get-weekly/{doctorId}', 'getWeeklySchedule');
             Route::get('/work-hour/{doctorId}', 'getWorkHourByDate');
         });
 
+        // no auth
         Route::prefix('medicines')->controller(MedicineController::class)->group(function () {
             Route::get('search', 'searchMedicine');
             Route::post('store', 'store');
@@ -170,4 +176,21 @@ Route::prefix('/clinic-system')->group(function () {
         Route::post('/', 'add');
         Route::delete('/{id}', 'delete');
     });
+});
+
+
+Route::post('/send-notification', function (Request $request) {
+
+    $receiver = User::findOrFail($request->receiver_id);
+    if (!$receiver->fcm_token) {
+        return response()->json(['error' => 'هذا المستخدم لا يملك توكن فايربيس مسجل'], 422);
+    }
+
+    $receiver->notify(new MobileNotification(
+        'مرحباً بك!',
+        'تم تفعيل حسابك بنجاح على تطبيق الجوال.',
+        ['screen' => 'profile', 'badge' => '1']
+    ));
+
+    return response()->json(['message' => 'تم إرسال الإشعار إلى الفايربيس الخاص بالمتلقي بنجاح!']);
 });

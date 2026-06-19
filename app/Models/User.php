@@ -59,7 +59,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(Doctor::class);
     }
-    
+
     public function secretaryProfile(): HasOne
     {
         return $this->hasOne(Secretary::class);
@@ -76,5 +76,19 @@ class User extends Authenticatable
     public function scopeByPhone(Builder $query, string $phone): Builder
     {
         return $query->where('phone', $phone);
+    }
+
+
+    public function fcmTokens()
+    {
+        return $this->hasMany(FcmToken::class);
+    }
+
+    /**
+     * (Receiver Firebase ID)
+     */
+    public function routeNotificationForFcm()
+    {
+        return $this->fcmTokens()->pluck('fcm_token')->toArray();
     }
 }
