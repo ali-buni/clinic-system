@@ -29,8 +29,9 @@ class PatientRecordResource extends JsonResource
             }),
 
             'doctor' => $this->whenLoaded('doctor', function () {
+                $this->doctor->loadMissing('user');
                 return [
-                    'name' => $this->doctor->user->fname . " " . $this->doctor->user->lname,
+                    'name' => $this->doctor->user?->fname . " " . $this->doctor->user?->lname,
                 ];
             }),
 

@@ -4,14 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SecretaryRequest;
 use App\Http\Resources\SecretaryResource;
-use App\Models\Room;
 use App\Services\ApiResponse;
 use App\Services\SecretaryService;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 
 class SecretaryController extends Controller
 {

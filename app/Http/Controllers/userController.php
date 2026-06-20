@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\ApiResponse;
 use App\Services\UserService;
-use Illuminate\Http\Request;
 
 class userController extends Controller
 {

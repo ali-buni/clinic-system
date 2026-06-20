@@ -46,7 +46,7 @@ class Appointment extends Model
     /**
      * scope for the all valid appointments in day
      */
-    public function scopeALLValidInDate(Builder $query, int $doctorId, string $date): Builder
+    public function scopeAllValidInDate(Builder $query, int $doctorId, string $date): Builder
     {
         return $query->where('doctor_id', $doctorId)->whereDate('start_time', $date)
             ->whereNotIn('status', ['cancelled', 'no_show']);

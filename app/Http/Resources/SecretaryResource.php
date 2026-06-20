@@ -15,21 +15,19 @@ class SecretaryResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $data = [];
-
-        $this->whenLoaded('user', function () use (&$data) {
-            $data['name'] = $this->user->fname . ' ' . $this->user->lname;
-            $data['phone'] = $this->user->phone;
-            $data['dob'] = Carbon::parse($this->user->dob)->format('Y-m-d');
-            $data['gender'] = $this->user->gender;
-        });
-        return [
+        return array_merge([
             'id' => $this->id,
             'user_id' => $this->user_id,
             'clinic_id' => $this->clinic_id,
             'created_at' => $this->created_at->format('Y-m-d'),
             'role' => 'secretary',
-            ...$data,
-        ];
+        ], $this->whenLoaded('user', function () {
+            return [
+                'name' => $this->user->fname . ' ' . $this->user->lname,
+                'phone' => $this->user->phone,
+                'dob' => Carbon::parse($this->user->dob)->format('Y-m-d'),
+                'gender' => $this->user->gender,
+            ];
+        }));
     }
 }

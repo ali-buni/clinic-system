@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Events\SendMsgEvent;
 use App\Models\User;
 use App\Models\Verification_code;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class VerificationService
 {
@@ -115,7 +115,7 @@ class VerificationService
             $verify->save();
 
             // event(new SendMsgEvent($user->phone, config('app.name') . ": Your verification code is: {$code}."));
-            logger()->info("Sent verification code {$code} to phone {$user->phone}");
+            \Illuminate\Support\Facades\Log::info("Sent verification code to phone {$user->phone}");
 
             DB::commit();
 

@@ -16,6 +16,7 @@ use App\Http\Requests\FilterRequest;
 use Exception;
 
 
+
 class PatientRecordController extends Controller
 {
     public function __construct(protected PatientRecordService $service) {}
@@ -25,13 +26,11 @@ class PatientRecordController extends Controller
         try {
             $record = $action->execute($request->validated());
             return ApiResponse::success(
-                // new PatientRecordResource($record),
                 null,
                 'Record created successfully',
                 201
             );
         } catch (\Exception $e) {
-            info($e->getMessage());
             return ApiResponse::error("failed to create a record");
         }
     }
@@ -47,7 +46,6 @@ class PatientRecordController extends Controller
                 'Record updated successfully'
             );
         } catch (Exception $e) {
-            info($e->getMessage());
             return ApiResponse::error(
                 $e->getMessage(),
                 str_contains($e->getMessage(), 'not found') ? 404 : 500

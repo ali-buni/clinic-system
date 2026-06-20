@@ -38,15 +38,15 @@ class AppointmentResource extends JsonResource
                     'en_name' => $this->type->en_name,
                 ];
             }),
-            'date' => Carbon::parse($this->start_time)->format('Y:m:d'),
+            'date' => Carbon::parse($this->start_time)->format('Y-m-d'),
             'dayOfWeek' => Carbon::parse($this->start_time)->dayOfWeek,
-            'start_time' => Carbon::parse($this->start_time)->format('h:i'),
-            'end_time' => Carbon::parse($this->end_time)->format('h:i'),
+            'start_time' => Carbon::parse($this->start_time)->format('H:i'),
+            'end_time' => Carbon::parse($this->end_time)->format('H:i'),
             'status' => $this->status,
             'visit_reason' => $this->visit_reason,
             'cancel_reason' => $this->cancel_reason,
             'notes' => $this->notes,
-            'created_at' => Carbon::parse($this->created_at)->format('Y:m:d'),
+            'created_at' => Carbon::parse($this->created_at)->format('Y-m-d'),
         ];
     }
 }

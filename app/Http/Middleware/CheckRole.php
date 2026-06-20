@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -13,7 +12,7 @@ class CheckRole
     {
 
         if (!auth()->check()) {
-            return response()->json(['message' => 'Unauthenticateddd.'], 401);
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
         $currentUser = auth()->user();

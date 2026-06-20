@@ -94,7 +94,7 @@ class AppointmentService
 
     public function getRoomAppointments(int $roomId, array $data): LengthAwarePaginator
     {
-        $q = Appointment::where('room_d', $roomId)->with(['doctor', 'patient', 'room', 'type']);
+        $q = Appointment::where('room_id', $roomId)->with(['doctor', 'patient', 'room', 'type']);
         return ModelFilter::filter($q, $data);
     }
 

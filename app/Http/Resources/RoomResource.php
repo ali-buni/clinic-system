@@ -22,7 +22,7 @@ class RoomResource extends JsonResource
             'clinic_id' => $this->clinic_id,
             'name' => $this->name,
             'created' => $this->created_at ? $this->created_at->format('Y-m-d') : null,
-            'doctors' => $this->doctors->map(function ($doctor) use ($action) {
+            'doctors' => $this->doctors->loadMissing('specialties')->map(function ($doctor) use ($action) {
                 $data = [
                     'id' => $doctor->id,
                     'name' => $doctor->user->fname . ' ' . $doctor->user->lname,

@@ -19,7 +19,7 @@ class userResource extends JsonResource
         $user = Auth::user();
         $data = [];
         if ($user->hasRole('doctor')) {
-            $doctor = $user->doctorProfile;
+            $doctor = $user->doctorProfile->loadMissing('specialties');
             $data['specialities'] = $doctor->specialties->map(function ($specialty) {
                 return $specialty->only(['ar_name', 'en_name']);
             })->values();

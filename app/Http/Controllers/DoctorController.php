@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Actions\Doctor\UpdateDoctorAction;
 use App\Actions\Doctor\DeleteDoctorAction;
-use App\Http\Controllers\Controller;
 use App\Http\Requests\FilterRequest;
 use App\Http\Requests\UpdateDoctorRequest;
 use App\Http\Resources\DoctorResource;
 use App\Models\Doctor;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 use App\Services\ModelFilter;

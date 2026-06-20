@@ -38,9 +38,8 @@ class PatientRecordService
 
     public function getPatientHistory(int $patientId)
     {
-        return Patient_record::with(['doctor', 'patient',])
+        return Patient_record::with(['doctor', 'patient'])
             ->where('patient_id', $patientId)
-            // ->latest()
             ->get();
     }
 

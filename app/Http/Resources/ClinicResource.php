@@ -32,7 +32,7 @@ class ClinicResource extends JsonResource
             }),
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d') : null,
 
-            'doctors' => $this->doctors->map(function ($doctor) {
+            'doctors' => $this->doctors->loadMissing('specialties')->map(function ($doctor) {
                 return [
                     'name' => $doctor->user->fname . ' ' . $doctor->user->lname,
                     'specialities' => $doctor->specialties->map(function ($specialty) {

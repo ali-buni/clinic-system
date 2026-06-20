@@ -34,11 +34,7 @@ class UpdateDoctorAction
     }
 
     /**
-     * Update user profile fields from secretary data.
-     *
-     * @param \App\Models\User $user
-     * @param array $data
-     * @return void
+     * Update user profile fields.
      */
     private function updateUserProfile($user, array $data): void
     {

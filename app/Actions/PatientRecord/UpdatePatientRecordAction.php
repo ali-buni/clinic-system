@@ -64,7 +64,7 @@ class UpdatePatientRecordAction
                         ->first();
 
                     if (! $prescription) {
-                        $prescription = $prescription = Prescription::create([
+                        $prescription = Prescription::create([
                             'patient_record_id' => $record->id,
                             'doctor_id'         => $record->doctor_id,
                         ]);

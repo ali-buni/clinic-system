@@ -9,7 +9,6 @@ use App\Models\Doctor;
 use App\Models\Secretary;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 class ClinicServices
@@ -105,13 +104,11 @@ class ClinicServices
                     PermissionHelper::grantRoomPermission($user, $rId);
                 }
             }
-            // Send credential via SMS (synchronous)
             try {
-                // event(new SendMsgEvent(
-                //     $user->phone,
-                //     config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
-                // ));
-                Log::info("SMS to {$user->phone}: Your password is: {$temporaryPassword}. Please change it after login.");
+                dispatch(new SendMsgEvent(
+                    $user->phone,
+                    config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
+                ));
             } catch (\Exception $e) {
                 throw new RuntimeException('Failed to send SMS: ' . $e->getMessage());
             }
