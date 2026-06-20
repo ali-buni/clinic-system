@@ -11,22 +11,32 @@ class userResource extends JsonResource
     public function toArray(Request $request): array
     {
         $role = $this->getRoleNames()->first() ?? 'secretary';
-        $data = [];
+        $info = [];
+        $isShow = request()->route()?->getActionMethod() === 'show';
 
         if ($role === 'doctor') {
             $doctor = $this->doctorProfile;
             if ($doctor) {
-                $data['specialties'] = $doctor->specialties->map(fn($s) => $s->only(['ar_name', 'en_name']))->values();
-                $data['appointment_duration'] = $doctor->appointment_duration;
-                $data['bio'] = $doctor->bio;
-                $data['consultation_fee'] = $doctor->consultation_fee;
+                $info['specialties'] = $doctor->specialties->map(fn($s) => $s->only(['ar_name', 'en_name']))->values();
+                $info['appointment_duration'] = $doctor->appointment_duration;
+                $info['bio'] = $doctor->bio;
+                $info['consultation_fee'] = $doctor->consultation_fee;
             }
         }
 
         if ($role === 'patient') {
-            $profile = $this->patientProfile;
-            if ($profile) {
-                $data['patient_info'] = new PatientInfoResource($profile);
+            $p = $this->patientProfile;
+            $u = $p?->user;
+            if ($p) {
+                $info['clinic_id'] = $p->clinic_id;
+                $info['nationality'] = $p->nationality;
+                $info['address'] = $p->address;
+                $info['marital_status'] = $p->marital_status;
+                $info['emergency_phone'] = $p->emergency_phone;
+                $info['allergies'] = $p->allergies;
+                $info['chronic_conditions'] = $p->chronic_conditions;
+                $info['career'] = $p->career;
+                $info['blood_type'] = $p->blood_type;
             }
         }
 
@@ -40,7 +50,7 @@ class userResource extends JsonResource
             'profile_image' => $this->profile_image,
             'created'       => $this->created_at->format('Y-m-d'),
             'role'          => $role,
-            ...$data,
+            ...$info,
         ];
     }
 }
