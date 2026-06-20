@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Models\Appointment;
 use App\Models\Clinic;
 use App\Models\Doctor;
-use App\Models\Patient;
+use App\Models\PatientInfo;
 use App\Models\Patient_record;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,7 +17,7 @@ class Patient_recordFactory extends Factory
     {
         return [
             'clinic_id' => Clinic::factory(),
-            'patient_id' => Patient::factory(),
+            'patient_id' => PatientInfo::factory(),
             'doctor_id' => Doctor::factory(),
             'appointment_id' => Appointment::factory(),
             'diagnosis_summary' => fake()->sentence(),

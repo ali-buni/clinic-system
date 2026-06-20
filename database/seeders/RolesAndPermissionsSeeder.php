@@ -17,34 +17,14 @@ class RolesAndPermissionsSeeder extends Seeder
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // $commonPermissions = [
-        //     'view dashboard',
-        //     'view profile',
-        //     'edit profile',
-        // ];
-
-        // $userPermissions = [
-        //     'view users',
-        //     'create users',
-        //     'edit users',
-        //     'delete users',
-        //     'restore users',
-        // ];
-
         $rolePermissions = [
-            // 'view roles',
-            // 'create roles',
-            // 'edit roles',
-            // 'delete roles',
             'give role',
             'restore role',
         ];
 
         $permissionPermissions = [
-            // 'view permissions',
             'give permission',
             'restore permission',
-            // 'delete permissions',
         ];
 
         $clinicPermissions = [
@@ -100,6 +80,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $owner = Role::firstOrCreate(['name' => 'owner']);
         $doctor = Role::firstOrCreate(['name' => 'doctor']);
         $secretary = Role::firstOrCreate(['name' => 'secretary']);
+        $patient = Role::firstOrCreate(['name' => 'patient']);
 
         $owner->syncPermissions([
             'give role',
@@ -123,12 +104,8 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $doctor->syncPermissions([
             'view patients',
-            // 'create patients',
-            // 'edit patients',
 
             'view appointments',
-            // 'create appointments',
-            // 'edit appointments',
             'delete appointments',
 
             'view prescriptions',
@@ -148,28 +125,25 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $secretary->syncPermissions([
             'view patients',
-            'create patients',
-            'edit patients',
             'delete patients',
 
             'view appointments',
-            'create appointments',
-            'edit appointments',
-            'delete appointments',
 
             'view invoices',
-            'create invoices',
-            'edit invoices',
-            'delete invoices',
 
             'view payments',
             'create payments',
-            'edit payments',
-            'delete payments',
 
             'view rooms',
 
             'view schedules',
+        ]);
+
+        $patient->syncPermissions([
+            'view appointments',
+            'view prescriptions',
+            'view invoices',
+            'view patient records',
         ]);
     }
 }

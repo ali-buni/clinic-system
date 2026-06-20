@@ -24,10 +24,12 @@ class User extends Authenticatable
     protected $fillable = [
         'fname',
         'lname',
+        'email',
         'phone',
         'password',
         'dob',
         'gender',
+        'profile_image',
     ];
 
     /**
@@ -59,6 +61,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(Doctor::class);
     }
+
+    public function patientProfile(): HasOne
+    {
+        return $this->hasOne(PatientInfo::class, 'user_id');
+    }
     
     public function secretaryProfile(): HasOne
     {
@@ -76,5 +83,13 @@ class User extends Authenticatable
     public function scopeByPhone(Builder $query, string $phone): Builder
     {
         return $query->where('phone', $phone);
+    }
+
+    /**
+     * Scope: Find user by email.
+     */
+    public function scopeByEmail(Builder $query, string $email): Builder
+    {
+        return $query->where('email', $email);
     }
 }

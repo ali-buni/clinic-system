@@ -6,7 +6,7 @@ use App\Models\Appointment;
 use App\Models\Appointment_type;
 use App\Models\Clinic;
 use App\Models\Doctor;
-use App\Models\Patient;
+use App\Models\PatientInfo;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AppointmentFactory extends Factory
@@ -21,7 +21,7 @@ class AppointmentFactory extends Factory
         return [
             'clinic_id' => Clinic::factory(),
             'doctor_id' => Doctor::factory(),
-            'patient_id' => Patient::factory(),
+            'patient_id' => PatientInfo::factory(),
             'appointment_type_id' => Appointment_type::factory(),
             'start_time' => $start,
             'end_time' => (clone $start)->modify("+{$duration} minutes"),

@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Models\Appointment;
 use App\Models\Clinic;
 use App\Models\Invoice;
-use App\Models\Patient;
+use App\Models\PatientInfo;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class InvoiceFactory extends Factory
@@ -16,7 +16,7 @@ class InvoiceFactory extends Factory
     {
         return [
             'clinic_id' => Clinic::factory(),
-            'patient_id' => Patient::factory(),
+            'patient_id' => PatientInfo::factory(),
             'appointment_id' => Appointment::factory(),
             'invoice_number' => strtoupper('INV-' . fake()->unique()->bothify('???###')),
             'status' => fake()->randomElement(['draft', 'issued', 'partially_paid', 'paid', 'void', 'refunded']),

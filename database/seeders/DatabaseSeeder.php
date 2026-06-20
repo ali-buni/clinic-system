@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder
             SpecialtySeeder::class,
             AppointmentTypesSeeder::class,
             RolesAndPermissionsSeeder::class,
+            MedicineSeeder::class,
+            DiseaseSeeder::class,
             ClinicSystemSeeder::class,
         ]);
     }
