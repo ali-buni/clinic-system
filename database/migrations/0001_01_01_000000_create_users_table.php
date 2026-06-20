@@ -15,9 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('fname')->nullable();
             $table->string('lname')->nullable();
-            $table->string('phone');
+            $table->string('email')->unique();
+            $table->string('phone')->nullable();
             $table->timestamp('phone_verified_at')->nullable();
+            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('profile_image')->nullable();
             $table->dateTime('dob')->nullable();
             $table->enum('gender', ['female', 'male', 'unknown'])->default('unknown');
             $table->rememberToken();

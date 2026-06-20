@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('ar_name');
             $table->string('en_name');
+            $table->enum('types', [1, 2, 3])->default(1);
             $table->timestamps();
         });
     }

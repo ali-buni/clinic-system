@@ -6,23 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('patients', function (Blueprint $table) {
+        Schema::create('patient_infos', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('clinic_id')->constrained('clinics')->cascadeOnDelete();
-            $table->string('fname');
-            $table->string('lname');
-            $table->date('dob')->nullable();
-            $table->enum('gender', ['male', 'female', 'other'])->default('other');
-            $table->enum('marital_status', ['married', 'single', 'other'])->nullable();
-            $table->string('phone')->nullable();
-            $table->string('emergency_phone')->nullable();
             $table->string('nationality')->nullable();
             $table->text('address')->nullable();
+            $table->enum('marital_status', ['married', 'single', 'divorced', 'widowed', 'other'])->nullable();
+            $table->string('emergency_phone')->nullable();
             $table->text('allergies')->nullable();
             $table->text('chronic_conditions')->nullable();
             $table->string('career')->nullable();
@@ -30,16 +23,13 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['clinic_id']);
-            $table->index(['lname', 'fname'], 'idx_patient_name');
+            $table->unique(['user_id', 'clinic_id']);
+            $table->index('user_id');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('patients');
+        Schema::dropIfExists('patient_infos');
     }
 };

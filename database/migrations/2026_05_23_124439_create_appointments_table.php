@@ -15,12 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('clinic_id')->constrained('clinics')->cascadeOnDelete();
             $table->foreignId('doctor_id')->nullable()->constrained('doctors')->nullOnDelete();
-            $table->foreignId('patient_id')->constrained('patients')->cascadeOnDelete();
+            $table->foreignId('patient_id')->constrained('patient_infos', 'id')->cascadeOnDelete();
+            $table->foreignId('room_id')->nullable()->constrained('rooms')->nullOnDelete()->after('doctor_id');
             $table->foreignId('appointment_type_id')->nullable()->constrained('appointment_types')->nullOnDelete();
             $table->dateTime('start_time');
             $table->dateTime('end_time');
-
-            // TODO: make the status confirmed when the patient get in room
             $table->enum('status', ['scheduled', 'completed', 'cancelled', 'no_show', 'confirmed'])
                 ->default('scheduled');
             $table->text('cancel_reason')->nullable();
@@ -31,6 +30,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
+            $table->index(['room_id', 'start_time'], 'idx_appt_room_start');
             $table->index(['clinic_id', 'doctor_id', 'start_time'], 'idx_appt_clinic_doctor_start');
             $table->index(['patient_id', 'start_time'], 'idx_appt_patient_start');
 
