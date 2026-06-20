@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 class AuthService
@@ -27,7 +28,8 @@ class AuthService
             $this->activityLog->log('User logged out', 'User logged out', new User(), $request->user());
             return $this->apiResponse->success(null, 'Logged out successfully');
         } catch (\Exception $e) {
-            return $this->apiResponse->error('Failed to log out', 500, ['message' => $e->getMessage()]);
+            Log::error('Failed to log out: ' . $e->getMessage());
+            return $this->apiResponse->error('Failed to log out', 500);
         }
     }
 
@@ -48,11 +50,12 @@ class AuthService
             }
 
             $newToken = $user->createToken('auth_token')->plainTextToken;
-            $user->currentAccessToken()->delete();
+            $request->user()?->currentAccessToken()?->delete();
 
             return $this->apiResponse->success(['auth_token' => $newToken], 'Token refreshed successfully');
         } catch (\Exception $e) {
-            return $this->apiResponse->error('Failed to refresh token', 500, ['message' => $e->getMessage()]);
+            Log::error('Token refresh failed: ' . $e->getMessage());
+            return $this->apiResponse->error('Failed to refresh token', 500);
         }
     }
 
@@ -80,7 +83,7 @@ class AuthService
             return $this->apiResponse->error('No account found with this email.', 404);
         }
 
-        $code = rand(100000, 999999);
+        $code = random_int(100000, 999999);
 
         DB::transaction(function () use ($user, $code, $email) {
             Verification_code::create([

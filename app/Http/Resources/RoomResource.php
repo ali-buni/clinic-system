@@ -22,7 +22,7 @@ class RoomResource extends JsonResource
             'clinic_id' => $this->clinic_id,
             'name' => $this->name,
             'created' => $this->created_at ? $this->created_at->format('Y-m-d') : null,
-            'doctors' => $this->doctors->loadMissing('specialties')->map(function ($doctor) use ($action) {
+            'doctors' => $this->doctors->loadMissing(['specialties', 'user'])->map(function ($doctor) use ($action) {
                 $data = [
                     'id' => $doctor->id,
                     'name' => $doctor->user->fname . ' ' . $doctor->user->lname,
@@ -39,7 +39,7 @@ class RoomResource extends JsonResource
 
                 return $data;
             }),
-            'secretaries' => $this->secretaries->map(function ($secretaries) use ($action) {
+            'secretaries' => $this->secretaries->loadMissing('user')->map(function ($secretaries) use ($action) {
                 $data = [
                     'id' => $secretaries->id,
                     'name' => $secretaries->user->fname . ' ' . $secretaries->user->lname,

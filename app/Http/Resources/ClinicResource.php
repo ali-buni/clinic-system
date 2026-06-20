@@ -32,7 +32,7 @@ class ClinicResource extends JsonResource
             }),
             'created_at' => $this->created_at ? $this->created_at->format('Y-m-d') : null,
 
-            'doctors' => $this->doctors->loadMissing('specialties')->map(function ($doctor) {
+            'doctors' => $this->doctors->loadMissing(['specialties', 'user'])->map(function ($doctor) {
                 return [
                     'name' => $doctor->user->fname . ' ' . $doctor->user->lname,
                     'specialities' => $doctor->specialties->map(function ($specialty) {
@@ -42,7 +42,7 @@ class ClinicResource extends JsonResource
                     'room_id' => $doctor->room_id,
                 ];
             }),
-            'secretaries' => $this->secretaries->map(function ($secretary) {
+            'secretaries' => $this->secretaries->loadMissing('user')->map(function ($secretary) {
                 return [
                     'name' => $secretary->user->fname . ' ' . $secretary->user->lname,
                     'phone' => $secretary->user->phone,

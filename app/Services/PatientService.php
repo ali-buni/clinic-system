@@ -22,33 +22,35 @@ class PatientService
      */
     public function updatePatientInfo(int $id, array $data): bool
     {
-        $patientInfo = PatientInfo::find($id);
-        if (!$patientInfo) return false;
+        $patientInfo = PatientInfo::with('user')->find($id);
+        if (!$patientInfo || !$patientInfo->user) return false;
 
-        $userData = array_filter([
-            'fname'  => $data['fname'] ?? null,
-            'lname'  => $data['lname'] ?? null,
-            'phone'  => $data['phone'] ?? null,
-            'dob'    => $data['dob'] ?? null,
-            'gender' => $data['gender'] ?? null,
-        ], fn($v) => !is_null($v));
+        return DB::transaction(function () use ($patientInfo, $data) {
+            $userData = array_filter([
+                'fname'  => $data['fname'] ?? null,
+                'lname'  => $data['lname'] ?? null,
+                'phone'  => $data['phone'] ?? null,
+                'dob'    => $data['dob'] ?? null,
+                'gender' => $data['gender'] ?? null,
+            ], fn($v) => !is_null($v));
 
-        if (!empty($userData)) {
-            $patientInfo->user->update($userData);
-        }
+            if (!empty($userData)) {
+                $patientInfo->user->update($userData);
+            }
 
-        $infoData = array_filter([
-            'nationality'        => $data['nationality'] ?? null,
-            'address'            => $data['address'] ?? null,
-            'marital_status'     => $data['marital_status'] ?? null,
-            'emergency_phone'    => $data['emergency_phone'] ?? null,
-            'allergies'          => $data['allergies'] ?? null,
-            'chronic_conditions' => $data['chronic_conditions'] ?? null,
-            'career'             => $data['career'] ?? null,
-            'blood_type'         => $data['blood_type'] ?? null,
-        ], fn($v) => !is_null($v));
+            $infoData = array_filter([
+                'nationality'        => $data['nationality'] ?? null,
+                'address'            => $data['address'] ?? null,
+                'marital_status'     => $data['marital_status'] ?? null,
+                'emergency_phone'    => $data['emergency_phone'] ?? null,
+                'allergies'          => $data['allergies'] ?? null,
+                'chronic_conditions' => $data['chronic_conditions'] ?? null,
+                'career'             => $data['career'] ?? null,
+                'blood_type'         => $data['blood_type'] ?? null,
+            ], fn($v) => !is_null($v));
 
-        return (bool) $patientInfo->update($infoData);
+            return (bool) $patientInfo->update($infoData);
+        });
     }
 
     public function softDelete(int $id): bool

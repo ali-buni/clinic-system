@@ -9,9 +9,8 @@ use App\Notifications\SendEmailVerificationCode;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
-
-use function Laravel\Prompts\error;
 
 class VerificationService
 {
@@ -127,14 +126,14 @@ class VerificationService
             );
         }
 
-        $code = rand(100000, 999999);
+        $code = random_int(100000, 999999);
 
         try {
             DB::beginTransaction();
 
             // Delete old verification codes for this type
             Verification_code::where('user_id', $user->id)
-                // ->where('type', $type)
+                ->where('type', $type)
                 ->delete();
 
             // Create new verification code
@@ -170,7 +169,7 @@ class VerificationService
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            error("Failed to send {$type} verification code: " . $e->getMessage());
+            Log::error("Failed to send {$type} verification code: " . $e->getMessage());
             return $this->apiResponse->error(
                 'Failed to send verification code. Please try again.',
                 500

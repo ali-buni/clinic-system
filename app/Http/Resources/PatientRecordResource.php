@@ -23,8 +23,8 @@ class PatientRecordResource extends JsonResource
 
             'patient' => $this->whenLoaded('patient', function () {
                 return [
-                    'name' => $this->patient->fname . " " . $this->patient->lname,
-                    'phone' => $this->patient->phone
+                    'name' => $this->patient->user?->fname . ' ' . $this->patient->user?->lname,
+                    'phone' => $this->patient->user?->phone,
                 ];
             }),
 
