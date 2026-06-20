@@ -102,7 +102,8 @@ class VerificationService
         }
 
         $attemptsKey = "verification_attempts:{$user_id}";
-        $attemptData = Cache::get($attemptsKey, ['count' => 0, 'started_at' => null]);
+        $raw = Cache::get($attemptsKey, ['count' => 0, 'started_at' => null]);
+        $attemptData = is_array($raw) ? $raw : ['count' => (int) $raw, 'started_at' => null];
         $attempts = $attemptData['count'];
 
         if ($attempts >= self::Max_attempts) {
@@ -162,7 +163,10 @@ class VerificationService
             }
 
             // Increment attempt counter
-            Cache::put($attemptsKey, $attempts + 1, 3600); // 1 hour
+            Cache::put($attemptsKey, [
+                'count' => $attempts + 1,
+                'started_at' => $attemptData['started_at'] ?? now()->timestamp,
+            ], 3600);
 
             DB::commit();
 
