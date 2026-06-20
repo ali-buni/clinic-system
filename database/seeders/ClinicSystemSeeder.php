@@ -33,7 +33,7 @@ class ClinicSystemSeeder extends Seeder
 
         $owner = User::factory()->create([
             'phone' => '0951232317',
-            'email' => 'aliboune184@gamil.com',
+            'email' => 'aliboune184@gmail.com',
             'fname' => 'Clinic',
             'lname' => 'Owner',
             'gender' => 'male',
