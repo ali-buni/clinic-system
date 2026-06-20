@@ -102,14 +102,17 @@ class VerificationService
         }
 
         $attemptsKey = "verification_attempts:{$user_id}";
-        $attempts = Cache::get($attemptsKey, 0);
+        $attemptData = Cache::get($attemptsKey, ['count' => 0, 'started_at' => null]);
+        $attempts = $attemptData['count'];
 
         if ($attempts >= self::Max_attempts) {
-            $remainingTime = Cache::ttl($attemptsKey);
+            $remainingSeconds = $attemptData['started_at']
+                ? max(0, $attemptData['started_at'] + 3600 - now()->timestamp)
+                : 3600;
             return $this->apiResponse->error(
                 'Too many attempts. Please try again later.',
                 429,
-                ['retry_after_minutes' => ceil($remainingTime / 60)]
+                ['retry_after_minutes' => (int) ceil($remainingSeconds / 60)]
             );
         }
 
