@@ -24,7 +24,7 @@ class DiseaseController extends Controller
         $results = $apiService->searchDiseases($request->query('query'));
 
         if (empty($results) && empty($diseases->items())) {
-            return ApiResponse::error('no diseasess found');
+            return ApiResponse::error('no diseases found');
         }
         return ApiResponse::success(array_merge($diseases->items(), $results), 'Diseases search results retrieved successfully.');
     }

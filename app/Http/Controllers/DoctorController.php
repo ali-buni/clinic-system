@@ -9,21 +9,12 @@ use App\Http\Requests\UpdateDoctorRequest;
 use App\Http\Resources\DoctorResource;
 use App\Models\Doctor;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Controllers\HasMiddleware;
-use Illuminate\Routing\Controllers\Middleware;
 use App\Services\ModelFilter;
 use App\Services\ApiResponse;
 use Illuminate\Support\Facades\Auth;
 
-class DoctorController extends Controller implements HasMiddleware
+class DoctorController extends Controller
 {
-    public static function middleware(): array
-    {
-        return [
-            new Middleware('auth:sanctum'),
-        ];
-    }
-
     public function info($id): JsonResponse
     {
         $Doctor = Doctor::query()
@@ -69,13 +60,6 @@ class DoctorController extends Controller implements HasMiddleware
                 200
             );
         } catch (\Exception $e) {
-            Log::error('Failed to remove doctor', [
-                'doctor_id' => $doctor->id,
-                'user_id'   => request()->user()->id,
-                'error'     => $e->getMessage(),
-                'trace'     => config('app.debug') ? $e->getTraceAsString() : null
-            ]);
-
             $status = $e->getCode() == 400 ? 400 : 500;
 
             return ApiResponse::error(

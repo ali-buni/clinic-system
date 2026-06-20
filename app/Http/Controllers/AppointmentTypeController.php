@@ -6,9 +6,7 @@ use App\Http\Requests\AddAppointmentTypeRequest;
 use App\Http\Resources\AppointmentTypeResource;
 use App\Services\AppointmentTypeService;
 use App\Services\ApiResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AppointmentTypeController extends Controller

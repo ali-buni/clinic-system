@@ -13,7 +13,6 @@ class SecretaryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // Only allow if user is authenticated and has a secretary profile
         $user = Auth::user();
         if (!$user) {
             return false;
@@ -30,7 +29,7 @@ class SecretaryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'clinic_id' => 'sometimes|exists:clinics,id',
+            'clinic_id' => 'sometimes|exists:clinics,id',
             'fname' => 'sometimes|string|max:255',
             'lname' => 'sometimes|string|max:255',
             'dob' => 'sometimes|date|before:today',

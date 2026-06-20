@@ -2,89 +2,81 @@
 
 namespace App\Services;
 
-use App\Models\Patient;
+use App\Models\PatientInfo;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class PatientService
 {
     /**
-     * Create a new patient.
-     *
-     * @param array $data
-     * @return Patient
+     * Get PatientInfo by ID with user relation.
      */
-    public function create(array $data): Patient
+    public function getById(int $id): ?PatientInfo
     {
-        return Patient::create($data);
+        return PatientInfo::with('user')->find($id);
     }
 
     /**
-     * Get a patient by ID with eager-loaded relationships.
-     *
-     * @param int $id
-     * @return Patient|null
+     * Update PatientInfo (identity fields go to User, medical fields stay).
      */
-    public function getById(int $id): ?Patient
+    public function updatePatientInfo(int $id, array $data): bool
     {
-        return Patient::find($id);
-    }
+        $patientInfo = PatientInfo::find($id);
+        if (!$patientInfo) return false;
 
-    /**
-     * Update patient information.
-     *
-     * @param int $id
-     * @param array $data
-     * @return bool
-     */
-    public function update(int $id, array $data): bool
-    {
-        return (bool) Patient::where('id', $id)->update($data);
-    }
+        $userData = array_filter([
+            'fname'  => $data['fname'] ?? null,
+            'lname'  => $data['lname'] ?? null,
+            'phone'  => $data['phone'] ?? null,
+            'dob'    => $data['dob'] ?? null,
+            'gender' => $data['gender'] ?? null,
+        ], fn($v) => !is_null($v));
 
-    /**
-     * Soft delete a patient.
-     *
-     * @param int $id
-     * @return bool
-     */
-    public function softDelete(int $id): bool
-    {
-        return (bool) Patient::where('id', $id)->delete();
-    }
-
-    /**
-     * Restore a soft-deleted patient.
-     *
-     * @param int $id
-     * @return bool
-     */
-    public function restore(int $id): bool
-    {
-        $patient = Patient::withTrashed()->find($id);
-
-        if (!$patient || !$patient->trashed()) {
-            return false;
+        if (!empty($userData)) {
+            $patientInfo->user->update($userData);
         }
 
-        return $patient->restore();
+        $infoData = array_filter([
+            'nationality'        => $data['nationality'] ?? null,
+            'address'            => $data['address'] ?? null,
+            'marital_status'     => $data['marital_status'] ?? null,
+            'emergency_phone'    => $data['emergency_phone'] ?? null,
+            'allergies'          => $data['allergies'] ?? null,
+            'chronic_conditions' => $data['chronic_conditions'] ?? null,
+            'career'             => $data['career'] ?? null,
+            'blood_type'         => $data['blood_type'] ?? null,
+        ], fn($v) => !is_null($v));
+
+        return (bool) $patientInfo->update($infoData);
+    }
+
+    public function softDelete(int $id): bool
+    {
+        $patientInfo = PatientInfo::find($id);
+        if (!$patientInfo) return false;
+        return (bool) $patientInfo->delete();
+    }
+
+    public function restore(int $id): bool
+    {
+        $patientInfo = PatientInfo::withTrashed()->find($id);
+        if (!$patientInfo || !$patientInfo->trashed()) return false;
+        return $patientInfo->restore();
     }
 
     /**
-     * Get patient information with full medical history.
-     *
-     * @param int $id
-     * @return Patient|null
+     * Get patient medical history.
      */
-    public function getPatientMedicalHistory(int $id): ?Patient
+    public function getPatientMedicalHistory(int $id): ?PatientInfo
     {
-        return Patient::with([
+        return PatientInfo::with([
+            'user',
             'appointments' => function ($query) {
                 $query->latest('start_time');
             },
             'records' => function ($query) {
-                $query->latest('created_at');
-            },
-            'prescriptions' => function ($query) {
-                $query->latest('issued_at');
+                $query->with(['prescriptions.items.medicine', 'diseases'])->latest('created_at');
             },
             'invoices' => function ($query) {
                 $query->latest('created_at');

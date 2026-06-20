@@ -3,10 +3,13 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\Verification_code;
+use App\Notifications\SendPasswordResetCode;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 
 class AuthService
 {
@@ -53,19 +56,82 @@ class AuthService
         }
     }
 
-    public function resetPassword(string $newPassword, string $phone)
+    public function resetPassword(string $newPassword, string $email)
     {
         DB::beginTransaction();
         try {
-            $user = User::query()->where('phone', $phone)->first();
+            $user = User::byEmail($email)->first();
             $user->password = Hash::make($newPassword);
             $user->save();
 
             DB::commit();
-            return $this->apiResponse->success(null, 'the password is reseted');
+            return $this->apiResponse->success(null, 'the password is reset');
         } catch (Exception $e) {
             DB::rollBack();
-            return $this->apiResponse->error('error ocurred in resest the password. Please try again.');
+            return $this->apiResponse->error('error occurred in reset the password. Please try again.');
         }
+    }
+
+    public function forgotPassword(string $email): \Illuminate\Http\JsonResponse
+    {
+        $user = User::byEmail($email)->first();
+
+        if (!$user) {
+            return $this->apiResponse->error('No account found with this email.', 404);
+        }
+
+        $code = rand(100000, 999999);
+
+        DB::transaction(function () use ($user, $code, $email) {
+            Verification_code::create([
+                'user_id'    => $user->id,
+                'type'       => 'email_reset',
+                'sent_to'    => $email,
+                'code_hash'  => Hash::make($code),
+                'expires_at' => now()->addMinutes(15),
+            ]);
+        });
+
+        Notification::route('mail', $email)
+            ->notify(new SendPasswordResetCode($code));
+
+        return $this->apiResponse->success(null, 'Password reset code sent to your email.');
+    }
+
+    public function resetWithCode(string $email, string $code, string $newPassword): \Illuminate\Http\JsonResponse
+    {
+        $user = User::byEmail($email)->first();
+
+        if (!$user) {
+            return $this->apiResponse->error('No account found.', 404);
+        }
+
+        $verification = Verification_code::where('user_id', $user->id)
+            ->where('type', 'email_reset')
+            ->where('expires_at', '>', now())
+            ->latest('id')
+            ->first();
+
+        if (!$verification) {
+            return $this->apiResponse->error('No valid reset code found. Please request a new one.');
+        }
+
+        if ($verification->failed_attempts >= 5) {
+            $verification->delete();
+            return $this->apiResponse->error('Too many failed attempts. Please request a new reset code.');
+        }
+
+        if (!Hash::check($code, $verification->code_hash)) {
+            $verification->increment('failed_attempts');
+            $remainingAttempts = 5 - $verification->failed_attempts;
+            return $this->apiResponse->error("Invalid reset code. {$remainingAttempts} attempts remaining.");
+        }
+
+        DB::transaction(function () use ($user, $newPassword, $verification) {
+            $user->update(['password' => Hash::make($newPassword)]);
+            $verification->delete();
+        });
+
+        return $this->apiResponse->success(null, 'Password has been reset successfully.');
     }
 }

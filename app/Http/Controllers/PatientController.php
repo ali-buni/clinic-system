@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PatientRequest;
 use App\Http\Requests\FilterRequest;
-use App\Http\Resources\PatientResource;
-use App\Models\Patient;
+use App\Http\Resources\PatientInfoResource;
+use App\Http\Resources\PatientMedicalHistoryResource;
+use App\Models\PatientInfo;
 use App\Services\ApiResponse;
 use App\Services\PatientService;
 use App\Services\ModelFilter;
@@ -25,7 +26,7 @@ class PatientController extends Controller
     {
         $filters = $request->validated();
 
-        $query = Patient::query();
+        $query = PatientInfo::query()->with('user');
 
         if (empty($filters['clinic_id'])) {
             return ApiResponse::error('Please enter the required valid clinic.');
@@ -33,14 +34,14 @@ class PatientController extends Controller
         $query->where('clinic_id', $filters['clinic_id']);
         $patients = ModelFilter::filter($query, $filters);
 
-        return ApiResponse::pagination($patients, 'Patients retrieved successfully', PatientResource::collection($patients));
+        return ApiResponse::pagination($patients, 'Patients retrieved successfully', PatientInfoResource::collection($patients));
     }
 
     public function indexTrashed(FilterRequest $request)
     {
         $filters = $request->validated();
 
-        $query = Patient::query()->onlyTrashed();
+        $query = PatientInfo::query()->onlyTrashed()->with('user');
 
         if (empty($filters['clinic_id'])) {
             return ApiResponse::error('Please enter the required valid clinic.');
@@ -48,30 +49,16 @@ class PatientController extends Controller
         $query->where('clinic_id', $filters['clinic_id']);
         $patients = ModelFilter::filter($query, $filters);
 
-        return ApiResponse::pagination($patients, 'Trashed patients retrieved successfully', PatientResource::collection($patients));
-    }
-
-    public function store(PatientRequest $request)
-    {
-        $validated = $request->validated();
-        // del $validated['patient_id'];
-        $auth = $this->authorizePermission('create patients');
-        if ($auth !== true) {
-            return $auth;
-        }
-
-        $this->service->create($validated);
-
-        return ApiResponse::success();
+        return ApiResponse::pagination($patients, 'success', PatientInfoResource::collection($patients));
     }
 
     public function show($patientId)
     {
         try {
             $patient = $this->service->getById($patientId);
-            return ApiResponse::success(new PatientResource($patient), 'the patient data.');
+            return ApiResponse::success(new PatientInfoResource($patient), 'the patient data.');
         } catch (Exception $e) {
-            return ApiResponse::error('The patient in not found.');
+            return ApiResponse::error('The patient is not found.');
         }
     }
 
@@ -80,56 +67,53 @@ class PatientController extends Controller
         $validated = $request->validated();
         $data = collect($validated)->except('patient_id')->toArray();
 
-        $auth = $this->authorizePermission('edit patients');
-        if ($auth !== true) {
-            return $auth;
-        }
-
-        $this->service->update($validated['patient_id'], $data);
+        $this->service->updatePatientInfo($validated['patient_id'], $data);
         return ApiResponse::success();
     }
 
     public function destroy(Request $request)
     {
         $validated = $request->validate([
-            'patient_id' => 'required|string|exists:patients,id'
+            'patient_id' => 'required|string|exists:patient_infos,id'
         ]);
 
         try {
-            $auth = $this->authorizePermission('delete patients');
-            if ($auth !== true) {
-                return $auth;
-            }
-
             $del = $this->service->softDelete($validated['patient_id']);
             if ($del) {
                 return ApiResponse::success();
             }
             return ApiResponse::error();
         } catch (Exception $e) {
-            return ApiResponse::error('The patient in not found.');
+            return ApiResponse::error('The patient is not found.');
         }
     }
 
     public function restore(Request $request)
     {
         $validated = $request->validate([
-            'patient_id' => 'required|string|exists:patients,id'
+            'patient_id' => 'required|string|exists:patient_infos,id'
         ]);
-
         try {
-            $auth = $this->authorizePermission('delete patients');
-            if ($auth !== true) {
-                return $auth;
-            }
-
             $restored = $this->service->restore($validated['patient_id']);
             if ($restored) {
                 return ApiResponse::success();
             }
             return ApiResponse::error();
         } catch (Exception $e) {
-            return ApiResponse::error('The patient in not found.');
+            return ApiResponse::error('The patient is not found.');
+        }
+    }
+
+    public function medicalHistory(int $patientId)
+    {
+        try {
+            $patient = $this->service->getPatientMedicalHistory($patientId);
+            if (!$patient) {
+                return ApiResponse::error('Patient not found.');
+            }
+            return ApiResponse::success(new PatientMedicalHistoryResource($patient), 'Medical history retrieved successfully.');
+        } catch (Exception $e) {
+            return ApiResponse::error('Failed to retrieve medical history.');
         }
     }
 }

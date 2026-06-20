@@ -5,15 +5,15 @@ namespace App\Http\Resources;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PatientResource extends JsonResource
+class PatientInfoResource extends JsonResource
 {
     public function toArray($request)
     {
         $user = $this->user;
 
+        $data = [];
         $route = request()->route();
         $action = $route?->getActionMethod();
-        $data = [];
         if ($action === 'show') {
             $data = [
                 'nationality'        => $this->nationality,
@@ -29,9 +29,11 @@ class PatientResource extends JsonResource
 
         return [
             'id'            => $this->id,
+            'user_id'       => $this->user_id,
             'name'          => $user ? trim(($user->fname ?? '') . ' ' . ($user->lname ?? '')) : null,
             'phone'         => $user?->phone,
             'email'         => $user?->email,
+            'dob'           => $user?->dob ? Carbon::parse($user->dob)->format('Y-m-d') : null,
             'gender'        => $user?->gender,
             'profile_image' => $user?->profile_image,
             'clinic_id'     => $this->clinic_id,

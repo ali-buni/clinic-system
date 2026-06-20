@@ -14,33 +14,31 @@ class PatientRequest extends FormRequest
 
     public function rules()
     {
-        $isUpdate = request()->route()->getActionMethod() === 'update';
-
         return [
             'patient_id' => [
-                $isUpdate ? 'required' : 'nullable',
-                'exists:patients,id',
+                'required',
+                'exists:patient_infos,id',
             ],
 
             'clinic_id' => [
-                $isUpdate ? 'sometimes' : 'required',
+                'sometimes',
                 'exists:clinics,id'
             ],
 
             'fname' => [
-                $isUpdate ? 'sometimes' : 'required',
+                'sometimes',
                 'string',
                 'max:255'
             ],
 
             'lname' => [
-                $isUpdate ? 'sometimes' : 'required',
+                'sometimes',
                 'string',
                 'max:255'
             ],
 
             'dob' => [
-                $isUpdate ? 'sometimes' : 'required',
+                'sometimes',
                 'date',
                 'before:today',
                 'after:1900-01-01'
@@ -49,9 +47,10 @@ class PatientRequest extends FormRequest
             'gender' => 'nullable|in:male,female,other,unknown',
 
             'phone' => [
-                $isUpdate ? 'sometimes' : 'required',
+                'sometimes',
                 'string',
                 'digits:10',
+                Rule::unique('patient_infos', 'phone')->ignore($this->patient_id),
             ],
 
             'nationality' => 'nullable|string|max:255',
@@ -68,22 +67,27 @@ class PatientRequest extends FormRequest
     public function messages()
     {
         return [
+            // Patient ID
+            'patient_id.required' => 'Patient ID is required for update.',
+            'patient_id.exists' => 'The selected patient does not exist.',
+
             // Clinic
-            'clinic_id.required' => 'Please select a clinic.',
             'clinic_id.exists' => 'The selected clinic does not exist.',
 
             // Name
-            'fname.required' => 'First name is required.',
-            'lname.required' => 'Last name is required.',
+            'fname.string' => 'First name must be a string.',
+            'fname.max' => 'First name must not exceed 255 characters.',
+            'lname.string' => 'Last name must be a string.',
+            'lname.max' => 'Last name must not exceed 255 characters.',
 
             // Date of birth
-            'dob.required' => 'Date of birth is required.',
+            'dob.date' => 'Date of birth must be a valid date.',
             'dob.before' => 'Date of birth must be before today.',
             'dob.after' => 'Date of birth is invalid.',
 
             // Phone
-            'phone.required' => 'Phone number is required.',
-            'phone.digits_between' => 'Phone number must be between 10 and 13 digits.',
+            'phone.string' => 'Phone number must be a string.',
+            'phone.digits' => 'Phone number must be exactly 10 digits.',
             'phone.unique' => 'This phone number is already registered to another patient.',
 
             // Gender
@@ -98,6 +102,10 @@ class PatientRequest extends FormRequest
 
             // Blood type
             'blood_type.in' => 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.',
+
+            // Chronic conditions
+            'chronic_conditions.max' => 'Chronic conditions must not exceed 1000 characters.',
+            'allergies.max' => 'Allergies must not exceed 1000 characters.',
         ];
     }
 }

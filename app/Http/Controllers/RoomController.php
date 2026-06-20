@@ -1,14 +1,14 @@
 <?php
-
+// TODO: exceptions
 namespace App\Http\Controllers;
 
-use App\Helpers\PermissionHelper;
 use App\Http\Requests\RoomRequest;
 use App\Http\Resources\RoomResource;
 use App\Http\Resources\userRoomsResource;
 use App\Models\Clinic;
 use App\Services\ApiResponse;
 use App\Services\RoomServices;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,17 +26,21 @@ class RoomController extends Controller
      */
     public function index($clinicId)
     {
-        $auth = $this->authorizeRole('owner', 'You do not have access to this clinic rooms.');
-        if ($auth !== true) {
-            return $auth;
-        }
+        try {
+            $rooms = $this->roomServices->getRooms($clinicId)->map(function ($room) {
+                return [
+                    'id' => $room->id,
+                    'name' => $room->name,
+                ];
+            });
 
-        return ApiResponse::success($this->roomServices->getRooms($clinicId)->map(function ($room) {
-            return [
-                'id' => $room->id,
-                'name' => $room->name,
-            ];
-        }));
+            if (count($rooms) === 0) {
+                return ApiResponse::error('Room not found', 404);
+            }
+            return ApiResponse::success(RoomResource::collection($rooms));
+        } catch (Exception $e) {
+            return ApiResponse::error('error in fetch rooms' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -44,12 +48,16 @@ class RoomController extends Controller
      */
     public function indexWithInfo($clinicId)
     {
-        $auth = $this->authorizeRole('owner', 'You do not have access to this clinic rooms.');
-        if ($auth !== true) {
-            return $auth;
-        }
+        try {
+            $rooms = $this->roomServices->getRooms($clinicId);
 
-        return ApiResponse::success(RoomResource::collection($this->roomServices->getRooms($clinicId)));
+            if (count($rooms) === 0) {
+                return ApiResponse::error('Room not found', 404);
+            }
+            return ApiResponse::success(RoomResource::collection($rooms));
+        } catch (Exception $e) {
+            return ApiResponse::error('error in fetch rooms' . $e->getMessage(), 500);
+        }
     }
 
     /**
@@ -57,20 +65,16 @@ class RoomController extends Controller
      */
     public function get($roomId)
     {
-        $user = Auth::user();
+        try {
+            $room = $this->roomServices->getRoomById($roomId);
 
-        // Owner can view any room, others need specific permission
-        if (!$this->isOwner() && !$user->can(PermissionHelper::viewRoom($roomId))) {
-            return ApiResponse::permissionDenied('You do not have access to this room.');
+            if (!$room) {
+                return ApiResponse::error('Room not found', 404);
+            }
+            return ApiResponse::success(new RoomResource($room));
+        } catch (Exception $e) {
+            return ApiResponse::error('error in fetch rooms' . $e->getMessage(), 500);
         }
-
-        $room = $this->roomServices->getRoomById($roomId);
-
-        if (!$room) {
-            return ApiResponse::error('Room not found', 404);
-        }
-
-        return ApiResponse::success(new RoomResource($room));
     }
 
     /**
@@ -99,18 +103,17 @@ class RoomController extends Controller
      */
     public function update(RoomRequest $request, $roomId)
     {
-        $auth = $this->authorizeRole('owner', 'You do not have access to update this room.');
-        if ($auth !== true) {
-            return $auth;
-        }
+        try {
+            $validated = $request->validated();
+            $updated = $this->roomServices->updateRoom($roomId, $validated);
 
-        $validated = $request->validated();
-        $updated = $this->roomServices->updateRoom($roomId, $validated);
-
-        if (!$updated) {
-            return ApiResponse::error('Room update failed.', 422);
+            if (!$updated) {
+                return ApiResponse::error('Room update failed.', 422);
+            }
+            return ApiResponse::success(null, 'Room updated successfully.');
+        } catch (Exception $e) {
+            return ApiResponse::error('error in fetch rooms' . $e->getMessage(), 500);
         }
-        return ApiResponse::success(null, 'Room updated successfully.');
     }
 
     /**
@@ -118,17 +121,16 @@ class RoomController extends Controller
      */
     public function destroy($roomId)
     {
-        $auth = $this->authorizeRole('owner', 'You do not have access to delete this room.');
-        if ($auth !== true) {
-            return $auth;
-        }
+        try {
+            $deleted = $this->roomServices->deleteRoom($roomId);
 
-        $deleted = $this->roomServices->deleteRoom($roomId);
-
-        if (!$deleted) {
+            if (!$deleted) {
+                return ApiResponse::error('Room deletion failed.', 422);
+            }
+            return ApiResponse::success(null, 'Room removed successfully.');
+        } catch (Exception $e) {
             return ApiResponse::error('Room deletion failed.', 422);
         }
-        return ApiResponse::success(null, 'Room removed successfully.');
     }
 
     public function userRooms()
@@ -149,9 +151,6 @@ class RoomController extends Controller
             'room_id' => 'required|exists:rooms,id',
             'doctor_id' => 'required|exists:doctors,id'
         ]);
-        if (!$this->isOwner()) {
-            return ApiResponse::error('Permission Dendied');
-        }
         $updated = $this->roomServices->addDoctorToRoom($validated['room_id'], $validated['doctor_id']);
 
         if ($updated) {
@@ -166,9 +165,6 @@ class RoomController extends Controller
             'room_id' => 'required|exists:rooms,id',
             'doctor_id' => 'required|exists:doctors,id'
         ]);
-        if (!$this->isOwner()) {
-            return ApiResponse::error('Permission Dendied');
-        }
         $updated = $this->roomServices->delDoctorFromRoom($validated['room_id'], $validated['doctor_id']);
 
         if ($updated) {
@@ -184,9 +180,6 @@ class RoomController extends Controller
             'room_ids.*' => 'required|exists:rooms,id',
             'secretary_id' => 'required|exists:secretaries,id'
         ]);
-        if (!$this->isOwner()) {
-            return ApiResponse::error('Permission Dendied');
-        }
         $updated = $this->roomServices->addSecretaryToRoom($validated['room_ids'], $validated['secretary_id']);
 
         if ($updated) {
@@ -202,9 +195,6 @@ class RoomController extends Controller
             'room_ids.*' => 'required|exists:rooms,id',
             'secretary_id' => 'required|exists:secretaries,id'
         ]);
-        if (!$this->isOwner()) {
-            return ApiResponse::error('Permission Dendied');
-        }
         $updated = $this->roomServices->delSecretaryFromRoom($validated['room_ids'], $validated['secretary_id']);
 
         if ($updated) {

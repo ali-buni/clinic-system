@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('verification_codes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users', 'id')->cascadeOnDelete();
-            $table->enum('type', ['email', 'phone']);
+            $table->enum('type', ['email', 'phone', 'email_reset']);
             $table->string('sent_to');
             $table->string('code_hash');
             $table->unsignedBigInteger('failed_attempts')->default(0);

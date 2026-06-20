@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ForgotPasswordRequest;
+use App\Http\Requests\RegisterPatientRequest;
 use App\Http\Requests\ResetPasswordRequest;
+use App\Http\Requests\ResetPasswordWithCodeRequest;
 use App\Models\User;
 use App\Services\ApiResponse;
 use App\Services\AuthService;
+use App\Services\PatientRegistrationService;
 use App\Services\VerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +20,8 @@ class AuthController extends Controller
     public function __construct(
         private ApiResponse $api,
         private AuthService $authService,
-        private VerificationService $verification
+        private VerificationService $verification,
+        private PatientRegistrationService $patientRegistration,
     ) {}
 
     public function signOut(Request $request)
@@ -32,33 +37,55 @@ class AuthController extends Controller
     public function resetPassword(ResetPasswordRequest $request)
     {
         $validated = $request->validated();
-
-        $user = User::byPhone($validated['phone'])->first();
+        $user = User::byEmail($validated['email'])->first();
         if (!$user) {
             return $this->api->error('no account found!');
         }
-
         if (!Hash::check($validated['password'], $user->password)) {
             return $this->api->error('Current password is incorrect', 400);
         }
-
-        return $this->authService->resetPassword($validated['new_password'], $user->phone);
+        return $this->authService->resetPassword($validated['new_password'], $user->email);
     }
 
     public function login(Request $request)
     {
         $request->validate([
-            'phone' => 'required|string|digits_between:10,13|starts_with:09',
+            'login'    => 'required|string',
             'password' => 'required|string|min:8',
         ]);
 
-        $credentials = $request->only('phone', 'password');
+        $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+
+        $credentials = [
+            $loginField => $request->login,
+            'password'  => $request->password,
+        ];
 
         if (!Auth::attempt($credentials)) {
             return $this->api->error('invalid credentials.', 401);
         }
 
         $user = Auth::user();
-        return $this->verification->sendVerificationCode($user);
+        return $this->verification->sendVerificationCode($user, $loginField);
+    }
+
+    public function register(RegisterPatientRequest $request)
+    {
+        return $this->patientRegistration->register($request->validated());
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request)
+    {
+        return $this->authService->forgotPassword($request->validated('email'));
+    }
+
+    public function resetWithCode(ResetPasswordWithCodeRequest $request)
+    {
+        $validated = $request->validated();
+        return $this->authService->resetWithCode(
+            $validated['email'],
+            $validated['code'],
+            $validated['password']
+        );
     }
 }

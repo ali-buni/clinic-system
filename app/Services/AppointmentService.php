@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Events\SendMsgEvent;
 use App\Models\Appointment;
-use App\Models\Patient;
 use App\Traits\BookingTrait;
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;

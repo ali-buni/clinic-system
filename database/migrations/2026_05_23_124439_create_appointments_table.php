@@ -25,8 +25,6 @@ return new class extends Migration
             $table->text('cancel_reason')->nullable();
             $table->text('visit_reason')->nullable();
             $table->boolean('visit_in_time')->nullable();
-            $table->boolean('requires_followup')->default(false);
-            $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

@@ -45,11 +45,11 @@ class DoctorScheduleController extends Controller
 
     public function update(StoreWorkHourRequest $request): JsonResponse
     {
-        $doctor = Auth::user()?->doctorProfile;
+        $validated = $request->validated();
+        $doctor = Doctor::where('doctor_id', $validated['doctor_id'])->first();
         if (!$doctor) {
             return ApiResponse::error('Doctor profile not found.', 404);
         }
-        $validated = $request->validated();
         try {
             $workHour = $this->scheduleService->updateWorkHour($doctor, $validated['day_of_week'], $validated);
 
@@ -65,9 +65,9 @@ class DoctorScheduleController extends Controller
         }
     }
 
-    public function destroy(int $dayOfWeek): JsonResponse
+    public function destroy(int $dayOfWeek, int $doctorId): JsonResponse
     {
-        $doctor = Auth::user()?->doctorProfile;
+        $doctor = Doctor::where('doctor_id', $doctorId)->first();
         if (!$doctor) {
             return ApiResponse::error('Doctor profile not found.', 404);
         }

@@ -18,7 +18,7 @@ class StoreDiseaseRequest extends FormRequest
             'ar_name'        => 'required|string|max:255',
             'en_name'        => 'required|string|max:255',
             'description'    => 'nullable|string',
-            'disease_nature' => 'nullable|in:infectious,genetic,chronic,acute,mental,other',
+            'disease_nature' => 'required|in:infectious,genetic,chronic,acute,mental,other',
         ];
     }
 

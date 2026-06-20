@@ -25,8 +25,6 @@ class Appointment extends Model
         'cancel_reason',
         'visit_reason',
         'visit_in_time',
-        'requires_followup',
-        'notes',
     ];
 
     protected $casts = [

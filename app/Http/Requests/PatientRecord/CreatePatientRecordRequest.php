@@ -14,7 +14,7 @@ class CreatePatientRecordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'patient_id'         => 'required|exists:patients,id',
+            'patient_id'         => 'required|exists:patient_infos,id',
             'doctor_id'          => 'required|exists:doctors,id',
             'clinic_id'          => 'required|exists:clinics,id',
             'appointment_id'     => 'required|exists:appointments,id',

@@ -8,7 +8,7 @@ use App\Actions\PatientRecord\{CreatePatientRecordAction, UpdatePatientRecordAct
 use App\Http\Resources\PatientRecordResource;
 use App\Http\Requests\PatientRecord\{CreatePatientRecordRequest, UpdatePatientRecordRequest, GetAllRecordsFilteredRequest};
 use App\Models\Patient_record;
-use App\Models\Patient;
+use App\Models\PatientInfo;
 use App\Models\Doctor;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -93,7 +93,7 @@ class PatientRecordController extends Controller
 
     public function history(int $patientId): JsonResponse
     {
-        if (!Patient::where('id', $patientId)->exists()) {
+        if (!PatientInfo::where('id', $patientId)->exists()) {
             return ApiResponse::error('Patient not found', 404);
         }
         $history = $this->service->getPatientHistory($patientId);
@@ -109,7 +109,7 @@ class PatientRecordController extends Controller
 
     public function getByDoctor(int $patientId, int $doctorId): JsonResponse
     {
-        if (!Patient::where('id', $patientId)->exists()) {
+        if (!PatientInfo::where('id', $patientId)->exists()) {
             return ApiResponse::error('Patient not found', 404);
         }
         if (!Doctor::where('id', $doctorId)->exists()) {

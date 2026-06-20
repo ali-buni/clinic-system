@@ -5,36 +5,41 @@ namespace App\Http\Resources;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Auth;
 
 class userResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
-        $user = Auth::user();
+        $role = $this->getRoleNames()->first() ?? 'secretary';
         $data = [];
-        if ($user->hasRole('doctor')) {
-            $doctor = $user->doctorProfile->loadMissing('specialties');
-            $data['specialities'] = $doctor->specialties->map(function ($specialty) {
-                return $specialty->only(['ar_name', 'en_name']);
-            })->values();
-            $data['appointment_duration'] = $doctor->appointment_duration;
-            $data['bio'] = $doctor->bio;
-            $data['consultation_fee'] = $doctor->consultation_fee;
+
+        if ($role === 'doctor') {
+            $doctor = $this->doctorProfile;
+            if ($doctor) {
+                $data['specialties'] = $doctor->specialties->map(fn($s) => $s->only(['ar_name', 'en_name']))->values();
+                $data['appointment_duration'] = $doctor->appointment_duration;
+                $data['bio'] = $doctor->bio;
+                $data['consultation_fee'] = $doctor->consultation_fee;
+            }
         }
+
+        if ($role === 'patient') {
+            $profile = $this->patientProfile;
+            if ($profile) {
+                $data['patient_info'] = new PatientInfoResource($profile);
+            }
+        }
+
         return [
-            'id' => $this->id,
-            'name' => $this->fname . ' ' . $this->lname,
-            'phone' => $this->phone,
-            'gender' => $this->gender,
-            'dob' => Carbon::parse($this->dob)->format('Y-m-d'),
-            'created' => $this->created_at->format('Y-m-d'),
-            'role' => $user->hasRole('doctor') ? 'doctor' : 'secretary',
+            'id'            => $this->id,
+            'name'          => $this->fname . ' ' . $this->lname,
+            'phone'         => $this->phone,
+            'email'         => $this->email,
+            'gender'        => $this->gender,
+            'dob'           => Carbon::parse($this->dob)->format('Y-m-d'),
+            'profile_image' => $this->profile_image,
+            'created'       => $this->created_at->format('Y-m-d'),
+            'role'          => $role,
             ...$data,
         ];
     }

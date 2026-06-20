@@ -2,12 +2,16 @@
 
 namespace App\Services;
 
+use App\Events\SendMsgEvent;
 use App\Models\User;
 use App\Models\Verification_code;
+use App\Notifications\SendEmailVerificationCode;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
+
+use function Laravel\Prompts\error;
 
 class VerificationService
 {
@@ -24,12 +28,19 @@ class VerificationService
         $user->save();
     }
 
+    private function verifyEmail(User $user)
+    {
+        $user->email_verified_at = now();
+        $user->save();
+    }
+
     /**
-     * Verifies the user's phone number.
+     * Verifies a code (phone or email).
      */
-    public function verify(User $user, string $code)
+    public function verify(User $user, string $code, string $type = 'phone')
     {
         $verification = Verification_code::where('user_id', $user->id)
+            ->where('type', $type)
             ->where('expires_at', '>', now())
             ->latest('id')
             ->first();
@@ -39,7 +50,6 @@ class VerificationService
         }
 
         if ($verification->failed_attempts >= 5) {
-            //delete the verification code
             $verification->delete();
             return $this->apiResponse->error('Maximum verification attempts reached. Please request a new code.');
         }
@@ -48,57 +58,73 @@ class VerificationService
             $verification->save();
             return $this->apiResponse->error('Invalid or expired verification code.');
         }
-        $this->verifyPhone($user);
 
-        $role = 'secretary';
-        $id = $user->id;
-        if ($user->hasRole('doctor')) {
-            $role = 'doctor';
-        } else if ($user->hasRole('owner')) {
-            $role = 'owner';
+        if ($type === 'email') {
+            $this->verifyEmail($user);
+        } else {
+            $this->verifyPhone($user);
         }
+
         $verification->delete();
         $token = $user->createToken('auth_token')->plainTextToken;
+
+        $role = $user->getRoleNames()->first() ?? 'patient';
+
         return $this->apiResponse->success(
             [
                 'token' => $token,
-                'id' => $id,
-                'role' => $role,
-                'name' => $user->fname . ' ' . $user->lname,
+                'id'    => $user->id,
+                'role'  => $role,
+                'name'  => $user->fname . ' ' . $user->lname,
             ],
-            'Phone number verified successfully.'
+            ucfirst($type) . ' verified successfully.'
         );
     }
 
     /**
-     * Sends a verification code to the user's phone number. Returns true if sent successfully, false otherwise.
+     * Sends a verification code to the user's phone number or email.
      */
-    public function sendVerificationCode(User $user)
+    public function sendVerificationCode(User $user, string $type): \Illuminate\Http\JsonResponse
     {
-        $user_id = $user->id;
-
-        $attemptsKey = "{$user_id}.{$user->phone}";
-        if (!Cache::has($attemptsKey)) {
-            Cache::add($attemptsKey, 1, 3600);
-            $attempts = 1;
-        } else {
-            $attempts = Cache::increment($attemptsKey, 1);
+        // Validate type
+        if (!in_array($type, ['phone', 'email'])) {
+            return $this->apiResponse->error('Invalid verification type. Must be "phone" or "email".', 400);
         }
 
-        if ($attempts > self::Max_attempts) {
-            $remainingTime = Cache::ttl($attemptsKey);
+        $user_id = $user->id;
+        $sentTo = $type === 'phone' ? $user->phone : $user->email;
+
+        // Check if the contact method exists
+        if (empty($sentTo)) {
             return $this->apiResponse->error(
-                'to many attemps. Please try again later.',
-                429,
-                ['retry_after_minut es' => $remainingTime]
+                $type === 'phone' ? 'User has no phone number.' : 'User has no email address.',
+                400
             );
         }
 
+        $attemptsKey = "verification_attempts:{$user_id}";
+        $attempts = Cache::get($attemptsKey, 0);
+
+        if ($attempts >= self::Max_attempts) {
+            $remainingTime = Cache::ttl($attemptsKey);
+            return $this->apiResponse->error(
+                'Too many attempts. Please try again later.',
+                429,
+                ['retry_after_minutes' => ceil($remainingTime / 60)]
+            );
+        }
+
+        // Check if a code was sent recently (60 second codedown)
         $recent = Verification_code::where('user_id', $user->id)
-            ->where('created_at', '>', now()->subSeconds(60))->exists();
+            ->where('type', $type)
+            ->where('created_at', '>', now()->subSeconds(60))
+            ->exists();
 
         if ($recent) {
-            return $this->apiResponse->error('A verification code was sent recently. Please wait before requesting another one.');
+            return $this->apiResponse->error(
+                'A verification code was sent recently. Please wait before requesting another one.',
+                429
+            );
         }
 
         $code = rand(100000, 999999);
@@ -106,23 +132,49 @@ class VerificationService
         try {
             DB::beginTransaction();
 
-            $verify = new verification_code();
-            $verify->user_id = $user_id;
-            $verify->type = 'phone';
-            $verify->sent_to = $user->phone;
-            $verify->code_hash = Hash::make($code);
-            $verify->expires_at = now()->addMinutes(15);
-            $verify->save();
+            // Delete old verification codes for this type
+            Verification_code::where('user_id', $user->id)
+                // ->where('type', $type)
+                ->delete();
 
-            // event(new SendMsgEvent($user->phone, config('app.name') . ": Your verification code is: {$code}."));
-            \Illuminate\Support\Facades\Log::info("Sent verification code to phone {$user->phone}");
+            // Create new verification code
+            Verification_code::create([
+                'user_id'    => $user->id,
+                'type'       => $type,
+                'sent_to'    => $sentTo,
+                'code_hash'  => Hash::make($code),
+                'expires_at' => now()->addMinutes(15),
+            ]);
+
+            // Send the code based on type
+            if ($type === 'phone') {
+                // TODO: send sms
+                // Send SMS (implement your SMS sending logic here)
+                // Example: $this->sendSms($user->phone, $code);
+                logger()->info("Sent verification code {$code} to phone {$user->phone}");
+            } else {
+                // Send email
+                Notification::route('mail', $user->email)
+                    ->notify(new SendEmailVerificationCode($code));
+                logger()->info("Sent verification code {$code} to email {$user->email}");
+            }
+
+            // Increment attempt counter
+            Cache::put($attemptsKey, $attempts + 1, 3600); // 1 hour
 
             DB::commit();
 
-            return $this->apiResponse->success(null, 'Verification code sent successfully.');
+            return $this->apiResponse->success(
+                null,
+                ucfirst($type) . ' verification code sent successfully.'
+            );
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->apiResponse->error('Failed to send verification code. Please try again.');
+            error("Failed to send {$type} verification code: " . $e->getMessage());
+            return $this->apiResponse->error(
+                'Failed to send verification code. Please try again.',
+                500
+            );
         }
     }
 }
