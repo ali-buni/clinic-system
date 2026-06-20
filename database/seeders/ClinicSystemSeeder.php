@@ -131,8 +131,6 @@ class ClinicSystemSeeder extends Seeder
                     'status' => fake()->randomElement(['scheduled', 'completed', 'cancelled', 'no_show']),
                     'visit_reason' => fake()->sentence(),
                     'visit_in_time' => fake()->boolean(80),
-                    'requires_followup' => fake()->boolean(25),
-                    'notes' => fake()->paragraph(),
                 ])
             );
         }

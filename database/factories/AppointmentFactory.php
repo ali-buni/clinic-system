@@ -29,8 +29,6 @@ class AppointmentFactory extends Factory
             'cancel_reason' => null,
             'visit_reason' => fake()->sentence(),
             'visit_in_time' => fake()->boolean(75),
-            'requires_followup' => fake()->boolean(30),
-            'notes' => fake()->paragraph(),
         ];
     }
 }
