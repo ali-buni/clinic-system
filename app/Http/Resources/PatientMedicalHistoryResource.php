@@ -49,8 +49,8 @@ class PatientMedicalHistoryResource extends JsonResource
                     'id'        => $p->id,
                     'doctor'    => $p->doctor?->user?->fname . ' ' . $p->doctor?->user?->lname,
                     'cost'      => $p->cost,
-                    'issued_at' => $p->issued_at?->format('Y-m-d'),
-                    'valid_until' => $p->valid_until?->format('Y-m-d'),
+                    'issued_at' => Carbon::parse($p->issued_at)?->format('Y-m-d'),
+                    'valid_until' => Carbon::parse($p->valid_until)?->format('Y-m-d'),
                     'items'     => $p->items->map(fn($i) => [
                         'id'                 => $i->id,
                         'medicine'           => $i->medicine?->en_name,
@@ -60,7 +60,7 @@ class PatientMedicalHistoryResource extends JsonResource
                         'duration'           => $i->duration,
                     ]),
                 ]),
-                'created_at'        => $r->created_at?->format('Y-m-d'),
+                'created_at'        => Carbon::parse($r->created_at)?->format('Y-m-d'),
             ]),
 
             'invoices' => $this->invoices->map(fn($i) => [
@@ -68,7 +68,7 @@ class PatientMedicalHistoryResource extends JsonResource
                 'invoice_number' => $i->invoice_number,
                 'status'         => $i->status,
                 'total_cost'     => $i->total_cost,
-                'issued_at'      => $i->created_at?->format('Y-m-d'),
+                'issued_at'      => Carbon::parse($i->created_at)?->format('Y-m-d'),
             ]),
         ];
     }

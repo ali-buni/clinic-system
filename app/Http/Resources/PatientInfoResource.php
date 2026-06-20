@@ -24,6 +24,10 @@ class PatientInfoResource extends JsonResource
                 'chronic_conditions' => $this->chronic_conditions,
                 'career'             => $this->career,
                 'blood_type'         => $this->blood_type,
+                'phone'         => $user?->phone,
+                'email'         => $user?->email,
+                'dob'           => $user?->dob ? Carbon::parse($user->dob)->format('Y-m-d') : null,
+                'created_at'    => Carbon::parse($this->created_at)->format('Y-m-d'),   
             ];
         }
 
@@ -31,13 +35,9 @@ class PatientInfoResource extends JsonResource
             'id'            => $this->id,
             'user_id'       => $this->user_id,
             'name'          => $user ? trim(($user->fname ?? '') . ' ' . ($user->lname ?? '')) : null,
-            'phone'         => $user?->phone,
-            'email'         => $user?->email,
-            'dob'           => $user?->dob ? Carbon::parse($user->dob)->format('Y-m-d') : null,
             'gender'        => $user?->gender,
             'profile_image' => $user?->profile_image,
             'clinic_id'     => $this->clinic_id,
-            'created_at'    => Carbon::parse($this->created_at)->format('Y-m-d'),
             ...$data,
         ];
     }
