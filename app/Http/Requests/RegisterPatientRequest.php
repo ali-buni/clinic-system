@@ -30,6 +30,7 @@ class RegisterPatientRequest extends FormRequest
             'chronic_conditions' => 'nullable|string|max:1000',
             'career' => 'nullable|string|max:255',
             'blood_type' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];
     }
 

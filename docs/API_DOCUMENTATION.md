@@ -1,7 +1,7 @@
 # Clinic System API Documentation
 
-**Base URL**: `{{base_url}}/api/clinic-system`  
-**Default**: `http://localhost:8000/api/clinic-system`  
+**Base URL**: `{{base_url}}/api`  
+**Default**: `http://localhost:8000/api`  
 **Auth**: Bearer JWT Token (Sanctum)  
 **Format**: JSON
 
@@ -64,14 +64,15 @@ Register → Verify Email → Login → (use token) → Sign Out
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/register` | Register new patient |
-| POST | `/login` | Login (email or phone) |
-| POST | `/verify-code` | Verify email/phone code |
-| POST | `/resend-code` | Resend verification code |
-| POST | `/forgot-password` | Send password reset code |
-| POST | `/reset-password-with-code` | Reset password with code |
+| POST | `/clinic-system/register` | Register new patient |
+| POST | `/clinic-system/login` | Login (email or phone) |
+| POST | `/clinic-system/verify-code` | Verify email/phone code |
+| POST | `/clinic-system/resend-code` | Resend verification code |
+| POST | `/clinic-system/forgot-password` | Send password reset code |
+| POST | `/clinic-system/reset-password-with-code` | Reset password with code |
 
-#### POST `/register`
+#### POST `/clinic-system/register`
+**Body** (multipart/form-data when including profile_image):
 ```json
 {
   "fname": "Ahmed",
@@ -84,17 +85,19 @@ Register → Verify Email → Login → (use token) → Sign Out
   "dob": "1995-06-15",
   "clinic_id": 1,
   "nationality": "Syrian",
-  "address": "Damascus"
+  "address": "Damascus",
+  "profile_image": "(file) jpeg,png,jpg,gif,svg max 2MB"
 }
 ```
+If no `profile_image` is provided, a default avatar is automatically assigned.
 
-#### POST `/login`
+#### POST `/clinic-system/login`
 ```json
 { "login": "ahmed@test.com", "password": "password" }
 ```
 Response contains `access_token` and `refresh_token`.
 
-#### POST `/verify-code`
+#### POST `/clinic-system/verify-code`
 ```json
 { "login": "ahmed@test.com", "code": "1234", "type": "email" }
 ```
@@ -103,9 +106,9 @@ Response contains `access_token` and `refresh_token`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/signout` | Revoke current token |
-| POST | `/refresh-token` | Get new access token |
-| POST | `/reset-password` | Reset password (authenticated) |
+| POST | `/clinic-system/signout` | Revoke current token |
+| POST | `/clinic-system/refresh-token` | Get new access token |
+| POST | `/clinic-system/reset-password` | Reset password (authenticated) |
 
 ---
 
@@ -113,22 +116,22 @@ Response contains `access_token` and `refresh_token`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/clinic/clinic/patients` | List patients (paginated) |
-| GET | `/clinic/clinic/patients/trashed` | List soft-deleted patients |
-| GET | `/clinic/clinic/patients/{id}/show` | Get patient details |
-| GET | `/clinic/clinic/patients/{id}/medical-history` | Full medical history |
-| POST | `/clinic/clinic/patients/update` | Update patient |
-| DELETE | `/clinic/clinic/patients/delete` | Soft-delete patient |
-| GET | `/clinic/clinic/patients/restore` | Restore patient |
+| GET | `/clinic-system/clinic/patients` | List patients (paginated) |
+| GET | `/clinic-system/clinic/patients/trashed` | List soft-deleted patients |
+| GET | `/clinic-system/clinic/patients/{id}/show` | Get patient details |
+| GET | `/clinic-system/clinic/patients/{id}/medical-history` | Full medical history |
+| POST | `/clinic-system/clinic/patients/update` | Update patient |
+| DELETE | `/clinic-system/clinic/patients/delete` | Soft-delete patient |
+| GET | `/clinic-system/clinic/patients/restore` | Restore patient |
 
 **Query params for list**: `clinic_id`, `search`, `column`, `sort`, `direction`, `per_page`, `page`
 
-#### POST `/clinic/clinic/patients/update`
+#### POST `/clinic-system/clinic/patients/update`
 ```json
 { "patient_id": 1, "fname": "Updated", "address": "New Address", "blood_type": "B+" }
 ```
 
-#### DELETE `/clinic/clinic/patients/delete`
+#### DELETE `/clinic-system/clinic/patients/delete`
 ```json
 { "patient_id": 1 }
 ```
@@ -139,21 +142,21 @@ Response contains `access_token` and `refresh_token`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/clinic/clinic/appointments/book` | Book appointment |
-| GET | `/clinic/clinic/appointments/{id}` | Show appointment |
-| POST | `/clinic/clinic/appointments/{id}/cancel` | Cancel appointment |
-| POST | `/clinic/clinic/appointments/{id}/complete` | Mark completed |
-| POST | `/clinic/clinic/appointments/{id}/confirmed` | Mark confirmed |
-| POST | `/clinic/clinic/appointments/{id}/reschedule` | Reschedule |
-| GET | `/clinic/clinic/appointments/patient/{id}` | Patient appointments |
-| GET | `/clinic/clinic/appointments/doctor/{id}` | Doctor appointments |
-| GET | `/clinic/clinic/appointments/clinic/{id}` | Clinic appointments |
-| GET | `/clinic/clinic/appointments/room/appo` | Room appointments |
-| GET | `/clinic/clinic/appointments/doctor/{id}/schedule` | Doctor schedule |
-| GET | `/clinic/clinic/appointments/clinic/{id}/schedule` | Clinic schedule |
-| GET | `/clinic/clinic/appointments/get/available-slots` | Available time slots |
+| POST | `/clinic-system/clinic/appointments/book` | Book appointment |
+| GET | `/clinic-system/clinic/appointments/{id}` | Show appointment |
+| POST | `/clinic-system/clinic/appointments/{id}/cancel` | Cancel appointment |
+| POST | `/clinic-system/clinic/appointments/{id}/complete` | Mark completed |
+| POST | `/clinic-system/clinic/appointments/{id}/confirmed` | Mark confirmed |
+| POST | `/clinic-system/clinic/appointments/{id}/reschedule` | Reschedule |
+| GET | `/clinic-system/clinic/appointments/patient/{id}` | Patient appointments |
+| GET | `/clinic-system/clinic/appointments/doctor/{id}` | Doctor appointments |
+| GET | `/clinic-system/clinic/appointments/clinic-system/clinic/{id}` | Clinic appointments |
+| GET | `/clinic-system/clinic/appointments/room/appo` | Room appointments |
+| GET | `/clinic-system/clinic/appointments/doctor/{id}/schedule` | Doctor schedule |
+| GET | `/clinic-system/clinic/appointments/clinic-system/clinic/{id}/schedule` | Clinic schedule |
+| GET | `/clinic-system/clinic/appointments/get/available-slots` | Available time slots |
 
-#### POST `/clinic/clinic/appointments/book`
+#### POST `/clinic-system/clinic/appointments/book`
 ```json
 {
   "doctor_id": 1,
@@ -166,12 +169,12 @@ Response contains `access_token` and `refresh_token`.
 }
 ```
 
-#### POST `/clinic/clinic/appointments/{id}/cancel`
+#### POST `/clinic-system/clinic/appointments/{id}/cancel`
 ```json
 { "cancel_reason": "Patient unavailable" }
 ```
 
-#### POST `/clinic/clinic/appointments/{id}/reschedule`
+#### POST `/clinic-system/clinic/appointments/{id}/reschedule`
 ```json
 { "date": "2026-06-22", "start_time": "10:00" }
 ```
@@ -182,17 +185,17 @@ Response contains `access_token` and `refresh_token`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/clinic/clinic/patient-records` | Create record |
-| GET | `/clinic/clinic/patient-records/show/{id}` | Show record |
-| PUT | `/clinic/clinic/patient-records/{id}` | Update record |
-| DELETE | `/clinic/clinic/patient-records/{id}` | Delete record |
-| GET | `/clinic/clinic/patient-records/filtered` | List records (filtered) |
-| GET | `/clinic/clinic/patient-records/patient/{id}/history` | Patient history |
-| GET | `/clinic/clinic/patient-records/patient/{pid}/doctor/{did}` | Records by doctor |
-| GET | `/clinic/clinic/patient-records/doctor/{id}/all` | All doctor records |
-| POST | `/clinic/clinic/patient-records/rooms/search` | Records by room |
+| POST | `/clinic-system/clinic/patient-records` | Create record |
+| GET | `/clinic-system/clinic/patient-records/show/{id}` | Show record |
+| PUT | `/clinic-system/clinic/patient-records/{id}` | Update record |
+| DELETE | `/clinic-system/clinic/patient-records/{id}` | Delete record |
+| GET | `/clinic-system/clinic/patient-records/filtered` | List records (filtered) |
+| GET | `/clinic-system/clinic/patient-records/patient/{id}/history` | Patient history |
+| GET | `/clinic-system/clinic/patient-records/patient/{pid}/doctor/{did}` | Records by doctor |
+| GET | `/clinic-system/clinic/patient-records/doctor/{id}/all` | All doctor records |
+| POST | `/clinic-system/clinic/patient-records/rooms/search` | Records by room |
 
-#### POST `/clinic/clinic/patient-records`
+#### POST `/clinic-system/clinic/patient-records`
 ```json
 {
   "patient_id": 1,
@@ -217,12 +220,12 @@ Response contains `access_token` and `refresh_token`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/clinic/clinic/clinic/info` | Get clinic info |
-| POST | `/clinic/clinic/clinic/update/{id}` | Update clinic |
-| POST | `/clinic/clinic/clinic/doctor/register` | Register doctor |
-| POST | `/clinic/clinic/clinic/secretary/register` | Register secretary |
+| GET | `/clinic-system/clinic/info` | Get clinic info |
+| POST | `/clinic-system/clinic/update/{id}` | Update clinic |
+| POST | `/clinic-system/clinic/doctor/register` | Register doctor |
+| POST | `/clinic-system/clinic/secretary/register` | Register secretary |
 
-#### POST `/clinic/clinic/clinic/doctor/register`
+#### POST `/clinic-system/clinic/doctor/register`
 ```json
 {
   "fname": "New",
@@ -244,12 +247,12 @@ Response contains `access_token` and `refresh_token`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/clinic/clinic/doctors/filter` | List doctors |
-| GET | `/clinic/clinic/doctors/{id}/info` | Doctor details |
-| POST | `/clinic/clinic/doctors/update` | Update doctor |
-| DELETE | `/clinic/clinic/doctors/{id}/leave` | Soft-delete doctor |
-| POST | `/clinic/clinic/doctors/{id}/restore` | Restore doctor |
-| DELETE | `/clinic/clinic/doctors/{id}/force` | Force delete doctor |
+| GET | `/clinic-system/clinic/doctors/filter` | List doctors |
+| GET | `/clinic-system/clinic/doctors/{id}/info` | Doctor details |
+| POST | `/clinic-system/clinic/doctors/update` | Update doctor |
+| DELETE | `/clinic-system/clinic/doctors/{id}/leave` | Soft-delete doctor |
+| POST | `/clinic-system/clinic/doctors/{id}/restore` | Restore doctor |
+| DELETE | `/clinic-system/clinic/doctors/{id}/force` | Force delete doctor |
 
 ---
 
@@ -257,17 +260,17 @@ Response contains `access_token` and `refresh_token`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/clinic/clinic/rooms/{clinicId}` | List rooms |
-| GET | `/clinic/clinic/rooms/{clinicId}/info` | Rooms with details |
-| GET | `/clinic/clinic/rooms/{id}/details` | Room details |
-| GET | `/clinic/clinic/rooms/userRooms/get` | Current user rooms |
-| POST | `/clinic/clinic/rooms` | Create room |
-| POST | `/clinic/clinic/rooms/{id}` | Update room |
-| DELETE | `/clinic/clinic/rooms/{id}` | Delete room |
-| POST | `/clinic/clinic/rooms/sync/doctorRoom` | Assign doctor to room |
-| DELETE | `/clinic/clinic/rooms/detach/doctorRoom` | Remove doctor from room |
-| POST | `/clinic/clinic/rooms/sync/secRooms` | Assign secretary to rooms |
-| DELETE | `/clinic/clinic/rooms/detach/secRooms` | Remove secretary from rooms |
+| GET | `/clinic-system/clinic/rooms/{clinicId}` | List rooms |
+| GET | `/clinic-system/clinic/rooms/{clinicId}/info` | Rooms with details |
+| GET | `/clinic-system/clinic/rooms/{id}/details` | Room details |
+| GET | `/clinic-system/clinic/rooms/userRooms/get` | Current user rooms |
+| POST | `/clinic-system/clinic/rooms` | Create room |
+| POST | `/clinic-system/clinic/rooms/{id}` | Update room |
+| DELETE | `/clinic-system/clinic/rooms/{id}` | Delete room |
+| POST | `/clinic-system/clinic/rooms/sync/doctorRoom` | Assign doctor to room |
+| DELETE | `/clinic-system/clinic/rooms/detach/doctorRoom` | Remove doctor from room |
+| POST | `/clinic-system/clinic/rooms/sync/secRooms` | Assign secretary to rooms |
+| DELETE | `/clinic-system/clinic/rooms/detach/secRooms` | Remove secretary from rooms |
 
 ---
 
@@ -275,8 +278,8 @@ Response contains `access_token` and `refresh_token`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/clinic/clinic/secretaries/{id}` | Secretary info |
-| POST | `/clinic/clinic/secretaries/update` | Update secretary |
+| GET | `/clinic-system/clinic/secretaries/{id}` | Secretary info |
+| POST | `/clinic-system/clinic/secretaries/update` | Update secretary |
 
 ---
 
@@ -286,28 +289,28 @@ Response contains `access_token` and `refresh_token`.
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/clinic/clinic/schedule/add` | Yes | Add work hour |
-| PUT | `/clinic/clinic/schedule/edit` | Yes | Edit work hour |
-| DELETE | `/clinic/clinic/schedule/delete/{day}/{docId}` | Yes | Delete work hour |
-| GET | `/clinic/clinic/schedule/get-weekly/{docId}` | No | Get weekly schedule |
-| GET | `/clinic/clinic/schedule/work-hour/{docId}` | No | Get work hour by date |
+| POST | `/clinic-system/clinic/schedule/add` | Yes | Add work hour |
+| PUT | `/clinic-system/clinic/schedule/edit` | Yes | Edit work hour |
+| DELETE | `/clinic-system/clinic/schedule/delete/{day}/{docId}` | Yes | Delete work hour |
+| GET | `/clinic-system/clinic/schedule/get-weekly/{docId}` | No | Get weekly schedule |
+| GET | `/clinic-system/clinic/schedule/work-hour/{docId}` | No | Get work hour by date |
 
 #### Specialties
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| GET | `/clinic/clinic/specialty/index` | No | List all specialties |
-| POST | `/clinic/clinic/specialty/add` | Yes | Attach specialties |
-| DELETE | `/clinic/clinic/specialty/delete/{id}` | Yes | Detach specialty |
-| POST | `/clinic/clinic/specialty/changePrimary/{id}` | Yes | Change primary |
-| GET | `/clinic/clinic/specialty/showPrimary/{docId}` | Yes | Show primary specialty |
-| GET | `/clinic/clinic/specialty/getAll` | Yes | Get doctor specialties |
+| GET | `/clinic-system/clinic/specialty/index` | No | List all specialties |
+| POST | `/clinic-system/clinic/specialty/add` | Yes | Attach specialties |
+| DELETE | `/clinic-system/clinic/specialty/delete/{id}` | Yes | Detach specialty |
+| POST | `/clinic-system/clinic/specialty/changePrimary/{id}` | Yes | Change primary |
+| GET | `/clinic-system/clinic/specialty/showPrimary/{docId}` | Yes | Show primary specialty |
+| GET | `/clinic-system/clinic/specialty/getAll` | Yes | Get doctor specialties |
 
 ```json
-// POST /clinic/clinic/schedule/add
+// POST /clinic-system/clinic/schedule/add
 { "doctor_id": 1, "day_of_week": 1, "start_time": "09:00", "end_time": "17:00", "max_patients_per_day": 10 }
 
-// POST /clinic/clinic/specialty/add
+// POST /clinic-system/clinic/specialty/add
 { "specialty_ids": [1, 2] }
 ```
 
@@ -317,16 +320,16 @@ Response contains `access_token` and `refresh_token`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/clinic/clinic/medicines/search` | Search medicines |
-| POST | `/clinic/clinic/medicines/store` | Store medicine |
-| GET | `/clinic/clinic/diseases/search` | Search diseases |
-| POST | `/clinic/clinic/diseases/store` | Store disease |
+| GET | `/clinic-system/clinic/medicines/search` | Search medicines |
+| POST | `/clinic-system/clinic/medicines/store` | Store medicine |
+| GET | `/clinic-system/clinic/diseases/search` | Search diseases |
+| POST | `/clinic-system/clinic/diseases/store` | Store disease |
 
 ```json
-// POST /clinic/clinic/medicines/store
+// POST /clinic-system/clinic/medicines/store
 { "en_name": "NewMed", "ar_name": "دواء", "generic_name_en": "Generic", "strength": "500mg", "form": "tablet" }
 
-// POST /clinic/clinic/diseases/store
+// POST /clinic-system/clinic/diseases/store
 { "en_name": "New Disease", "ar_name": "مرض", "icd_code": "X99.9", "description": "Test", "disease_nature": "chronic" }
 ```
 
@@ -346,8 +349,20 @@ Response contains `access_token` and `refresh_token`.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/clinic/clinic/clinic/users/info` | Get current user info |
+| GET | `/clinic-system/clinic/users/info` | Get current user info |
+| POST | `/clinic-system/clinic/users/update-image` | Update profile image |
+| GET | `/clinic-system/clinic/users/image-url` | Get profile image URL |
 | POST | `/clinic-system/devices/register-token` | Register FCM device token |
+
+#### POST `/clinic-system/clinic/users/update-image`
+**Body** (multipart/form-data):
+```
+profile_image: (file) required, jpeg/png/jpg/gif/svg, max 2MB
+```
+Response returns updated user info with new `profile_image` path.
+
+#### GET `/clinic-system/clinic/users/image-url`
+Returns the full URL to the profile image (default or uploaded).
 
 ---
 

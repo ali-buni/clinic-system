@@ -4,11 +4,14 @@ namespace App\Services;
 
 use App\Models\PatientInfo;
 use App\Models\User;
+use App\Traits\HandleUserImage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class PatientRegistrationService
 {
+    use HandleUserImage;
+
     public function __construct(
         private ApiResponse $apiResponse,
         private VerificationService $verification,
@@ -17,14 +20,18 @@ class PatientRegistrationService
     public function register(array $data): \Illuminate\Http\JsonResponse
     {
         return DB::transaction(function () use ($data) {
+            $image = $data['profile_image'] ?? null;
+            $profileImage = $this->handleUserImage($image);
+
             $user = User::create([
-                'fname'    => $data['fname'],
-                'lname'    => $data['lname'],
-                'email'    => $data['email'],
-                'phone'    => $data['phone'] ?? null,
-                'password' => Hash::make($data['password']),
-                'dob'      => $data['dob'] ?? null,
-                'gender'   => $data['gender'] ?? 'unknown',
+                'fname'         => $data['fname'],
+                'lname'         => $data['lname'],
+                'email'         => $data['email'],
+                'phone'         => $data['phone'] ?? null,
+                'password'      => Hash::make($data['password']),
+                'dob'           => $data['dob'] ?? null,
+                'gender'        => $data['gender'] ?? 'unknown',
+                'profile_image' => $profileImage,
             ]);
 
             $user->assignRole('patient');

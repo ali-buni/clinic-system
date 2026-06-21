@@ -125,6 +125,8 @@ Route::prefix('/clinic-system')->group(function () {
 
             Route::prefix('/users')->controller(userController::class)->group(function () {
                 Route::get('/info', 'info');
+                Route::post('/update-image', 'updateImage');
+                Route::get('/image-url', 'getImageUrl');
             });
 
             Route::prefix('/doctors')->controller(DoctorController::class)->group(function () {
