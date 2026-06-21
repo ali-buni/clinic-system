@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 12:18:57 GMT"
+            "Sun, 21 Jun 2026 13:51:47 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -22,11 +22,11 @@
             "clinic_id": 1,
             "doctor": {
                 "id": 1,
-                "name": "Porter Breitenberg"
+                "name": "Dillan Sauer"
             },
             "patient": {
                 "id": 1,
-                "name": "Hermann Boyle",
+                "name": "Ofelia Gleichner",
                 "phone": "0900000004"
             },
             "room": {

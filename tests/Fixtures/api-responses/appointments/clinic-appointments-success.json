@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 12:19:01 GMT"
+            "Sun, 21 Jun 2026 13:43:46 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -23,11 +23,11 @@
                 "clinic_id": 1,
                 "doctor": {
                     "id": 1,
-                    "name": "Alycia Lehner"
+                    "name": "Velma Mann"
                 },
                 "patient": {
                     "id": 1,
-                    "name": "Estella Stamm",
+                    "name": "Kylee Sawayn",
                     "phone": "0900000004"
                 },
                 "room": {

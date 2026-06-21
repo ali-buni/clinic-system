@@ -190,16 +190,20 @@ abstract class TestCase extends BaseTestCase
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
         }
-        file_put_contents(
-            $path,
-            json_encode(
-                [
-                    'status' => $response->status(),
-                    'headers' => $response->headers->all(),
-                    'body' => $response->json(),
-                ],
-                JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
-            )
-        );
+        try {
+            file_put_contents(
+                $path,
+                json_encode(
+                    [
+                        'status' => $response->status(),
+                        'headers' => $response->headers->all(),
+                        'body' => $response->json(),
+                    ],
+                    JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+                )
+            );
+        } catch (\ErrorException $e) {
+            // Silently skip if fixture cannot be written (e.g. concurrent access)
+        }
     }
 }

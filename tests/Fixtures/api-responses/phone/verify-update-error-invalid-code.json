@@ -1,11 +1,11 @@
 {
-    "status": 401,
+    "status": 500,
     "headers": {
         "cache-control": [
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 10:39:41 GMT"
+            "Sun, 21 Jun 2026 13:46:16 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -15,6 +15,8 @@
         ]
     },
     "body": {
-        "message": "Unauthenticated."
+        "success": false,
+        "message": "No verification code found. Please request a new one.",
+        "data": null
     }
 }

@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 12:20:26 GMT"
+            "Sun, 21 Jun 2026 13:20:47 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -23,15 +23,15 @@
                 "user_id": 3,
                 "clinic_id": 1,
                 "room_id": 1,
-                "name": "Ardella Erdman",
+                "name": "Ethan Gutmann",
                 "phone": "0900000002",
                 "email": "doctor@test.com",
-                "dob": "1986-10-02 01:51:57",
-                "gender": "female",
+                "dob": "1983-04-02 10:53:29",
+                "gender": "male",
                 "created_at": "2026-06-21",
                 "appointment_duration": 30,
                 "consultation_fee": 150,
-                "bio": "Dolorem omnis eum ea et optio. Deserunt dolorum et blanditiis qui aut quos. Dolores voluptates qui earum est. Fuga quia accusantium expedita officia corporis. Sed ipsa porro praesentium eaque reprehenderit quia.",
+                "bio": "Ipsa sit dolorem quis aut omnis quia. Voluptatem delectus odio aut nihil et officiis doloribus et. Aut soluta iure vitae tempora dolorum voluptas eligendi. Et eum quae id autem corrupti numquam debitis asperiores. Cum laborum quasi sed eaque amet ut dignissimos.",
                 "specialties": [
                     {
                         "ar_name": "الطب العام",

@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 12:18:49 GMT"
+            "Sun, 21 Jun 2026 13:51:39 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -22,11 +22,11 @@
             "clinic_id": 1,
             "doctor": {
                 "id": 1,
-                "name": "Jessyca Kutch"
+                "name": "Reese Hahn"
             },
             "patient": {
                 "id": 1,
-                "name": "Braulio Cartwright",
+                "name": "Melvina Bauch",
                 "phone": "0900000004"
             },
             "room": {

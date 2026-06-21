@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 11:48:55 GMT"
+            "Sun, 21 Jun 2026 13:53:29 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -24,19 +24,19 @@
             "clinic_id": 1,
             "appointment_id": 1,
             "diagnosis_summary": "Test diagnosis",
-            "description": "Ea modi laborum voluptas ex esse dolorum est quia. Dolorum voluptatem et eum nobis. Perspiciatis aut rem exercitationem repellendus.",
+            "description": "Et id rerum provident officia quas voluptatem aspernatur. Nihil perspiciatis qui veniam eum natus. Esse nisi quo numquam rerum adipisci quos. Incidunt et occaecati repudiandae mollitia quo.",
             "status": "open",
-            "notes": "Exercitationem fugit nihil nesciunt optio deleniti quo est aperiam. Accusantium esse eligendi ut quod sint. Dolorem laudantium quaerat earum. Quis et vitae molestias error nihil recusandae maiores.",
+            "notes": "Dolor mollitia rerum ut reiciendis quis molestiae. In vel at distinctio corrupti nostrum. Reprehenderit ad fugiat error sapiente omnis atque sit.",
             "patient": {
-                "name": "Chad Hegmann",
+                "name": "Scottie Heidenreich",
                 "phone": "0900000004"
             },
             "doctor": {
-                "name": "Zachery Langosh"
+                "name": "Hellen Hamill"
             },
             "diseases": [],
             "prescriptions": [],
-            "created_at": "2026-06-21 11:48:55"
+            "created_at": "2026-06-21 13:53:29"
         }
     }
 }

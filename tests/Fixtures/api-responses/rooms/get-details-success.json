@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 11:49:31 GMT"
+            "Sun, 21 Jun 2026 13:54:05 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -25,11 +25,11 @@
             "doctors": [
                 {
                     "id": 1,
-                    "name": "Terrence Wisozk",
+                    "name": "Sarai Lebsack",
                     "phone": "0900000002",
                     "created": "2026-06-21",
                     "gender": "unknown",
-                    "bio": "Libero incidunt qui reprehenderit et. Officia architecto omnis iure molestias sed distinctio excepturi. Laudantium consequatur animi provident minima eum. Nostrum sint totam non aut.",
+                    "bio": "Eligendi qui minus saepe. Iure culpa laboriosam laudantium non debitis quaerat saepe. Et quibusdam quam unde maxime. Rerum et est sapiente reiciendis dignissimos repellat.",
                     "specialties": [
                         {
                             "ar_name": "الطب العام",
@@ -41,7 +41,7 @@
             "secretaries": [
                 {
                     "id": 1,
-                    "name": "Elouise Reichert",
+                    "name": "Keira Cole",
                     "phone": "0900000003",
                     "created": "2026-06-21",
                     "gender": "female"

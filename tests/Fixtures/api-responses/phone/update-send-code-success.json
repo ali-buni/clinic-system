@@ -1,11 +1,11 @@
 {
-    "status": 401,
+    "status": 200,
     "headers": {
         "cache-control": [
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 10:41:24 GMT"
+            "Sun, 21 Jun 2026 13:53:57 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -15,6 +15,10 @@
         ]
     },
     "body": {
-        "message": "Unauthenticated."
+        "success": true,
+        "message": "Verification code sent to your new phone number.",
+        "data": {
+            "new_phone": "0999999999"
+        }
     }
 }

@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 11:48:46 GMT"
+            "Sun, 21 Jun 2026 13:53:20 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -27,7 +27,7 @@
             "strength": "400mg",
             "form": "tablet",
             "is_custom_added": true,
-            "created_at": "2026-06-21T11:48:46+00:00"
+            "created_at": "2026-06-21T13:53:20+00:00"
         }
     }
 }

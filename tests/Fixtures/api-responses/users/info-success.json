@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 11:50:06 GMT"
+            "Sun, 21 Jun 2026 13:54:34 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -19,23 +19,23 @@
         "message": "Success",
         "data": {
             "id": 5,
-            "name": "Mckayla Grant",
+            "name": "Patsy Walker",
             "phone": "0900000004",
             "email": "patient@test.com",
-            "gender": "female",
-            "dob": "1979-09-19",
+            "gender": "male",
+            "dob": "1981-07-05",
             "profile_image": null,
             "created": "2026-06-21",
             "role": "patient",
             "clinic_id": 1,
-            "nationality": "Austria",
-            "address": "70155 Kilback Glen\nPort Stonebury, MN 60563",
-            "marital_status": "other",
-            "emergency_phone": "0991668315",
+            "nationality": "Paraguay",
+            "address": "492 Coby Cliffs\nVickystad, KY 23523",
+            "marital_status": "single",
+            "emergency_phone": "0932430311",
             "allergies": null,
             "chronic_conditions": null,
-            "career": "Laundry OR Dry-Cleaning Worker",
-            "blood_type": "AB-"
+            "career": "Supervisor Fire Fighting Worker",
+            "blood_type": "A-"
         }
     }
 }

@@ -1,11 +1,11 @@
 {
-    "status": 404,
+    "status": 200,
     "headers": {
         "cache-control": [
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 10:40:26 GMT"
+            "Sun, 21 Jun 2026 13:53:56 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -15,8 +15,8 @@
         ]
     },
     "body": {
-        "success": false,
-        "message": "no record found",
+        "success": true,
+        "message": "Phone number set successfully.",
         "data": null
     }
 }

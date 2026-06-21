@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 11:49:48 GMT"
+            "Sun, 21 Jun 2026 13:54:20 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -22,7 +22,7 @@
                 "id": 1,
                 "doctor": {
                     "id": 1,
-                    "name": "Hortense Fisher"
+                    "name": "Nelda Little"
                 },
                 "day_of_week": 0,
                 "day_name": "Sunday",

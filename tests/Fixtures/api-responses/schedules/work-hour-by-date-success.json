@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 11:49:51 GMT"
+            "Sun, 21 Jun 2026 13:54:22 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -21,7 +21,7 @@
             "id": 1,
             "doctor": {
                 "id": 1,
-                "name": "Patricia Kutch"
+                "name": "Jadon Howell"
             },
             "day_of_week": 0,
             "day_name": "Sunday",

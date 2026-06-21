@@ -102,7 +102,7 @@ class ClinicTest extends TestCase
             [
                 'fname' => 'New',
                 'lname' => 'Doctor',
-                'phone' => '0933333333',
+                'email' => 'newdoctor@test.com',
                 'dob' => '1985-05-15',
                 'gender' => 'male',
                 'clinic_id' => $this->clinic->id,
@@ -126,7 +126,7 @@ class ClinicTest extends TestCase
             $this->uri('/clinic-system/clinic/clinic/doctor/register'),
             [
                 'fname' => '',
-                'phone' => 'invalid',
+                'email' => 'not-an-email',
             ],
             $this->authHeaders($this->ownerToken)
         );
@@ -144,7 +144,7 @@ class ClinicTest extends TestCase
             [
                 'fname' => 'New',
                 'lname' => 'Secretary',
-                'phone' => '0944444444',
+                'email' => 'newsecretary@test.com',
                 'dob' => '1990-01-01',
                 'gender' => 'female',
                 'clinic_id' => $this->clinic->id,

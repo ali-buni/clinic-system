@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 11:49:30 GMT"
+            "Sun, 21 Jun 2026 13:54:04 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -26,13 +26,13 @@
                 "doctors": [
                     {
                         "id": 1,
-                        "name": "Haley Rice"
+                        "name": "Trevion Vandervort"
                     }
                 ],
                 "secretaries": [
                     {
                         "id": 1,
-                        "name": "Walter Bogisich"
+                        "name": "Nikolas Corkery"
                     }
                 ]
             }

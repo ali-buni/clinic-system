@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 11:48:44 GMT"
+            "Sun, 21 Jun 2026 13:53:18 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -23,11 +23,11 @@
                 "ar_name": "باراسيتامول",
                 "en_name": "Paracetamol",
                 "generic_name_ar": null,
-                "generic_name_en": "nulla",
+                "generic_name_en": "debitis",
                 "strength": "500mg",
                 "form": "tablet",
-                "created_at": "2026-06-21T11:48:41.000000Z",
-                "updated_at": "2026-06-21T11:48:41.000000Z",
+                "created_at": "2026-06-21T13:53:14.000000Z",
+                "updated_at": "2026-06-21T13:53:14.000000Z",
                 "api_medicine_id": null,
                 "is_custom": 1
             },

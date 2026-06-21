@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 11:49:26 GMT"
+            "Sun, 21 Jun 2026 13:53:53 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -19,17 +19,17 @@
         "message": "Medical history retrieved successfully.",
         "data": {
             "id": 1,
-            "name": "Jeanne Rutherford",
+            "name": "Iliana Lehner",
             "phone": "0900000004",
             "email": "patient@test.com",
-            "gender": "male",
-            "dob": "1966-01-30",
+            "gender": "unknown",
+            "dob": "1975-07-16",
             "profile_image": null,
             "clinic_id": 1,
             "appointments": [
                 {
                     "id": 1,
-                    "doctor_name": "Florian Medhurst",
+                    "doctor_name": "Rowland McClure",
                     "type": null,
                     "start_time": "2026-06-22 10:00",
                     "end_time": "2026-06-22 10:30",
@@ -40,9 +40,9 @@
             "records": [
                 {
                     "id": 1,
-                    "doctor_name": "Florian Medhurst",
+                    "doctor_name": "Rowland McClure",
                     "diagnosis_summary": "Test diagnosis",
-                    "description": "Odio aut tempora velit nisi molestiae consequatur. Et nostrum ipsa est iure qui. Numquam ex dolorem et laboriosam.",
+                    "description": "Itaque dignissimos dolor laborum omnis facilis. Repudiandae ut natus dolores ut in porro et. Temporibus enim odio totam. Expedita illum aut totam eos ut.",
                     "status": "open",
                     "diseases": [],
                     "prescriptions": [],

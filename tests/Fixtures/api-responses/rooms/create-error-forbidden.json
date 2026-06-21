@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 11:49:35 GMT"
+            "Sun, 21 Jun 2026 13:54:10 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -312,6 +312,13 @@
                 "line": 374,
                 "function": "run",
                 "class": "PHPUnit\\Framework\\TestCase",
+                "type": "->"
+            },
+            {
+                "file": "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestSuite.php",
+                "line": 374,
+                "function": "run",
+                "class": "PHPUnit\\Framework\\TestSuite",
                 "type": "->"
             },
             {

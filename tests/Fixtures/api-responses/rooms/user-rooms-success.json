@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 11:49:33 GMT"
+            "Sun, 21 Jun 2026 13:26:12 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -26,13 +26,13 @@
                 "doctors": [
                     {
                         "id": 1,
-                        "name": "Torey Eichmann"
+                        "name": "Nikita Swaniawski"
                     }
                 ],
                 "secretaries": [
                     {
                         "id": 1,
-                        "name": "Shakira Lemke"
+                        "name": "Opal Hand"
                     }
                 ]
             }

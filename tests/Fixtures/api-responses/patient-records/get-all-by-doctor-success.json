@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 11:49:12 GMT"
+            "Sun, 21 Jun 2026 13:53:42 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -25,17 +25,17 @@
                 "clinic_id": 1,
                 "appointment_id": 1,
                 "diagnosis_summary": "Test diagnosis",
-                "description": "Provident laborum laudantium delectus. Iure est hic maiores id perspiciatis. Eligendi suscipit libero odio tenetur. Et ipsum unde corrupti beatae.",
+                "description": "Ullam incidunt non voluptatum sed occaecati. Mollitia placeat sed rerum accusantium. Sint cumque illo minus natus adipisci et vero. Omnis dignissimos voluptas nemo et ut.",
                 "status": "open",
-                "notes": "Animi qui modi ullam alias earum. Id hic numquam assumenda aspernatur non ipsa. Nostrum aliquid id corrupti qui aliquam pariatur.",
+                "notes": "Eaque in qui qui iusto. Et nam maxime sunt laudantium laudantium qui unde. Minima labore tempore excepturi. Ipsam dolores sed in.",
                 "patient": {
-                    "name": "Emile Morar",
+                    "name": "Thaddeus Dickinson",
                     "phone": "0900000004"
                 },
                 "doctor": {
-                    "name": "Daisy Gislason"
+                    "name": "Gwen Smitham"
                 },
-                "created_at": "2026-06-21 11:49:12"
+                "created_at": "2026-06-21 13:53:42"
             }
         ]
     }

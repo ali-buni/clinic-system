@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 12:19:03 GMT"
+            "Sun, 21 Jun 2026 13:51:55 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -23,11 +23,11 @@
                 "clinic_id": 1,
                 "doctor": {
                     "id": 1,
-                    "name": "Amy Predovic"
+                    "name": "Fannie Runolfsdottir"
                 },
                 "patient": {
                     "id": 1,
-                    "name": "Jaunita Bergnaum",
+                    "name": "Dax Hartmann",
                     "phone": "0900000004"
                 },
                 "room": {

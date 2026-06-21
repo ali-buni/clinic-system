@@ -1,11 +1,11 @@
 {
-    "status": 500,
+    "status": 401,
     "headers": {
         "cache-control": [
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 10:39:07 GMT"
+            "Sun, 21 Jun 2026 13:54:01 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -15,8 +15,6 @@
         ]
     },
     "body": {
-        "success": false,
-        "message": "No valid reset code found. Please request a new one.",
-        "data": null
+        "message": "Unauthenticated."
     }
 }
