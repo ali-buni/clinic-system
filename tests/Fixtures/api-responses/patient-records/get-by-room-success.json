@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:53:40 GMT"
+            "Sun, 21 Jun 2026 15:09:57 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -25,17 +25,17 @@
                 "clinic_id": 1,
                 "appointment_id": 1,
                 "diagnosis_summary": "Test diagnosis",
-                "description": "Quia eaque reiciendis ut et est modi. Ipsa nihil labore eligendi aut necessitatibus quam dolor. Minus sit nesciunt deleniti.",
+                "description": "Tenetur veritatis non dolor sint. Suscipit nobis ab maxime sequi quia autem. Cumque adipisci consequuntur laudantium voluptatem in voluptas enim aut.",
                 "status": "open",
-                "notes": "Est id voluptatem autem consequatur vel nesciunt. Provident doloribus temporibus dolore sed et. Quae architecto aut eos.",
+                "notes": "Earum distinctio omnis ut accusamus laboriosam. Temporibus molestiae quia in aspernatur. Reprehenderit nam deleniti eum dolores quia non. Illum molestiae quaerat itaque nulla quis saepe. Optio et numquam excepturi aperiam dolores libero qui.",
                 "patient": {
-                    "name": "Yvette Kilback",
+                    "name": "Patricia Bechtelar",
                     "phone": "0900000004"
                 },
                 "doctor": {
-                    "name": "Haley Romaguera"
+                    "name": "Hilario Jones"
                 },
-                "created_at": "2026-06-21 13:53:40"
+                "created_at": "2026-06-21 15:09:57"
             }
         ]
     }

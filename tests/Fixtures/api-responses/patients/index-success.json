@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:53:44 GMT"
+            "Sun, 21 Jun 2026 14:28:52 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -21,7 +21,7 @@
             {
                 "id": 1,
                 "user_id": 5,
-                "name": "Maegan Heller",
+                "name": "Brycen Flatley",
                 "gender": "male",
                 "profile_image": null,
                 "clinic_id": 1

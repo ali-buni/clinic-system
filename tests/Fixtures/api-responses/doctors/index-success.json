@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:20:47 GMT"
+            "Sun, 21 Jun 2026 15:12:52 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -23,15 +23,15 @@
                 "user_id": 3,
                 "clinic_id": 1,
                 "room_id": 1,
-                "name": "Ethan Gutmann",
+                "name": "Lura Lang",
                 "phone": "0900000002",
                 "email": "doctor@test.com",
-                "dob": "1983-04-02 10:53:29",
-                "gender": "male",
+                "dob": "1990-05-04 17:42:35",
+                "gender": "unknown",
                 "created_at": "2026-06-21",
                 "appointment_duration": 30,
                 "consultation_fee": 150,
-                "bio": "Ipsa sit dolorem quis aut omnis quia. Voluptatem delectus odio aut nihil et officiis doloribus et. Aut soluta iure vitae tempora dolorum voluptas eligendi. Et eum quae id autem corrupti numquam debitis asperiores. Cum laborum quasi sed eaque amet ut dignissimos.",
+                "bio": "Magni nam voluptatum assumenda sint a quod. Aperiam aut aut ipsam. Soluta ad est qui quibusdam placeat. Error quia quia illo occaecati temporibus.",
                 "specialties": [
                     {
                         "ar_name": "الطب العام",

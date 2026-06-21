@@ -11,7 +11,7 @@ class PhoneTest extends TestCase
 {
     const DOMAIN = 'phone';
 
-    public function test_update_phone_first_time_success()
+    public function test_update_phone_sends_code()
     {
         $user = User::factory()->create(['phone' => null]);
         $token = $user->createToken('test')->plainTextToken;
@@ -23,28 +23,8 @@ class PhoneTest extends TestCase
         );
 
         $response->assertStatus(200);
-        $response->assertJson(['success' => true]);
-        $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-            'phone' => '0911111111',
-        ]);
-        $this->saveFixture(self::DOMAIN, 'update-first-time-success', $response);
-    }
-
-    public function test_update_phone_sends_code_when_already_set()
-    {
-        $user = User::factory()->create(['phone' => '0912345678']);
-        $token = $user->createToken('test')->plainTextToken;
-
-        $response = $this->postJson(
-            $this->uri('/clinic-system/phone/update'),
-            ['phone' => '0999999999'],
-            $this->authHeaders($token)
-        );
-
-        $response->assertStatus(200);
         $response->assertJson(['success' => true, 'message' => 'Verification code sent to your new phone number.']);
-        $this->saveFixture(self::DOMAIN, 'update-send-code-success', $response);
+        $this->saveFixture(self::DOMAIN, 'update-send-code-first-time', $response);
     }
 
     public function test_verify_phone_update_success()

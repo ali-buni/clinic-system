@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:53:30 GMT"
+            "Sun, 21 Jun 2026 15:09:39 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -28,15 +28,15 @@
             "status": "follow-up",
             "notes": "Updated notes",
             "patient": {
-                "name": "Maiya Dibbert",
+                "name": "Luz Hahn",
                 "phone": "0900000004"
             },
             "doctor": {
-                "name": "Haleigh Haley"
+                "name": "Leonel Stehr"
             },
             "diseases": [],
             "prescriptions": [],
-            "created_at": "2026-06-21 13:53:30"
+            "created_at": "2026-06-21 15:09:39"
         }
     }
 }

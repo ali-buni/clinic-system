@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:51:56 GMT"
+            "Sun, 21 Jun 2026 15:11:25 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -23,11 +23,11 @@
                 "clinic_id": 1,
                 "doctor": {
                     "id": 1,
-                    "name": "Ashley Hand"
+                    "name": "Sammy Bode"
                 },
                 "patient": {
                     "id": 1,
-                    "name": "Shaylee Halvorson",
+                    "name": "Vaughn Zieme",
                     "phone": "0900000004"
                 },
                 "room": {

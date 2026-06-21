@@ -19,12 +19,179 @@ Authorization: Bearer {token}
 Accept: application/json
 ```
 
+## Table of Contents
+
+### Auth
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | [/refresh-token](#auth-refresh-token) | Refresh authentication token. |
+| POST | [/reset-password](#auth-reset-password) | Reset password (authenticated). |
+| POST | [/reset-password-with-code](#auth-reset-with-code) | Reset password using verification code. |
+| POST | [/signout](#auth-signout) | Revoke current token. |
+| POST | [/login](#auth-login) | Authenticate user credentials. |
+| POST | [/register](#auth-register) | Register a new user. |
+| POST | [/forgot-password](#auth-forgot-password) | Send password reset link. |
+
+### Verification
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | [/resend-code](#verification-resend-code) | Resend verification code. |
+| POST | [/verify-code](#verification-verify-code) | Verify email verification code. |
+
+### Appointment Types
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/appointment-types](#appointment-types-index) | List all appointment types. |
+| POST | [/appointment-types](#appointment-types-add) | Create a new appointment type. |
+| DELETE | [/appointment-types/{id}](#appointment-types-delete) | Delete an appointment type. |
+
+### Devices
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | [/devices/register-token](#devices-register-token) | Register FCM device token. |
+
+### Specialties
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/clinic/specialty/getAll](#specialties-get-all-specialties) | Show all doctor specialties. |
+| GET | [/clinic/specialty/showPrimary/{doctorId}](#specialties-show-primary) | Show primary specialty. |
+| GET | [/clinic/specialty/index](#specialties-index) | List all specialties. |
+| POST | [/clinic/specialty/changePrimary/{specialtyId}](#specialties-change-primary) | Change primary specialty. |
+| POST | [/clinic/specialty/add](#specialties-attach-specialties) | Attach specialties to doctor. |
+| DELETE | [/clinic/specialty/delete/{specialId}](#specialties-detach-specialty) | Detach specialty from doctor. |
+
+### Schedules
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/clinic/schedule/get-weekly/{doctorId}](#schedules-get-weekly) | Get weekly schedule for a doctor. |
+| GET | [/clinic/schedule/work-hour/{doctorId}](#schedules-work-hour-by-date) | Get work hours for a specific date. |
+| POST | [/clinic/schedule/add](#schedules-store) | Create work hour entry. |
+| PUT | [/clinic/schedule/edit](#schedules-update) | Update work hour. |
+| DELETE | [/clinic/schedule/delete/{dayOfWeek}/{doctorId}](#schedules-destroy) | Delete work hour. |
+
+### Medicines
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/clinic/medicines/search](#medicines-search) | Search medicines by name. |
+| POST | [/clinic/medicines/store](#medicines-store) | Create custom medicine. |
+
+### Diseases
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/clinic/diseases/search](#diseases-search) | Search diseases by name. |
+| POST | [/clinic/diseases/store](#diseases-store) | Create custom disease. |
+
+### Clinic
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | [/clinic/clinic/secretary/register](#clinic-create-secretary) | Create secretary (owner only). |
+| POST | [/clinic/clinic/doctor/register](#clinic-create-doctor) | Create doctor (owner only). |
+
+### Rooms
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/clinic/clinic/rooms/userRooms/get](#rooms-user-rooms) | Get current user's rooms. |
+| GET | [/clinic/clinic/rooms/{clinicId}](#rooms-index) | List rooms in a clinic. |
+| GET | [/clinic/clinic/rooms/{clinicId}/info](#rooms-index-with-info) | List rooms with additional info. |
+| POST | [/clinic/clinic/rooms/sync/doctorRoom](#rooms-add-doctor-to-room) | Add doctor to room. |
+| POST | [/clinic/clinic/rooms/sync/secRooms](#rooms-add-sec-to-room) | Add secretary to room. |
+| DELETE | [/clinic/clinic/rooms/detach/secRooms](#rooms-del-sec-from-room) | Remove secretary from room. |
+| DELETE | [/clinic/clinic/rooms/detach/doctorRoom](#rooms-del-doctor-from-room) | Remove doctor from room. |
+
+### Secretaries
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/clinic/clinic/secretaries/{id}](#secretaries-info) | Get secretary info. |
+| POST | [/clinic/clinic/secretaries/update](#secretaries-update) | Update secretary info. |
+
+### Patients
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/clinic/clinic/patients/{patientId}/medical-history](#patients-medical-history) | Get patient medical history. |
+| GET | [/clinic/clinic/patients/restore](#patients-restore) | Restore soft-deleted patient. |
+| GET | [/clinic/clinic/patients/{patientId}/show](#patients-show) | Get patient details. |
+| GET | [/clinic/clinic/patients](#patients-index) | List patients (requires clinic_id). |
+| GET | [/clinic/clinic/patients/trashed](#patients-index-trashed) | List soft-deleted patients. |
+| POST | [/clinic/clinic/patients/update](#patients-update) | Update patient info. |
+| DELETE | [/clinic/clinic/patients/delete](#patients-destroy) | Soft-delete patient. |
+
+### Users
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/clinic/clinic/users/image-url](#users-image-url) | Get user profile image URL. |
+| GET | [/clinic/clinic/users/info](#users-info) | Get authenticated user info. |
+| POST | [/clinic/clinic/users/update-image](#users-update-image) | Update user profile image. |
+
+### Doctors
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/clinic/clinic/doctors/{id}/info](#doctors-info) | Get doctor info. |
+| GET | [/clinic/clinic/doctors/filter](#doctors-index) | List doctors with filters. |
+| POST | [/clinic/clinic/doctors/{id}/restore](#doctors-restore) | Restore soft-deleted doctor. |
+| POST | [/clinic/clinic/doctors/update](#doctors-update) | Update doctor info. |
+| DELETE | [/clinic/clinic/doctors/{id}/force](#doctors-force-delete) | Force-delete doctor. |
+| DELETE | [/clinic/clinic/doctors/{id}/leave](#doctors-destroy) | Soft-delete doctor. |
+
+### Appointments
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/clinic/clinic/appointments/clinic/{clinicId}](#appointments-clinic-appointments) | List clinic appointments. |
+| GET | [/clinic/clinic/appointments/doctor/{doctorId}](#appointments-doctor-appointments) | List doctor appointments. |
+| GET | [/clinic/clinic/appointments/get/available-slots](#appointments-available-slots) | Get available appointment slots. |
+| GET | [/clinic/clinic/appointments/clinic/{clinicId}/schedule](#appointments-clinic-schedule) | Get clinic schedule for a date. |
+| GET | [/clinic/clinic/appointments/doctor/{doctorId}/schedule](#appointments-doctor-schedule) | Get doctor schedule for a date. |
+| GET | [/clinic/clinic/appointments/room/appo](#appointments-room-appointments) | List room appointments. |
+| GET | [/clinic/clinic/appointments/{id}](#appointments-show) | Show appointment details. |
+| GET | [/clinic/clinic/appointments/patient/{patientId}](#appointments-patient-appointments) | List patient appointments. |
+| POST | [/clinic/clinic/appointments/book](#appointments-book) | Book a new appointment. |
+| POST | [/clinic/clinic/appointments/{id}/cancel](#appointments-cancel) | Cancel an appointment. |
+| POST | [/clinic/clinic/appointments/{id}/reschedule](#appointments-reschedule) | Reschedule an appointment. |
+| POST | [/clinic/clinic/appointments/{id}/complete](#appointments-complete) | Complete a confirmed appointment. |
+| POST | [/clinic/clinic/appointments/{id}/confirmed](#appointments-mark-confirmed) | Mark appointment as confirmed. |
+
+### Phone
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | [/phone/verify-update](#phone-verify-update) | Verify phone update with code. |
+| POST | [/phone/update](#phone-update) | Request phone update (sends code if already set). |
+
+### Patient Records
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/clinic/clinic/patient-records/doctor/{doctorId}/all](#patient-records-get-all-by-doctor) | Get all records for a doctor. |
+| GET | [/clinic/clinic/patient-records/patient/{patientId}/doctor/{doctorId}](#patient-records-get-by-doctor) | Get records by patient and doctor. |
+| GET | [/clinic/clinic/patient-records/patient/{patientId}/history](#patient-records-history) | Get patient medical history records. |
+| GET | [/clinic/clinic/patient-records/filtered](#patient-records-index) | List filtered patient records. |
+| GET | [/clinic/clinic/patient-records/show/{id}](#patient-records-show) | Show patient record. |
+| POST | [/clinic/clinic/patient-records/rooms/search](#patient-records-get-by-room) | Search records by rooms. |
+| POST | [/clinic/clinic/patient-records](#patient-records-store) | Create patient record. |
+| PUT | [/clinic/clinic/patient-records/{id}](#patient-records-update) | Update patient record. |
+| DELETE | [/clinic/clinic/patient-records/{id}](#patient-records-destroy) | Delete patient record. |
+
 ---
 
 ## Auth
 
 Public authentication endpoints.
 
+<div id="auth-refresh-token"></div>
 **`POST /api/clinic-system/refresh-token`**
 
 Refresh authentication token. Auth required.
@@ -32,7 +199,9 @@ Refresh authentication token. Auth required.
 **Request Body:**
 
 ```json
-{"refresh_token":"..."}
+{
+    "refresh_token": "..."         // required
+}
 ```
 
 **Response (200) - Success:**
@@ -42,16 +211,8 @@ Refresh authentication token. Auth required.
     "success":  true,
     "message":  "Token refreshed successfully",
     "data":  {
-                 "auth_token":  "5|5qNwWGDq8SiQvI092xccyhnyD7lpEE6tJWRtPVb49deb4052"
+                 "auth_token":  "5|iLcjLqZ4CCfjL3VnJLX74FxNscrcdRnrrO0i8Zb7c6e55c1c"
              }
-}
-```
-
-**Response (401) - Error: unauthenticated:**
-
-```json
-{
-    "message":  "Unauthenticated."
 }
 ```
 
@@ -63,6 +224,7 @@ Refresh authentication token. Auth required.
 }
 ```
 
+<div id="auth-reset-password"></div>
 **`POST /api/clinic-system/reset-password`**
 
 Reset password (authenticated). Auth required.
@@ -70,7 +232,12 @@ Reset password (authenticated). Auth required.
 **Request Body:**
 
 ```json
-{"current_password":"password","new_password":"newpass123"}
+{
+    "email": "patient@test.com",   // required, exists:users
+    "password": "currentpass",      // required, min:8
+    "new_password": "newpass123",   // required, min:8, different, confirmed
+    "new_password_confirmation": "newpass123" // required
+}
 ```
 
 **Response (200) - Success:**
@@ -79,16 +246,6 @@ Reset password (authenticated). Auth required.
 {
     "success":  true,
     "message":  "the password is reset",
-    "data":  null
-}
-```
-
-**Response (500) - code-error-invalid:**
-
-```json
-{
-    "success":  false,
-    "message":  "No valid reset code found. Please request a new one.",
     "data":  null
 }
 ```
@@ -103,6 +260,7 @@ Reset password (authenticated). Auth required.
 }
 ```
 
+<div id="auth-reset-with-code"></div>
 **`POST /api/clinic-system/reset-password-with-code`**
 
 Reset password using verification code. Public.
@@ -110,7 +268,12 @@ Reset password using verification code. Public.
 **Request Body:**
 
 ```json
-{"email":"","code":"","password":""}
+{
+    "email": "patient@test.com",   // required, email, exists:users
+    "code": "123456",               // required, digits:6
+    "password": "newpass123",       // required, min:8, confirmed
+    "password_confirmation": "newpass123" // required
+}
 ```
 
 **Response (422) - Error: validation:**
@@ -133,6 +296,7 @@ Reset password using verification code. Public.
 }
 ```
 
+<div id="auth-signout"></div>
 **`POST /api/clinic-system/signout`**
 
 Revoke current token. Auth required.
@@ -147,14 +311,6 @@ Revoke current token. Auth required.
 }
 ```
 
-**Response (401) - Error: unauthenticated:**
-
-```json
-{
-    "message":  "Unauthenticated."
-}
-```
-
 **Response (401) - Error: unauthorized:**
 
 ```json
@@ -163,6 +319,7 @@ Revoke current token. Auth required.
 }
 ```
 
+<div id="auth-login"></div>
 **`POST /api/clinic-system/login`**
 
 Authenticate user credentials. Public.
@@ -170,7 +327,10 @@ Authenticate user credentials. Public.
 **Request Body:**
 
 ```json
-{"email":"patient@test.com","password":"password"}
+{
+    "login": "patient@test.com",   // required, email
+    "password": "password"         // required, min:8
+}
 ```
 
 **Response (200) - Success:**
@@ -209,6 +369,7 @@ Authenticate user credentials. Public.
 }
 ```
 
+<div id="auth-register"></div>
 **`POST /api/clinic-system/register`**
 
 Register a new user. Public.
@@ -216,7 +377,25 @@ Register a new user. Public.
 **Request Body:**
 
 ```json
-{"email":"new@test.com","password":"password","phone":"0900000005"}
+{
+    "fname": "New",                // required
+    "lname": "Patient",             // required
+    "email": "newpatient@test.com", // required, unique
+    "password": "password123",      // required, min:8, confirmed
+    "password_confirmation": "password123", // required
+    "clinic_id": 1,                 // required, exists:clinics
+    "dob": "1990-01-01",            // optional
+    "gender": "male",               // optional
+    "nationality": null,            // optional
+    "address": null,                // optional
+    "marital_status": null,         // optional
+    "emergency_phone": null,        // optional, digits_between:10,13
+    "allergies": null,              // optional
+    "chronic_conditions": null,     // optional
+    "career": null,                 // optional
+    "blood_type": null,             // optional
+    "profile_image": null           // optional, image, max:2048
+}
 ```
 
 **Response (200) - Success:**
@@ -268,6 +447,7 @@ Register a new user. Public.
 }
 ```
 
+<div id="auth-forgot-password"></div>
 **`POST /api/clinic-system/forgot-password`**
 
 Send password reset link. Public.
@@ -275,7 +455,9 @@ Send password reset link. Public.
 **Request Body:**
 
 ```json
-{"email":"patient@test.com"}
+{
+    "email": "patient@test.com"    // required, email, exists:users
+}
 ```
 
 **Response (200) - Success:**
@@ -320,6 +502,7 @@ Send password reset link. Public.
 
 Email verification.
 
+<div id="verification-resend-code"></div>
 **`POST /api/clinic-system/resend-code`**
 
 Resend verification code. Public.
@@ -327,7 +510,10 @@ Resend verification code. Public.
 **Request Body:**
 
 ```json
-{"email":"..."}
+{
+    "login": "patient@test.com",   // required, email, exists:users
+    "password": "password"         // required, min:8
+}
 ```
 
 **Response (401) - Error: invalid-credentials:**
@@ -356,6 +542,7 @@ Resend verification code. Public.
 }
 ```
 
+<div id="verification-verify-code"></div>
 **`POST /api/clinic-system/verify-code`**
 
 Verify email verification code. Public.
@@ -363,7 +550,11 @@ Verify email verification code. Public.
 **Request Body:**
 
 ```json
-{"email":"...","code":"..."}
+{
+    "login": "patient@test.com",   // required, email, exists:users
+    "code": "123456",               // required, digits:6
+    "type": "email"                 // required, in:phone,email
+}
 ```
 
 **Response (422) - Error: validation:**
@@ -391,6 +582,7 @@ Verify email verification code. Public.
 
 Appointment type CRUD.
 
+<div id="appointment-types-index"></div>
 **`GET /api/clinic-system/appointment-types`**
 
 List all appointment types. Public.
@@ -407,75 +599,76 @@ List all appointment types. Public.
                      "ar_name":  "مراجعة",
                      "en_name":  "Review",
                      "types":  "1",
-                     "created_at":  "2026-06-21 12:19:06"
+                     "created_at":  "2026-06-21 15:11:29"
                  },
                  {
                      "id":  9,
                      "ar_name":  "جلسة طويلة",
                      "en_name":  "Long Session",
                      "types":  "3",
-                     "created_at":  "2026-06-21 12:19:06"
+                     "created_at":  "2026-06-21 15:11:29"
                  },
                  {
                      "id":  8,
                      "ar_name":  "جلسة متوسطة",
                      "en_name":  "Medium Session",
                      "types":  "2",
-                     "created_at":  "2026-06-21 12:19:06"
+                     "created_at":  "2026-06-21 15:11:29"
                  },
                  {
                      "id":  7,
                      "ar_name":  "جلسة قصيرة",
                      "en_name":  "Short Session",
                      "types":  "1",
-                     "created_at":  "2026-06-21 12:19:06"
+                     "created_at":  "2026-06-21 15:11:29"
                  },
                  {
                      "id":  6,
                      "ar_name":  "فحص",
                      "en_name":  "Examination",
                      "types":  "1",
-                     "created_at":  "2026-06-21 12:19:06"
+                     "created_at":  "2026-06-21 15:11:29"
                  },
                  {
                      "id":  5,
                      "ar_name":  "طوارئ",
                      "en_name":  "Emergency",
                      "types":  "1",
-                     "created_at":  "2026-06-21 12:19:06"
+                     "created_at":  "2026-06-21 15:11:29"
                  },
                  {
                      "id":  4,
                      "ar_name":  "متابعة 3",
                      "en_name":  "Follow Up 3",
                      "types":  "3",
-                     "created_at":  "2026-06-21 12:19:06"
+                     "created_at":  "2026-06-21 15:11:29"
                  },
                  {
                      "id":  3,
                      "ar_name":  "متابعة 2",
                      "en_name":  "Follow Up 2",
                      "types":  "2",
-                     "created_at":  "2026-06-21 12:19:06"
+                     "created_at":  "2026-06-21 15:11:29"
                  },
                  {
                      "id":  2,
                      "ar_name":  "متابعة 1",
                      "en_name":  "Follow Up 1",
                      "types":  "1",
-                     "created_at":  "2026-06-21 12:19:06"
+                     "created_at":  "2026-06-21 15:11:29"
                  },
                  {
                      "id":  1,
                      "ar_name":  "استشارة عامة",
                      "en_name":  "General Consultation",
                      "types":  "1",
-                     "created_at":  "2026-06-21 12:19:06"
+                     "created_at":  "2026-06-21 15:11:29"
                  }
              ]
 }
 ```
 
+<div id="appointment-types-add"></div>
 **`POST /api/clinic-system/appointment-types`**
 
 Create a new appointment type. Public.
@@ -483,7 +676,11 @@ Create a new appointment type. Public.
 **Request Body:**
 
 ```json
-{"types":1,"ar_name":"...","en_name":"..."}
+{
+    "types": 1,                     // required, integer, min:1, max:3
+    "ar_name": "...",               // required
+    "en_name": "..."                // required
+}
 ```
 
 **Response (201) - Success:**
@@ -515,6 +712,7 @@ Create a new appointment type. Public.
 }
 ```
 
+<div id="appointment-types-delete"></div>
 **`DELETE /api/clinic-system/appointment-types/{id}`**
 
 Delete an appointment type. Public.
@@ -545,6 +743,7 @@ Delete an appointment type. Public.
 
 FCM device token registration.
 
+<div id="devices-register-token"></div>
 **`POST /api/clinic-system/devices/register-token`**
 
 Register FCM device token. Auth required.
@@ -552,22 +751,8 @@ Register FCM device token. Auth required.
 **Request Body:**
 
 ```json
-{"fcm_token":"..."}
-```
-
-**Response (200) - Success:**
-
-```json
 {
-    "message":  "Not implemented yet."
-}
-```
-
-**Response (401) - Error: unauthenticated:**
-
-```json
-{
-    "message":  "Unauthenticated."
+    "fcm_token": "..."             // required
 }
 ```
 
@@ -593,6 +778,7 @@ Register FCM device token. Auth required.
 
 Medical specialty management.
 
+<div id="specialties-get-all-specialties"></div>
 **`GET /api/clinic-system/clinic/specialty/getAll`**
 
 Show all doctor specialties. Auth required.
@@ -613,6 +799,7 @@ Show all doctor specialties. Auth required.
 }
 ```
 
+<div id="specialties-show-primary"></div>
 **`GET /api/clinic-system/clinic/specialty/showPrimary/{doctorId}`**
 
 Show primary specialty. Auth required.
@@ -631,6 +818,7 @@ Show primary specialty. Auth required.
 }
 ```
 
+<div id="specialties-index"></div>
 **`GET /api/clinic-system/clinic/specialty/index`**
 
 List all specialties. Public.
@@ -771,15 +959,10 @@ List all specialties. Public.
 }
 ```
 
+<div id="specialties-change-primary"></div>
 **`POST /api/clinic-system/clinic/specialty/changePrimary/{specialtyId}`**
 
 Change primary specialty. Auth required.
-
-**Request Body:**
-
-```json
-{"doctor_id":1}
-```
 
 **Response (200) - Success:**
 
@@ -791,6 +974,7 @@ Change primary specialty. Auth required.
 }
 ```
 
+<div id="specialties-attach-specialties"></div>
 **`POST /api/clinic-system/clinic/specialty/add`**
 
 Attach specialties to doctor. Auth required.
@@ -798,7 +982,9 @@ Attach specialties to doctor. Auth required.
 **Request Body:**
 
 ```json
-{"doctor_id":1,"specialties":[1,2]}
+{
+    "specialty_ids": [1, 2]         // required, array, min:1, each exists:specialties
+}
 ```
 
 **Response (200) - Success:**
@@ -843,6 +1029,7 @@ Attach specialties to doctor. Auth required.
 }
 ```
 
+<div id="specialties-detach-specialty"></div>
 **`DELETE /api/clinic-system/clinic/specialty/delete/{specialId}`**
 
 Detach specialty from doctor. Auth required.
@@ -865,6 +1052,7 @@ Detach specialty from doctor. Auth required.
 
 Doctor work hours and schedules.
 
+<div id="schedules-get-weekly"></div>
 **`GET /api/clinic-system/clinic/schedule/get-weekly/{doctorId}`**
 
 Get weekly schedule for a doctor. Public.
@@ -880,7 +1068,7 @@ Get weekly schedule for a doctor. Public.
                      "id":  1,
                      "doctor":  {
                                     "id":  1,
-                                    "name":  "Hortense Fisher"
+                                    "name":  "Glenna Lebsack"
                                 },
                      "day_of_week":  0,
                      "day_name":  "Sunday",
@@ -906,6 +1094,7 @@ Get weekly schedule for a doctor. Public.
 }
 ```
 
+<div id="schedules-work-hour-by-date"></div>
 **`GET /api/clinic-system/clinic/schedule/work-hour/{doctorId}`**
 
 Get work hours for a specific date. Public.
@@ -926,7 +1115,7 @@ date=2026-06-28
                  "id":  1,
                  "doctor":  {
                                 "id":  1,
-                                "name":  "Patricia Kutch"
+                                "name":  "Anibal Grimes"
                             },
                  "day_of_week":  0,
                  "day_name":  "Sunday",
@@ -954,6 +1143,7 @@ date=2026-06-28
 }
 ```
 
+<div id="schedules-store"></div>
 **`POST /api/clinic-system/clinic/schedule/add`**
 
 Create work hour entry. Auth required.
@@ -961,7 +1151,16 @@ Create work hour entry. Auth required.
 **Request Body:**
 
 ```json
-{"doctor_id":1,"day_of_week":0,"start_time":"09:00","end_time":"17:00"}
+{
+    "doctor_id": 1,                 // required, integer, exists:doctors
+    "day_of_week": 0,               // required, integer, between:0,6
+    "start_time": "09:00",          // required, format:H:i
+    "end_time": "17:00",            // required, format:H:i, after:start_time
+    "is_active": true,              // optional, boolean
+    "max_patients_per_day": 20,     // optional, integer, min:1
+    "break_start": "12:00",         // optional, format:H:i
+    "break_end": "13:00"            // optional, format:H:i
+}
 ```
 
 **Response (201) - Success:**
@@ -974,7 +1173,7 @@ Create work hour entry. Auth required.
                  "id":  2,
                  "doctor":  {
                                 "id":  1,
-                                "name":  "Kory Gerhold"
+                                "name":  "Odessa Bode"
                             },
                  "day_of_week":  1,
                  "day_name":  "Monday",
@@ -1019,6 +1218,7 @@ Create work hour entry. Auth required.
 }
 ```
 
+<div id="schedules-update"></div>
 **`PUT /api/clinic-system/clinic/schedule/edit`**
 
 Update work hour. Auth required.
@@ -1026,7 +1226,16 @@ Update work hour. Auth required.
 **Request Body:**
 
 ```json
-{"doctor_id":1,"day_of_week":0,"start_time":"09:00","end_time":"18:00"}
+{
+    "doctor_id": 1,                 // sometimes, integer, exists:doctors
+    "day_of_week": 0,               // sometimes, integer, between:0,6
+    "start_time": "09:00",          // sometimes, format:H:i
+    "end_time": "18:00",            // sometimes, format:H:i, after:start_time
+    "is_active": true,              // optional, boolean
+    "max_patients_per_day": 20,     // optional, integer, min:1
+    "break_start": "12:00",         // optional, format:H:i
+    "break_end": "13:00"            // optional, format:H:i
+}
 ```
 
 **Response (200) - Success:**
@@ -1039,7 +1248,7 @@ Update work hour. Auth required.
                  "id":  1,
                  "doctor":  {
                                 "id":  1,
-                                "name":  "Maegan Wiza"
+                                "name":  "Leonardo Luettgen"
                             },
                  "day_of_week":  0,
                  "day_name":  "Sunday",
@@ -1054,6 +1263,7 @@ Update work hour. Auth required.
 }
 ```
 
+<div id="schedules-destroy"></div>
 **`DELETE /api/clinic-system/clinic/schedule/delete/{dayOfWeek}/{doctorId}`**
 
 Delete work hour. Auth required.
@@ -1074,6 +1284,7 @@ Delete work hour. Auth required.
 
 Medicine search and creation.
 
+<div id="medicines-search"></div>
 **`GET /api/clinic-system/clinic/medicines/search`**
 
 Search medicines by name. Public.
@@ -1096,148 +1307,26 @@ query=para
                      "ar_name":  "باراسيتامول",
                      "en_name":  "Paracetamol",
                      "generic_name_ar":  null,
-                     "generic_name_en":  "nulla",
+                     "generic_name_en":  "molestias",
                      "strength":  "500mg",
                      "form":  "tablet",
-                     "created_at":  "2026-06-21T11:48:41.000000Z",
-                     "updated_at":  "2026-06-21T11:48:41.000000Z",
+                     "created_at":  "2026-06-21T15:12:59.000000Z",
+                     "updated_at":  "2026-06-21T15:12:59.000000Z",
                      "api_medicine_id":  null,
                      "is_custom":  1
                  },
                  {
-                     "api_medicine_id":  "83027-0122_37909445-becc-47ba-9ed4-008f7027b8f0",
-                     "en_name":  "B Complex Liquescence",
-                     "ar_name":  null,
-                     "generic_name_en":  "Cholinum (Choline), Inositol (Vitamin B8), Folic Acid (Vitamin B9), Pantothenic Acid (Calcium Pantothenate, Vitamin B5), Thiaminum Hydrochloricum (Vitamin B1), Heart (Bovine), Hepar (Bovine), Methylcobalamin (Vitamin B12), Nicotinamidum (Vitamin B3), PABA (Para Aminobenzoic Acid Vitamin B10), Pyridoxinum Hydrochloricum (Vitamin B6), Biotin (Vitamin B7), Hordeum Vulgare, Riboflavinum (Vitamin B2), Torula Cerevisiae",
+                     "id":  2,
+                     "ar_name":  "sequi",
+                     "en_name":  "Paracetamol",
                      "generic_name_ar":  null,
-                     "strength":  "6 [hp_X]/mL",
-                     "form":  "tablet"
-                 },
-                 {
-                     "api_medicine_id":  "64616-102_462ee395-047c-8300-e063-6294a90a251d",
-                     "en_name":  "Para-BN",
-                     "ar_name":  null,
-                     "generic_name_en":  "Parathyroid Booster",
-                     "generic_name_ar":  null,
-                     "strength":  "7 [hp_X]/mL",
-                     "form":  "tablet"
-                 },
-                 {
-                     "api_medicine_id":  "55714-2594_27d4f0eb-04b6-cf82-e063-6394a90a897e",
-                     "en_name":  "Para-Si",
-                     "ar_name":  null,
-                     "generic_name_en":  "Juglans reg, Abrotanum, Aesculus hipp, Allium sat, Arsenicum alb, Artemisia, Baptisia, Cina, Cuprum met, Filix mas, Granatum, Ipecac, Lacheis, Lycopodium, Merc viv, Naphthalinum, Nat mur, Nux vom, Pulsatilla, Ratanhia, Ruta, Sabadilla, Santoninum, Silicea, Spigelia anth, Terebinthina, Teucrium mar, Thymolum, Zingiber",
-                     "generic_name_ar":  null,
-                     "strength":  "15 [hp_X]/g",
-                     "form":  "tablet"
-                 },
-                 {
-                     "api_medicine_id":  "55714-2593_27d41614-3a78-e814-e063-6394a90a94bc",
-                     "en_name":  "Para-Si",
-                     "ar_name":  null,
-                     "generic_name_en":  "Juglans reg, Abrotanum, Aesculus hipp, Allium sat, Arsenicum alb, Artemisia, Baptisia, Cina, Cuprum met, Filix mas, Granatum, Ipecac, Lachesis, Lycopodium, Merc viv, Naphthalinum, Nat mur, Nux vom, Pulsatilla, Ratanhia, Ruta, Sabadilla, Santoninum, Silicea, Spigelia anth, Terebinthina, Teucrium mar, Thymolum, Zingiber",
-                     "generic_name_ar":  null,
-                     "strength":  "15 [hp_X]/mL",
-                     "form":  "tablet"
-                 },
-                 {
-                     "api_medicine_id":  "0942-9603_71e5dcd0-4aa3-4cb6-89b3-8229f73c75fc",
-                     "en_name":  "Solucion InterSol",
-                     "ar_name":  null,
-                     "generic_name_en":  "Solucion aditiva para plaquetas 3",
-                     "generic_name_ar":  null,
-                     "strength":  "442 mg/100mL",
-                     "form":  "injection"
-                 },
-                 {
-                     "api_medicine_id":  "84219-003_15078c5d-2c0c-7e71-e063-6394a90ad193",
-                     "en_name":  "Insect Sting Relief Pad TOALLITAS PARA PICADURAS DE INSECTOS",
-                     "ar_name":  null,
-                     "generic_name_en":  "BENZOCAINE, ALCOHOL",
-                     "generic_name_ar":  null,
-                     "strength":  "60 g/100g",
-                     "form":  "ointment"
-                 },
-                 {
-                     "api_medicine_id":  "69710-115_40e5d3f5-5380-5a99-e063-6294a90aaa24",
-                     "en_name":  "SYMBIO PARA DROPS",
-                     "ar_name":  null,
-                     "generic_name_en":  "Candida parapsilosis",
-                     "generic_name_ar":  null,
-                     "strength":  "4 [hp_X]/mL",
-                     "form":  "tablet"
-                 },
-                 {
-                     "api_medicine_id":  "69710-165_40e5e3bf-76fa-7552-e063-6294a90af768",
-                     "en_name":  "SYMBIO PARA/ROQUEFORTI DROPS",
-                     "ar_name":  null,
-                     "generic_name_en":  "Candida parapsilosis, Penicillium roqueforti",
-                     "generic_name_ar":  null,
-                     "strength":  "4 [hp_X]/mL",
-                     "form":  "tablet"
-                 },
-                 {
-                     "api_medicine_id":  "14141-307_3ce46bfb-8d6d-05f6-e063-6394a90aac2f",
-                     "en_name":  "CYZONE CY PLAY CREAMY LIP BALM HIDRATANTE EN BARRA PARA LABIOS 24H FPS 12 PINK CREAMY",
-                     "ar_name":  null,
-                     "generic_name_en":  "OCTINOXATE, ZINC OXIDE",
-                     "generic_name_ar":  null,
-                     "strength":  "25 mg/g",
-                     "form":  "ointment"
-                 },
-                 {
-                     "api_medicine_id":  "61626-0107_b9492b5a-908a-4f3c-e053-2a95a90a6650",
-                     "en_name":  "Para Solve",
-                     "ar_name":  null,
-                     "generic_name_en":  "Calc carb, Chenopodium anth, Cina, Croton, Filix Mas, Gambocia, Granatum, Lycopodium, Merc corros, Nat phos, Santoninum, Senna, Spigelia anth, Stannum met, Tanacetum, Teuricum mar, Zingiber",
-                     "generic_name_ar":  null,
-                     "strength":  "12 [hp_X]/59.1mL",
-                     "form":  "tablet"
-                 },
-                 {
-                     "api_medicine_id":  "14141-306_3ce46bfb-8d6d-05f6-e063-6394a90aac2f",
-                     "en_name":  "CYZONE CY PLAY CREAMY LIP BALM HIDRATANTE EN BARRA PARA LABIOS 24H FPS 12 FUCHSIA CREAMY",
-                     "ar_name":  null,
-                     "generic_name_en":  "OCTINOXATE, ZINC OXIDE",
-                     "generic_name_ar":  null,
-                     "strength":  "25 mg/g",
-                     "form":  "ointment"
-                 },
-                 {
-                     "api_medicine_id":  "14141-308_3ce46bfb-8d6d-05f6-e063-6394a90aac2f",
-                     "en_name":  "CYZONE CY PLAY CREAMY LIP BALM HIDRATANTE EN BARRA PARA LABIOS 24H FPS 12 NUDE CREAMY",
-                     "ar_name":  null,
-                     "generic_name_en":  "OCTINOXATE, ZINC OXIDE",
-                     "generic_name_ar":  null,
-                     "strength":  "25 mg/g",
-                     "form":  "ointment"
-                 },
-                 {
-                     "api_medicine_id":  "14141-309_3ce46bfb-8d6d-05f6-e063-6394a90aac2f",
-                     "en_name":  "CYZONE CY PLAY CREAMY LIP BALM HIDRATANTE EN BARRA PARA LABIOS 24H FPS 12 CORAL CREAMY",
-                     "ar_name":  null,
-                     "generic_name_en":  "OCTINOXATE, ZINC OXIDE",
-                     "generic_name_ar":  null,
-                     "strength":  "25 mg/g",
-                     "form":  "ointment"
-                 },
-                 {
-                     "api_medicine_id":  "14141-348_3ce46bfb-8d6d-05f6-e063-6394a90aac2f",
-                     "en_name":  "CYZONE CY PLAY CREAMY LIP BALM HIDRATANTE EN BARRA PARA LABIOS 24H FPS 12 BERRY CREAMY",
-                     "ar_name":  null,
-                     "generic_name_en":  "OCTINOXATE, ZINC OXIDE",
-                     "generic_name_ar":  null,
-                     "strength":  "25 mg/g",
-                     "form":  "ointment"
-                 },
-                 {
-                     "api_medicine_id":  "55714-4859_27d587ec-b67e-ea05-e063-6394a90a9aac",
-                     "en_name":  "Para-Si",
-                     "ar_name":  null,
-                     "generic_name_en":  "Juglans reg, Abrotanum, Aesculus hipp, Allium sat, Arsenicum alb, Artemisia, Baptisia, Cina, Cuprum met, Filix mas, Granatum, Ipecac, Lachesis, Lycopodium, Merc viv, Naphthalinum, Nat mur Nux vom, Pulsatilla, Ratanhia, Ruta, Sabadilla, Santoninum, Silicea, Spigelia anth, Terebinthina, Teucrium mar, Thymolum, Zingiber",
-                     "generic_name_ar":  null,
-                     "strength":  "20 [hp_X]/mL",
-                     "form":  "tablet"
+                     "generic_name_en":  "harum",
+                     "strength":  "250mg",
+                     "form":  "injection",
+                     "created_at":  "2026-06-21T15:12:59.000000Z",
+                     "updated_at":  "2026-06-21T15:12:59.000000Z",
+                     "api_medicine_id":  null,
+                     "is_custom":  1
                  }
              ]
 }
@@ -1256,6 +1345,7 @@ query=para
 }
 ```
 
+<div id="medicines-store"></div>
 **`POST /api/clinic-system/clinic/medicines/store`**
 
 Create custom medicine. Auth required.
@@ -1263,7 +1353,16 @@ Create custom medicine. Auth required.
 **Request Body:**
 
 ```json
-{"ar_name":"...","en_name":"Paracetamol","form":"tablet","strength":"500mg","is_custom":true}
+{
+    "ar_name": "...",               // required_without:en_name
+    "en_name": "Paracetamol",        // required_without:ar_name
+    "api_medicine_id": null,         // optional
+    "generic_name_ar": null,         // optional
+    "generic_name_en": null,         // optional
+    "strength": "500mg",             // optional
+    "form": "tablet"                 // optional, in:tablet,capsule,syrup,injection,ointment
+    // Note: at least one of ar_name or en_name is required
+}
 ```
 
 **Response (201) - Success:**
@@ -1282,7 +1381,7 @@ Create custom medicine. Auth required.
                  "strength":  "400mg",
                  "form":  "tablet",
                  "is_custom_added":  true,
-                 "created_at":  "2026-06-21T11:48:46+00:00"
+                 "created_at":  "2026-06-21T15:13:06+00:00"
              }
 }
 ```
@@ -1606,6 +1705,13 @@ Create custom medicine. Auth required.
                       "type":  "-\u003e"
                   },
                   {
+                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestSuite.php",
+                      "line":  374,
+                      "function":  "run",
+                      "class":  "PHPUnit\\Framework\\TestSuite",
+                      "type":  "-\u003e"
+                  },
+                  {
                       "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\TextUI\\TestRunner.php",
                       "line":  64,
                       "function":  "run",
@@ -1625,11 +1731,6 @@ Create custom medicine. Auth required.
                       "function":  "run",
                       "class":  "PHPUnit\\TextUI\\Application",
                       "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\bin\\phpunit",
-                      "line":  122,
-                      "function":  "include"
                   }
               ]
 }
@@ -1660,6 +1761,7 @@ Create custom medicine. Auth required.
 
 Disease search and creation.
 
+<div id="diseases-search"></div>
 **`GET /api/clinic-system/clinic/diseases/search`**
 
 Search diseases by name. Public.
@@ -1679,21 +1781,25 @@ query=dia
     "data":  [
                  {
                      "id":  1,
-                     "code":  "VDK131",
+                     "code":  "WFW180",
                      "ar_name":  "السكري",
                      "en_name":  "Diabetes",
-                     "description":  "Aut aut cumque animi voluptatem hic sit.",
+                     "description":  "Et sunt quis qui quia.",
                      "disease_nature":  "chronic",
-                     "created_at":  "2026-06-21T12:20:05.000000Z",
-                     "updated_at":  "2026-06-21T12:20:05.000000Z",
+                     "created_at":  "2026-06-21T15:09:09.000000Z",
+                     "updated_at":  "2026-06-21T15:09:09.000000Z",
                      "is_custom":  1
                  },
                  {
-                     "code":  "D61.02",
-                     "en_name":  "Shwachman-Diamond syndrome",
-                     "ar_name":  null,
-                     "disease_nature":  "other",
-                     "description":  "ICD-10 International Classification"
+                     "id":  2,
+                     "code":  "SUS919",
+                     "ar_name":  "suscipit",
+                     "en_name":  "Diabetes",
+                     "description":  "Eveniet occaecati sit recusandae.",
+                     "disease_nature":  "infectious",
+                     "created_at":  "2026-06-21T15:09:09.000000Z",
+                     "updated_at":  "2026-06-21T15:09:09.000000Z",
+                     "is_custom":  1
                  },
                  {
                      "code":  "E08.00",
@@ -1736,6 +1842,13 @@ query=dia
                      "ar_name":  null,
                      "disease_nature":  "other",
                      "description":  "ICD-10 International Classification"
+                 },
+                 {
+                     "code":  "E08.29",
+                     "en_name":  "Diabetes mellitus due to underlying condition with other diabetic kidney complication",
+                     "ar_name":  null,
+                     "disease_nature":  "other",
+                     "description":  "ICD-10 International Classification"
                  }
              ]
 }
@@ -1754,6 +1867,7 @@ query=dia
 }
 ```
 
+<div id="diseases-store"></div>
 **`POST /api/clinic-system/clinic/diseases/store`**
 
 Create custom disease. Auth required.
@@ -1761,7 +1875,13 @@ Create custom disease. Auth required.
 **Request Body:**
 
 ```json
-{"ar_name":"...","en_name":"Diabetes","disease_nature":"chronic","is_custom":true}
+{
+    "ar_name": "...",               // required
+    "en_name": "Diabetes",           // required
+    "disease_nature": "chronic",     // required, in:infectious,genetic,chronic,acute,mental,other
+    "code": null,                    // optional
+    "description": null              // optional
+}
 ```
 
 **Response (201) - Success:**
@@ -1772,13 +1892,13 @@ Create custom disease. Auth required.
     "message":  "Disease processed successfully.",
     "data":  {
                  "id":  2,
-                 "icd10_code":  null,
-                 "arabic_name":  "ضغط الدم",
-                 "english_name":  "Hypertension",
-                 "description":  null,
+                 "icd10_code":  "E10",
+                 "arabic_name":  "سكري",
+                 "english_name":  "Diabetes",
+                 "description":  "Type 1 Diabetes Mellitus",
                  "nature":  "chronic",
-                 "is_custom":  true,
-                 "created_at":  "2026-06-21T12:20:11+00:00"
+                 "is_custom":  false,
+                 "created_at":  "2026-06-21T15:13:15+00:00"
              }
 }
 ```
@@ -2158,6 +2278,7 @@ Create custom disease. Auth required.
 
 Clinic management (all routes require auth:sanctum).
 
+<div id="clinic-create-secretary"></div>
 **`POST /api/clinic-system/clinic/clinic/secretary/register`**
 
 Create secretary (owner only). Auth required.
@@ -2165,7 +2286,15 @@ Create secretary (owner only). Auth required.
 **Request Body:**
 
 ```json
-{"user_id":1,"clinic_id":1}
+{
+    "fname": "New",               // required, min:2, max:50
+    "lname": "Secretary",         // required, min:2, max:50
+    "email": "newsecretary@test.com", // required, email, unique:users
+    "dob": "1990-01-01",          // required, date, before:today
+    "gender": "female",           // required, in:male,female,unknown
+    "clinic_id": 1,               // required, exists:clinics
+    "room_ids": [1]               // required, array, min:1, each exists:rooms
+}
 ```
 
 **Response (200) - Success:**
@@ -2175,346 +2304,6 @@ Create secretary (owner only). Auth required.
     "success":  true,
     "message":  "Secretary created successfully.",
     "data":  null
-}
-```
-
-**Response (403) - Error: permission:**
-
-```json
-{
-    "message":  "This action is unauthorized.",
-    "exception":  "Symfony\\Component\\HttpKernel\\Exception\\AccessDeniedHttpException",
-    "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Exceptions\\Handler.php",
-    "line":  640,
-    "trace":  [
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Exceptions\\Handler.php",
-                      "line":  584,
-                      "function":  "prepareException",
-                      "class":  "Illuminate\\Foundation\\Exceptions\\Handler",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Pipeline.php",
-                      "line":  51,
-                      "function":  "render",
-                      "class":  "Illuminate\\Foundation\\Exceptions\\Handler",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  172,
-                      "function":  "handleException",
-                      "class":  "Illuminate\\Routing\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php",
-                      "line":  51,
-                      "function":  "{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():168}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Routing\\Middleware\\SubstituteBindings",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php",
-                      "line":  64,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Auth\\Middleware\\Authenticate",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  127,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
-                      "line":  807,
-                      "function":  "then",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
-                      "line":  786,
-                      "function":  "runRouteWithinStack",
-                      "class":  "Illuminate\\Routing\\Router",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
-                      "line":  750,
-                      "function":  "runRoute",
-                      "class":  "Illuminate\\Routing\\Router",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
-                      "line":  739,
-                      "function":  "dispatchToRoute",
-                      "class":  "Illuminate\\Routing\\Router",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php",
-                      "line":  201,
-                      "function":  "dispatch",
-                      "class":  "Illuminate\\Routing\\Router",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  170,
-                      "function":  "{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():198}",
-                      "class":  "Illuminate\\Foundation\\Http\\Kernel",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php",
-                      "line":  21,
-                      "function":  "{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():168}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php",
-                      "line":  31,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php",
-                      "line":  21,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php",
-                      "line":  51,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\TrimStrings",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php",
-                      "line":  27,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Http\\Middleware\\ValidatePostSize",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php",
-                      "line":  110,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php",
-                      "line":  62,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Http\\Middleware\\HandleCors",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php",
-                      "line":  58,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Http\\Middleware\\TrustProxies",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php",
-                      "line":  22,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  127,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php",
-                      "line":  176,
-                      "function":  "then",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php",
-                      "line":  145,
-                      "function":  "sendRequestThroughRouter",
-                      "class":  "Illuminate\\Foundation\\Http\\Kernel",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Testing\\Concerns\\MakesHttpRequests.php",
-                      "line":  607,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Kernel",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Testing\\Concerns\\MakesHttpRequests.php",
-                      "line":  573,
-                      "function":  "call",
-                      "class":  "Illuminate\\Foundation\\Testing\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Testing\\Concerns\\MakesHttpRequests.php",
-                      "line":  411,
-                      "function":  "json",
-                      "class":  "Illuminate\\Foundation\\Testing\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\tests\\Feature\\Api\\ClinicTest.php",
-                      "line":  103,
-                      "function":  "postJson",
-                      "class":  "Illuminate\\Foundation\\Testing\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestCase.php",
-                      "line":  1548,
-                      "function":  "test_create_secretary_fails_not_owner",
-                      "class":  "Tests\\Feature\\Api\\ClinicTest",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestCase.php",
-                      "line":  686,
-                      "function":  "runTest",
-                      "class":  "PHPUnit\\Framework\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestRunner.php",
-                      "line":  106,
-                      "function":  "runBare",
-                      "class":  "PHPUnit\\Framework\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestCase.php",
-                      "line":  516,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestRunner",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestSuite.php",
-                      "line":  374,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestSuite.php",
-                      "line":  374,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestSuite",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\TextUI\\TestRunner.php",
-                      "line":  64,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestSuite",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\TextUI\\Application.php",
-                      "line":  204,
-                      "function":  "run",
-                      "class":  "PHPUnit\\TextUI\\TestRunner",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\phpunit",
-                      "line":  104,
-                      "function":  "run",
-                      "class":  "PHPUnit\\TextUI\\Application",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\bin\\phpunit",
-                      "line":  122,
-                      "function":  "include"
-                  }
-              ]
 }
 ```
 
@@ -2530,8 +2319,8 @@ Create secretary (owner only). Auth required.
                    "lname":  [
                                  "Last name is required."
                              ],
-                   "phone":  [
-                                 "Phone number is required."
+                   "email":  [
+                                 "Email address is required."
                              ],
                    "dob":  [
                                "Date of birth is required."
@@ -2549,6 +2338,7 @@ Create secretary (owner only). Auth required.
 }
 ```
 
+<div id="clinic-create-doctor"></div>
 **`POST /api/clinic-system/clinic/clinic/doctor/register`**
 
 Create doctor (owner only). Auth required.
@@ -2556,7 +2346,19 @@ Create doctor (owner only). Auth required.
 **Request Body:**
 
 ```json
-{"user_id":1,"clinic_id":1}
+{
+    "fname": "New",               // required, min:2, max:50
+    "lname": "Doctor",            // required, min:2, max:50
+    "email": "newdoctor@test.com", // required, email, unique:users
+    "dob": "1985-05-15",          // required, date, before:today
+    "gender": "male",             // required, in:male,female,unknown
+    "clinic_id": 1,               // required, exists:clinics
+    "room_id": 1,                 // required, exists:rooms
+    "appointment_duration": 30,   // required, integer, min:5, max:120
+    "consultation_fee": 200,      // required, numeric, min:0
+    "specialty_ids": [1],         // required, array, min:1
+    "bio": "Experienced doctor"   // optional, max:1000
+}
 ```
 
 **Response (200) - Success:**
@@ -2573,7 +2375,7 @@ Create doctor (owner only). Auth required.
 
 ```json
 {
-    "message":  "First name is required. (and 10 more errors)",
+    "message":  "First name is required. (and 9 more errors)",
     "errors":  {
                    "fname":  [
                                  "First name is required."
@@ -2581,9 +2383,8 @@ Create doctor (owner only). Auth required.
                    "lname":  [
                                  "Last name is required."
                              ],
-                   "phone":  [
-                                 "Phone number must be exactly 10 digits.",
-                                 "Phone number must start with 09."
+                   "email":  [
+                                 "Please provide a valid email address."
                              ],
                    "dob":  [
                                "Date of birth is required."
@@ -2616,6 +2417,7 @@ Create doctor (owner only). Auth required.
 
 Room management (auth required).
 
+<div id="rooms-user-rooms"></div>
 **`GET /api/clinic-system/clinic/clinic/rooms/userRooms/get`**
 
 Get current user's rooms. Auth required.
@@ -2635,13 +2437,13 @@ Get current user's rooms. Auth required.
                      "doctors":  [
                                      {
                                          "id":  1,
-                                         "name":  "Torey Eichmann"
+                                         "name":  "Madeline Lind"
                                      }
                                  ],
                      "secretaries":  [
                                          {
                                              "id":  1,
-                                             "name":  "Shakira Lemke"
+                                             "name":  "Derek Osinski"
                                          }
                                      ]
                  }
@@ -2649,6 +2451,7 @@ Get current user's rooms. Auth required.
 }
 ```
 
+<div id="rooms-index"></div>
 **`GET /api/clinic-system/clinic/clinic/rooms/{clinicId}`**
 
 List rooms in a clinic. Auth required.
@@ -2683,27 +2486,17 @@ List rooms in a clinic. Auth required.
                      "doctors":  [
                                      {
                                          "id":  1,
-                                         "name":  "Haley Rice"
+                                         "name":  "Sabrina Nicolas"
                                      }
                                  ],
                      "secretaries":  [
                                          {
                                              "id":  1,
-                                             "name":  "Walter Bogisich"
+                                             "name":  "Althea Kiehn"
                                          }
                                      ]
                  }
              ]
-}
-```
-
-**Response (404) - Error: not-found:**
-
-```json
-{
-    "success":  false,
-    "message":  "Room not found",
-    "data":  null
 }
 ```
 
@@ -2715,6 +2508,7 @@ List rooms in a clinic. Auth required.
 }
 ```
 
+<div id="rooms-index-with-info"></div>
 **`GET /api/clinic-system/clinic/clinic/rooms/{clinicId}/info`**
 
 List rooms with additional info. Auth required.
@@ -2734,13 +2528,13 @@ List rooms with additional info. Auth required.
                      "doctors":  [
                                      {
                                          "id":  1,
-                                         "name":  "Haley Rice"
+                                         "name":  "Sabrina Nicolas"
                                      }
                                  ],
                      "secretaries":  [
                                          {
                                              "id":  1,
-                                             "name":  "Walter Bogisich"
+                                             "name":  "Althea Kiehn"
                                          }
                                      ]
                  }
@@ -2748,6 +2542,7 @@ List rooms with additional info. Auth required.
 }
 ```
 
+<div id="rooms-add-doctor-to-room"></div>
 **`POST /api/clinic-system/clinic/clinic/rooms/sync/doctorRoom`**
 
 Add doctor to room. Auth required.
@@ -2755,7 +2550,10 @@ Add doctor to room. Auth required.
 **Request Body:**
 
 ```json
-{"room_id":1,"doctor_id":1}
+{
+    "room_id": 1,                   // required
+    "doctor_id": 1                  // required
+}
 ```
 
 **Response (200) - Success:**
@@ -2768,6 +2566,7 @@ Add doctor to room. Auth required.
 }
 ```
 
+<div id="rooms-add-sec-to-room"></div>
 **`POST /api/clinic-system/clinic/clinic/rooms/sync/secRooms`**
 
 Add secretary to room. Auth required.
@@ -2775,7 +2574,10 @@ Add secretary to room. Auth required.
 **Request Body:**
 
 ```json
-{"room_id":1,"secretary_id":1}
+{
+    "room_id": 1,                   // required
+    "secretary_id": 1               // required
+}
 ```
 
 **Response (200) - Success:**
@@ -2788,6 +2590,7 @@ Add secretary to room. Auth required.
 }
 ```
 
+<div id="rooms-del-sec-from-room"></div>
 **`DELETE /api/clinic-system/clinic/clinic/rooms/detach/secRooms`**
 
 Remove secretary from room. Auth required.
@@ -2795,7 +2598,10 @@ Remove secretary from room. Auth required.
 **Request Body:**
 
 ```json
-{"room_id":1,"secretary_id":1}
+{
+    "room_id": 1,                   // required
+    "secretary_id": 1               // required
+}
 ```
 
 **Response (200) - Success:**
@@ -2808,6 +2614,7 @@ Remove secretary from room. Auth required.
 }
 ```
 
+<div id="rooms-del-doctor-from-room"></div>
 **`DELETE /api/clinic-system/clinic/clinic/rooms/detach/doctorRoom`**
 
 Remove doctor from room. Auth required.
@@ -2815,7 +2622,10 @@ Remove doctor from room. Auth required.
 **Request Body:**
 
 ```json
-{"room_id":1,"doctor_id":1}
+{
+    "room_id": 1,                   // required
+    "doctor_id": 1                  // required
+}
 ```
 
 **Response (200) - Success:**
@@ -2834,6 +2644,7 @@ Remove doctor from room. Auth required.
 
 Secretary management (auth required).
 
+<div id="secretaries-info"></div>
 **`GET /api/clinic-system/clinic/clinic/secretaries/{id}`**
 
 Get secretary info. Auth required.
@@ -2850,9 +2661,9 @@ Get secretary info. Auth required.
                  "clinic_id":  1,
                  "created_at":  "2026-06-21",
                  "role":  "secretary",
-                 "name":  "Kayley Rutherford",
+                 "name":  "Rozella Kuhic",
                  "phone":  "0900000003",
-                 "dob":  "1968-08-22",
+                 "dob":  "1972-10-06",
                  "gender":  "unknown"
              }
 }
@@ -2876,6 +2687,7 @@ Get secretary info. Auth required.
 }
 ```
 
+<div id="secretaries-update"></div>
 **`POST /api/clinic-system/clinic/clinic/secretaries/update`**
 
 Update secretary info. Auth required.
@@ -2883,7 +2695,13 @@ Update secretary info. Auth required.
 **Request Body:**
 
 ```json
-{"secretary_id":1,"fname":"...","lname":"..."}
+{
+    "clinic_id": 1,                 // optional, exists:clinics
+    "fname": "Updated",             // optional
+    "lname": "Name",                // optional
+    "dob": "1990-01-01",            // optional, date, before:today
+    "gender": "female"              // optional, in:male,female,unknown
+}
 ```
 
 **Response (200) - Success:**
@@ -2918,6 +2736,7 @@ Update secretary info. Auth required.
 
 Patient management (auth required).
 
+<div id="patients-medical-history"></div>
 **`GET /api/clinic-system/clinic/clinic/patients/{patientId}/medical-history`**
 
 Get patient medical history. Auth required.
@@ -2930,17 +2749,17 @@ Get patient medical history. Auth required.
     "message":  "Medical history retrieved successfully.",
     "data":  {
                  "id":  1,
-                 "name":  "Jeanne Rutherford",
+                 "name":  "Isai Weissnat",
                  "phone":  "0900000004",
                  "email":  "patient@test.com",
                  "gender":  "male",
-                 "dob":  "1966-01-30",
+                 "dob":  "1972-06-03",
                  "profile_image":  null,
                  "clinic_id":  1,
                  "appointments":  [
                                       {
                                           "id":  1,
-                                          "doctor_name":  "Florian Medhurst",
+                                          "doctor_name":  "Shanna Gaylord",
                                           "type":  null,
                                           "start_time":  "2026-06-22 10:00",
                                           "end_time":  "2026-06-22 10:30",
@@ -2951,9 +2770,9 @@ Get patient medical history. Auth required.
                  "records":  [
                                  {
                                      "id":  1,
-                                     "doctor_name":  "Florian Medhurst",
+                                     "doctor_name":  "Shanna Gaylord",
                                      "diagnosis_summary":  "Test diagnosis",
-                                     "description":  "Odio aut tempora velit nisi molestiae consequatur. Et nostrum ipsa est iure qui. Numquam ex dolorem et laboriosam.",
+                                     "description":  "Nihil eum debitis officia voluptatum. Ut necessitatibus est voluptatum molestiae et ut quo quis. Reprehenderit non est ipsa quia repellat iusto maiores facilis. Aut qui velit sequi natus veniam.",
                                      "status":  "open",
                                      "diseases":  [
 
@@ -2981,6 +2800,7 @@ Get patient medical history. Auth required.
 }
 ```
 
+<div id="patients-restore"></div>
 **`GET /api/clinic-system/clinic/clinic/patients/restore`**
 
 Restore soft-deleted patient. Auth required.
@@ -3001,6 +2821,7 @@ patient_id=1
 }
 ```
 
+<div id="patients-show"></div>
 **`GET /api/clinic-system/clinic/clinic/patients/{patientId}/show`**
 
 Get patient details. Auth required.
@@ -3014,21 +2835,21 @@ Get patient details. Auth required.
     "data":  {
                  "id":  1,
                  "user_id":  5,
-                 "name":  "Jamal Grady",
-                 "gender":  "unknown",
+                 "name":  "Salvador Daugherty",
+                 "gender":  "female",
                  "profile_image":  null,
                  "clinic_id":  1,
-                 "nationality":  "Central African Republic",
-                 "address":  "3518 Schaden Spur\nNorth Genoveva, MD 81071-4722",
-                 "marital_status":  "other",
-                 "emergency_phone":  "0992410433",
+                 "nationality":  "Saint Martin",
+                 "address":  "357 Jody Manors\nPort Camylle, MS 02399-4171",
+                 "marital_status":  "single",
+                 "emergency_phone":  "0905262508",
                  "allergies":  null,
-                 "chronic_conditions":  "Natus eum ratione illum repellendus voluptatem autem commodi.",
-                 "career":  "Press Machine Setter, Operator",
-                 "blood_type":  "B-",
+                 "chronic_conditions":  "Iure dicta enim ea nam voluptas et quaerat.",
+                 "career":  "Textile Dyeing Machine Operator",
+                 "blood_type":  "AB+",
                  "phone":  "0900000004",
                  "email":  "patient@test.com",
-                 "dob":  "1994-06-19",
+                 "dob":  "1981-12-23",
                  "created_at":  "2026-06-21"
              }
 }
@@ -3044,6 +2865,7 @@ Get patient details. Auth required.
 }
 ```
 
+<div id="patients-index"></div>
 **`GET /api/clinic-system/clinic/clinic/patients`**
 
 List patients (requires clinic_id). Auth required.
@@ -3064,7 +2886,7 @@ clinic_id=1
                  {
                      "id":  1,
                      "user_id":  5,
-                     "name":  "Caleb Torphy",
+                     "name":  "Brycen Flatley",
                      "gender":  "male",
                      "profile_image":  null,
                      "clinic_id":  1
@@ -3125,6 +2947,7 @@ clinic_id=1
 }
 ```
 
+<div id="patients-index-trashed"></div>
 **`GET /api/clinic-system/clinic/clinic/patients/trashed`**
 
 List soft-deleted patients. Auth required.
@@ -3158,6 +2981,7 @@ clinic_id=1
 }
 ```
 
+<div id="patients-update"></div>
 **`POST /api/clinic-system/clinic/clinic/patients/update`**
 
 Update patient info. Auth required.
@@ -3165,7 +2989,22 @@ Update patient info. Auth required.
 **Request Body:**
 
 ```json
-{"patient_id":1,"fname":"Updated","blood_type":"A+"}
+{
+    "patient_id": 1,                // required, exists:patient_infos
+    "clinic_id": 1,                 // optional, exists:clinics
+    "fname": "Updated",             // optional
+    "lname": "Name",                // optional
+    "dob": "1990-01-01",            // optional, date, before:today
+    "gender": "male",               // optional, in:male,female,other,unknown
+    "nationality": null,            // optional
+    "address": null,                // optional
+    "marital_status": null,         // optional, in:married,single,divorced,widowed,other
+    "emergency_phone": null,        // optional, digits_between:10,13
+    "allergies": null,              // optional
+    "chronic_conditions": null,     // optional
+    "career": null,                 // optional
+    "blood_type": "A+"              // optional, in:A+,A-,B+,B-,AB+,AB-,O+,O-
+}
 ```
 
 **Response (200) - Success:**
@@ -3194,14 +3033,17 @@ Update patient info. Auth required.
 }
 ```
 
+<div id="patients-destroy"></div>
 **`DELETE /api/clinic-system/clinic/clinic/patients/delete`**
 
-Soft-delete patient (patient_id must be string). Auth required.
+Soft-delete patient. Auth required.
 
 **Request Body:**
 
 ```json
-{"patient_id":"1"}
+{
+    "patient_id": "1"               // required, exists:patient_infos
+}
 ```
 
 **Response (200) - Success:**
@@ -3220,6 +3062,7 @@ Soft-delete patient (patient_id must be string). Auth required.
 
 User profile management (auth required).
 
+<div id="users-image-url"></div>
 **`GET /api/clinic-system/clinic/clinic/users/image-url`**
 
 Get user profile image URL. Auth required.
@@ -3236,6 +3079,7 @@ Get user profile image URL. Auth required.
 }
 ```
 
+<div id="users-info"></div>
 **`GET /api/clinic-system/clinic/clinic/users/info`**
 
 Get authenticated user info. Auth required.
@@ -3248,32 +3092,24 @@ Get authenticated user info. Auth required.
     "message":  "Success",
     "data":  {
                  "id":  5,
-                 "name":  "Mckayla Grant",
+                 "name":  "Dandre Lockman",
                  "phone":  "0900000004",
                  "email":  "patient@test.com",
-                 "gender":  "female",
-                 "dob":  "1979-09-19",
+                 "gender":  "male",
+                 "dob":  "1993-02-07",
                  "profile_image":  null,
                  "created":  "2026-06-21",
                  "role":  "patient",
                  "clinic_id":  1,
-                 "nationality":  "Austria",
-                 "address":  "70155 Kilback Glen\nPort Stonebury, MN 60563",
-                 "marital_status":  "other",
-                 "emergency_phone":  "0991668315",
+                 "nationality":  "Martinique",
+                 "address":  "68759 Rebecca Fields Apt. 469\nJanychester, MN 52058",
+                 "marital_status":  "single",
+                 "emergency_phone":  "0943194555",
                  "allergies":  null,
                  "chronic_conditions":  null,
-                 "career":  "Laundry OR Dry-Cleaning Worker",
+                 "career":  "Dentist",
                  "blood_type":  "AB-"
              }
-}
-```
-
-**Response (401) - Error: unauthenticated:**
-
-```json
-{
-    "message":  "Unauthenticated."
 }
 ```
 
@@ -3285,6 +3121,7 @@ Get authenticated user info. Auth required.
 }
 ```
 
+<div id="users-update-image"></div>
 **`POST /api/clinic-system/clinic/clinic/users/update-image`**
 
 Update user profile image. Auth required.
@@ -3308,6 +3145,7 @@ Update user profile image. Auth required.
 
 Doctor management (auth required).
 
+<div id="doctors-info"></div>
 **`GET /api/clinic-system/clinic/clinic/doctors/{id}/info`**
 
 Get doctor info. Auth required.
@@ -3323,15 +3161,15 @@ Get doctor info. Auth required.
                  "user_id":  3,
                  "clinic_id":  1,
                  "room_id":  1,
-                 "name":  "Vivienne Gerlach",
+                 "name":  "Georgianna Herzog",
                  "phone":  "0900000002",
                  "email":  "doctor@test.com",
-                 "dob":  "1992-09-26 07:35:31",
-                 "gender":  "female",
+                 "dob":  "1976-08-30 08:44:36",
+                 "gender":  "unknown",
                  "created_at":  "2026-06-21",
                  "appointment_duration":  30,
                  "consultation_fee":  150,
-                 "bio":  "Et nesciunt repellendus aut. Incidunt iste tenetur provident. Laboriosam beatae consequatur cum.",
+                 "bio":  "Dolor officiis expedita non. Saepe tenetur quis quam blanditiis quas suscipit quis. Reiciendis molestiae suscipit porro excepturi accusantium cumque minima. Sed ea sunt quos rerum sequi minima.",
                  "specialties":  [
                                      {
                                          "ar_name":  "الطب العام",
@@ -3360,6 +3198,7 @@ Get doctor info. Auth required.
 }
 ```
 
+<div id="doctors-index"></div>
 **`GET /api/clinic-system/clinic/clinic/doctors/filter`**
 
 List doctors with filters. Auth required.
@@ -3382,15 +3221,15 @@ clinic_id=1
                      "user_id":  3,
                      "clinic_id":  1,
                      "room_id":  1,
-                     "name":  "Ardella Erdman",
+                     "name":  "Lura Lang",
                      "phone":  "0900000002",
                      "email":  "doctor@test.com",
-                     "dob":  "1986-10-02 01:51:57",
-                     "gender":  "female",
+                     "dob":  "1990-05-04 17:42:35",
+                     "gender":  "unknown",
                      "created_at":  "2026-06-21",
                      "appointment_duration":  30,
                      "consultation_fee":  150,
-                     "bio":  "Dolorem omnis eum ea et optio. Deserunt dolorum et blanditiis qui aut quos. Dolores voluptates qui earum est. Fuga quia accusantium expedita officia corporis. Sed ipsa porro praesentium eaque reprehenderit quia.",
+                     "bio":  "Magni nam voluptatum assumenda sint a quod. Aperiam aut aut ipsam. Soluta ad est qui quibusdam placeat. Error quia quia illo occaecati temporibus.",
                      "specialties":  [
                                          {
                                              "ar_name":  "الطب العام",
@@ -3413,15 +3252,7 @@ clinic_id=1
 }
 ```
 
-**Response (403) - Error: permission:**
-
-```json
-{
-    "success":  false,
-    "message":  "Not associated with any clinic."
-}
-```
-
+<div id="doctors-restore"></div>
 **`POST /api/clinic-system/clinic/clinic/doctors/{id}/restore`**
 
 Restore soft-deleted doctor. Auth required.
@@ -3453,6 +3284,7 @@ Restore soft-deleted doctor. Auth required.
 }
 ```
 
+<div id="doctors-update"></div>
 **`POST /api/clinic-system/clinic/clinic/doctors/update`**
 
 Update doctor info. Auth required.
@@ -3460,7 +3292,17 @@ Update doctor info. Auth required.
 **Request Body:**
 
 ```json
-{"doctor_id":1,"consultation_fee":200}
+{
+    "doctor_id": 1,                 // required, exists:doctors
+    "fname": "Updated",             // optional
+    "lname": "Doctor",              // optional
+    "dob": "1985-05-15",            // optional, date, before:today
+    "gender": "male",               // optional, in:male,female,unknown
+    "appointment_duration": 30,     // optional, integer, min:5, max:120
+    "bio": "Experienced",           // optional
+    "consultation_fee": 200,        // optional, numeric, min:0
+    "specialties": [1, 2]           // optional, array, each exists:specialties
+}
 ```
 
 **Response (200) - Success:**
@@ -3489,6 +3331,7 @@ Update doctor info. Auth required.
 }
 ```
 
+<div id="doctors-force-delete"></div>
 **`DELETE /api/clinic-system/clinic/clinic/doctors/{id}/force`**
 
 Force-delete doctor. Auth required.
@@ -3503,6 +3346,7 @@ Force-delete doctor. Auth required.
 }
 ```
 
+<div id="doctors-destroy"></div>
 **`DELETE /api/clinic-system/clinic/clinic/doctors/{id}/leave`**
 
 Soft-delete doctor. Auth required.
@@ -3523,6 +3367,7 @@ Soft-delete doctor. Auth required.
 
 Appointment booking and management (auth required).
 
+<div id="appointments-clinic-appointments"></div>
 **`GET /api/clinic-system/clinic/clinic/appointments/clinic/{clinicId}`**
 
 List clinic appointments. Auth required.
@@ -3539,11 +3384,11 @@ List clinic appointments. Auth required.
                      "clinic_id":  1,
                      "doctor":  {
                                     "id":  1,
-                                    "name":  "Alycia Lehner"
+                                    "name":  "Rhoda Gerhold"
                                 },
                      "patient":  {
                                      "id":  1,
-                                     "name":  "Estella Stamm",
+                                     "name":  "Alexanne Doyle",
                                      "phone":  "0900000004"
                                  },
                      "room":  {
@@ -3580,6 +3425,7 @@ List clinic appointments. Auth required.
 }
 ```
 
+<div id="appointments-doctor-appointments"></div>
 **`GET /api/clinic-system/clinic/clinic/appointments/doctor/{doctorId}`**
 
 List doctor appointments. Auth required.
@@ -3596,7 +3442,7 @@ List doctor appointments. Auth required.
                      "clinic_id":  1,
                      "patient":  {
                                      "id":  1,
-                                     "name":  "Erna Hauck",
+                                     "name":  "Blanca Bernhard",
                                      "phone":  "0900000004"
                                  },
                      "room":  {
@@ -3633,6 +3479,7 @@ List doctor appointments. Auth required.
 }
 ```
 
+<div id="appointments-available-slots"></div>
 **`GET /api/clinic-system/clinic/clinic/appointments/get/available-slots`**
 
 Get available appointment slots. Auth required.
@@ -3734,6 +3581,7 @@ doctor_id=1&date=2026-06-28
 }
 ```
 
+<div id="appointments-clinic-schedule"></div>
 **`GET /api/clinic-system/clinic/clinic/appointments/clinic/{clinicId}/schedule`**
 
 Get clinic schedule for a date. Auth required.
@@ -3756,11 +3604,11 @@ date=2026-06-28
                      "clinic_id":  1,
                      "doctor":  {
                                     "id":  1,
-                                    "name":  "Elbert Kohler"
+                                    "name":  "Sammy Bode"
                                 },
                      "patient":  {
                                      "id":  1,
-                                     "name":  "D\u0027angelo Ryan",
+                                     "name":  "Vaughn Zieme",
                                      "phone":  "0900000004"
                                  },
                      "room":  {
@@ -3786,6 +3634,7 @@ date=2026-06-28
 }
 ```
 
+<div id="appointments-doctor-schedule"></div>
 **`GET /api/clinic-system/clinic/clinic/appointments/doctor/{doctorId}/schedule`**
 
 Get doctor schedule for a date. Auth required.
@@ -3808,11 +3657,11 @@ date=2026-06-28
                      "clinic_id":  1,
                      "doctor":  {
                                     "id":  1,
-                                    "name":  "Amy Predovic"
+                                    "name":  "Terrell Waters"
                                 },
                      "patient":  {
                                      "id":  1,
-                                     "name":  "Jaunita Bergnaum",
+                                     "name":  "Ena Paucek",
                                      "phone":  "0900000004"
                                  },
                      "room":  {
@@ -3838,6 +3687,7 @@ date=2026-06-28
 }
 ```
 
+<div id="appointments-room-appointments"></div>
 **`GET /api/clinic-system/clinic/clinic/appointments/room/appo`**
 
 List room appointments. Auth required.
@@ -3860,11 +3710,11 @@ roomIds[0]=1
                      "clinic_id":  1,
                      "doctor":  {
                                     "id":  1,
-                                    "name":  "Hanna Fahey"
+                                    "name":  "Terrence Leffler"
                                 },
                      "patient":  {
                                      "id":  1,
-                                     "name":  "Anderson Schimmel",
+                                     "name":  "Rupert Veum",
                                      "phone":  "0900000004"
                                  },
                      "room":  {
@@ -3901,6 +3751,7 @@ roomIds[0]=1
 }
 ```
 
+<div id="appointments-show"></div>
 **`GET /api/clinic-system/clinic/clinic/appointments/{id}`**
 
 Show appointment details. Auth required.
@@ -3916,11 +3767,11 @@ Show appointment details. Auth required.
                  "clinic_id":  1,
                  "doctor":  {
                                 "id":  1,
-                                "name":  "Jessyca Kutch"
+                                "name":  "Herminia Batz"
                             },
                  "patient":  {
                                  "id":  1,
-                                 "name":  "Braulio Cartwright",
+                                 "name":  "Delia Gislason",
                                  "phone":  "0900000004"
                              },
                  "room":  {
@@ -3955,6 +3806,7 @@ Show appointment details. Auth required.
 }
 ```
 
+<div id="appointments-patient-appointments"></div>
 **`GET /api/clinic-system/clinic/clinic/appointments/patient/{patientId}`**
 
 List patient appointments. Auth required.
@@ -3971,11 +3823,11 @@ List patient appointments. Auth required.
                      "clinic_id":  1,
                      "doctor":  {
                                     "id":  1,
-                                    "name":  "Maximillia Barrows"
+                                    "name":  "Hardy Gulgowski"
                                 },
                      "patient":  {
                                      "id":  1,
-                                     "name":  "Ursula Dicki",
+                                     "name":  "Nona Gleason",
                                      "phone":  "0900000004"
                                  },
                      "room":  {
@@ -4012,6 +3864,7 @@ List patient appointments. Auth required.
 }
 ```
 
+<div id="appointments-book"></div>
 **`POST /api/clinic-system/clinic/clinic/appointments/book`**
 
 Book a new appointment. Auth required.
@@ -4019,7 +3872,15 @@ Book a new appointment. Auth required.
 **Request Body:**
 
 ```json
-{"patient_id":1,"doctor_id":1,"clinic_id":1,"appointment_type_id":1,"start_time":"11:00","date":"2026-06-28","visit_reason":"Routine checkup"}
+{
+    "patient_id": 1,                // required, integer, exists:patient_infos
+    "doctor_id": 1,                 // required, integer, exists:doctors
+    "clinic_id": 1,                 // required, integer, exists:clinics
+    "appointment_type_id": 1,       // required, integer, exists:appointment_types
+    "start_time": "11:00",          // required, format:H:i
+    "date": "2026-06-28",           // required, date, format:Y-m-d
+    "visit_reason": "Routine checkup" // optional
+}
 ```
 
 **Response (201) - Success:**
@@ -4033,11 +3894,11 @@ Book a new appointment. Auth required.
                  "clinic_id":  1,
                  "doctor":  {
                                 "id":  1,
-                                "name":  "Kiarra Daniel"
+                                "name":  "Weldon Schneider"
                             },
                  "patient":  {
                                  "id":  1,
-                                 "name":  "Dock Purdy",
+                                 "name":  "Micaela Marquardt",
                                  "phone":  "0900000004"
                              },
                  "room":  {
@@ -4059,16 +3920,6 @@ Book a new appointment. Auth required.
                  "notes":  null,
                  "created_at":  "2026-06-21"
              }
-}
-```
-
-**Response (422) - Error: doctor-invalid:**
-
-```json
-{
-    "success":  false,
-    "message":  "no work hour valid for this date",
-    "data":  null
 }
 ```
 
@@ -4109,6 +3960,7 @@ Book a new appointment. Auth required.
 }
 ```
 
+<div id="appointments-cancel"></div>
 **`POST /api/clinic-system/clinic/clinic/appointments/{id}/cancel`**
 
 Cancel an appointment. Auth required.
@@ -4116,7 +3968,9 @@ Cancel an appointment. Auth required.
 **Request Body:**
 
 ```json
-{"cancel_reason":"Patient requested"}
+{
+    "cancel_reason": "Patient requested" // optional
+}
 ```
 
 **Response (200) - Success:**
@@ -4139,6 +3993,7 @@ Cancel an appointment. Auth required.
 }
 ```
 
+<div id="appointments-reschedule"></div>
 **`POST /api/clinic-system/clinic/clinic/appointments/{id}/reschedule`**
 
 Reschedule an appointment. Auth required.
@@ -4146,7 +4001,11 @@ Reschedule an appointment. Auth required.
 **Request Body:**
 
 ```json
-{"start_time":"14:00","date":"2026-06-28"}
+{
+    "start_time": "14:00",          // required, format:H:i
+    "date": "2026-06-28",           // required, date, format:Y-m-d
+    "type_id": 1                    // optional, exists:appointment_types
+}
 ```
 
 **Response (200) - Success:**
@@ -4160,11 +4019,11 @@ Reschedule an appointment. Auth required.
                  "clinic_id":  1,
                  "doctor":  {
                                 "id":  1,
-                                "name":  "Porter Breitenberg"
+                                "name":  "Luella Morar"
                             },
                  "patient":  {
                                  "id":  1,
-                                 "name":  "Hermann Boyle",
+                                 "name":  "Lee Wilkinson",
                                  "phone":  "0900000004"
                              },
                  "room":  {
@@ -4189,16 +4048,6 @@ Reschedule an appointment. Auth required.
 }
 ```
 
-**Response (404) - Error: not-found:**
-
-```json
-{
-    "success":  false,
-    "message":  "Appointment not found",
-    "data":  null
-}
-```
-
 **Response (422) - Error: validation:**
 
 ```json
@@ -4216,6 +4065,7 @@ Reschedule an appointment. Auth required.
 }
 ```
 
+<div id="appointments-complete"></div>
 **`POST /api/clinic-system/clinic/clinic/appointments/{id}/complete`**
 
 Complete a confirmed appointment. Auth required.
@@ -4240,6 +4090,7 @@ Complete a confirmed appointment. Auth required.
 }
 ```
 
+<div id="appointments-mark-confirmed"></div>
 **`POST /api/clinic-system/clinic/clinic/appointments/{id}/confirmed`**
 
 Mark appointment as confirmed. Auth required.
@@ -4256,10 +4107,107 @@ Mark appointment as confirmed. Auth required.
 
 ---
 
+## Phone
+
+Phone number management (auth required).
+
+<div id="phone-verify-update"></div>
+**`POST /api/clinic-system/phone/verify-update`**
+
+Verify phone update with code. Auth required.
+
+**Request Body:**
+
+```json
+{
+    "code": "123456"               // required, digits:6
+}
+```
+
+**Response (200) - Success:**
+
+```json
+{
+    "success":  true,
+    "message":  "Phone number updated successfully.",
+    "data":  null
+}
+```
+
+**Response (500) - Error: invalid-code:**
+
+```json
+{
+    "success":  false,
+    "message":  "No verification code found. Please request a new one.",
+    "data":  null
+}
+```
+
+**Response (500) - Error: no-request:**
+
+```json
+{
+    "success":  false,
+    "message":  "No verification code found. Please request a new one.",
+    "data":  null
+}
+```
+
+<div id="phone-update"></div>
+**`POST /api/clinic-system/phone/update`**
+
+Request phone update (sends code if already set). Auth required.
+
+**Request Body:**
+
+```json
+{
+    "phone": "0911111111"          // required, digits:10, starts_with:09
+}
+```
+
+**Response (401) - Error: unauthorized:**
+
+```json
+{
+    "message":  "Unauthenticated."
+}
+```
+
+**Response (422) - Error: validation:**
+
+```json
+{
+    "message":  "The phone field must be 10 digits. (and 1 more error)",
+    "errors":  {
+                   "phone":  [
+                                 "The phone field must be 10 digits.",
+                                 "The phone field must start with one of the following: 09."
+                             ]
+               }
+}
+```
+
+**Response (200) - send-code-first-time:**
+
+```json
+{
+    "success":  true,
+    "message":  "Verification code sent to your new phone number.",
+    "data":  {
+                 "new_phone":  "0911111111"
+             }
+}
+```
+
+---
+
 ## Patient Records
 
 Patient medical records (auth required).
 
+<div id="patient-records-get-all-by-doctor"></div>
 **`GET /api/clinic-system/clinic/clinic/patient-records/doctor/{doctorId}/all`**
 
 Get all records for a doctor. Auth required.
@@ -4278,17 +4226,17 @@ Get all records for a doctor. Auth required.
                      "clinic_id":  1,
                      "appointment_id":  1,
                      "diagnosis_summary":  "Test diagnosis",
-                     "description":  "Provident laborum laudantium delectus. Iure est hic maiores id perspiciatis. Eligendi suscipit libero odio tenetur. Et ipsum unde corrupti beatae.",
+                     "description":  "Praesentium dolor fugit nesciunt sed. Ut quis esse qui voluptas omnis cumque exercitationem. Quia et id quae quo eligendi tenetur iure voluptas. Nihil temporibus suscipit sunt accusantium quis.",
                      "status":  "open",
-                     "notes":  "Animi qui modi ullam alias earum. Id hic numquam assumenda aspernatur non ipsa. Nostrum aliquid id corrupti qui aliquam pariatur.",
+                     "notes":  "Non nobis dolorem recusandae vel non eius in. Qui animi eaque et ut voluptatem. Iusto eveniet placeat est molestiae officiis.",
                      "patient":  {
-                                     "name":  "Emile Morar",
+                                     "name":  "Miracle Weissnat",
                                      "phone":  "0900000004"
                                  },
                      "doctor":  {
-                                    "name":  "Daisy Gislason"
+                                    "name":  "Jamar Rosenbaum"
                                 },
-                     "created_at":  "2026-06-21 11:49:12"
+                     "created_at":  "2026-06-21 14:21:11"
                  }
              ]
 }
@@ -4304,6 +4252,7 @@ Get all records for a doctor. Auth required.
 }
 ```
 
+<div id="patient-records-get-by-doctor"></div>
 **`GET /api/clinic-system/clinic/clinic/patient-records/patient/{patientId}/doctor/{doctorId}`**
 
 Get records by patient and doctor. Auth required.
@@ -4322,17 +4271,17 @@ Get records by patient and doctor. Auth required.
                      "clinic_id":  1,
                      "appointment_id":  1,
                      "diagnosis_summary":  "Test diagnosis",
-                     "description":  "Molestias voluptates nobis necessitatibus praesentium iure qui est. Modi necessitatibus voluptas rerum sunt minima. Adipisci pariatur qui voluptas ipsam quaerat rerum.",
+                     "description":  "Facilis quis ducimus aut ut neque labore vitae. Adipisci aut facilis hic perferendis in dolores velit. Enim est vel asperiores fuga perferendis. Et perferendis deserunt ducimus autem natus quas.",
                      "status":  "open",
-                     "notes":  "Rem ab harum ea qui quas libero enim. In et asperiores similique inventore. Et quia aut voluptates. Officia id reprehenderit omnis ad ut porro.",
+                     "notes":  "Eligendi quisquam sed odit error voluptatem inventore dolor exercitationem. Aut quia eos harum quisquam. Placeat ipsa ut eveniet laudantium autem officiis. Aut in harum officia veniam est modi repellendus.",
                      "patient":  {
-                                     "name":  "Sigrid Cummings",
+                                     "name":  "Arch Fisher",
                                      "phone":  "0900000004"
                                  },
                      "doctor":  {
-                                    "name":  "Camren Sipes"
+                                    "name":  "Naomie Schneider"
                                 },
-                     "created_at":  "2026-06-21 11:49:06"
+                     "created_at":  "2026-06-21 14:28:38"
                  }
              ]
 }
@@ -4358,9 +4307,10 @@ Get records by patient and doctor. Auth required.
 }
 ```
 
+<div id="patient-records-history"></div>
 **`GET /api/clinic-system/clinic/clinic/patient-records/patient/{patientId}/history`**
 
-Get patient's medical history records. Auth required.
+Get patient medical history records. Auth required.
 
 **Response (200) - Success:**
 
@@ -4376,17 +4326,17 @@ Get patient's medical history records. Auth required.
                      "clinic_id":  1,
                      "appointment_id":  1,
                      "diagnosis_summary":  "Test diagnosis",
-                     "description":  "Et nam velit corrupti molestias culpa. Nihil beatae et aliquam non labore dignissimos repellat error. Debitis at similique ipsam ducimus voluptatibus.",
+                     "description":  "Quia nobis et est et. Laudantium commodi est occaecati reprehenderit sunt. Suscipit ab impedit labore praesentium reiciendis. Dolorem architecto quo distinctio aut in aspernatur animi.",
                      "status":  "open",
-                     "notes":  "Aut delectus nihil nobis odio alias. Maxime impedit vel error saepe omnis id. Velit earum omnis consequatur.",
+                     "notes":  "Ducimus ea eos asperiores exercitationem voluptas. Quae dolores delectus consequatur consequatur. Et qui culpa nisi eos.",
                      "patient":  {
-                                     "name":  "Cristian Zieme",
+                                     "name":  "Joaquin Ondricka",
                                      "phone":  "0900000004"
                                  },
                      "doctor":  {
-                                    "name":  "Kristoffer Hane"
+                                    "name":  "Louie Emard"
                                 },
-                     "created_at":  "2026-06-21 11:49:03"
+                     "created_at":  "2026-06-21 15:09:46"
                  }
              ]
 }
@@ -4402,6 +4352,7 @@ Get patient's medical history records. Auth required.
 }
 ```
 
+<div id="patient-records-index"></div>
 **`GET /api/clinic-system/clinic/clinic/patient-records/filtered`**
 
 List filtered patient records. Auth required.
@@ -4409,7 +4360,7 @@ List filtered patient records. Auth required.
 **Query Parameters:**
 
 ```
-clinic_id=1
+clinic_id=1&search=&status=open&date_from=&date_to=&disease_code=
 ```
 
 **Response (200) - Success:**
@@ -4426,17 +4377,17 @@ clinic_id=1
                      "clinic_id":  1,
                      "appointment_id":  1,
                      "diagnosis_summary":  "Test diagnosis",
-                     "description":  "Blanditiis dolorem libero facilis recusandae et fugiat. Veniam voluptatum totam ut facilis molestiae itaque. Neque aperiam illum aut eaque aliquam inventore. Totam est soluta enim ipsam vero dolorem.",
+                     "description":  "Sit vel dolores minima qui. Et nisi nulla numquam omnis ea vel. Quo sequi quis sit impedit. Ipsum eius itaque deserunt excepturi beatae delectus ut.",
                      "status":  "open",
-                     "notes":  "Minus velit quaerat quibusdam esse. Nulla enim rerum quaerat ut non rerum cum itaque. Et tempore autem quibusdam tempora neque esse.",
+                     "notes":  "Ut fuga ea repellat doloremque omnis placeat. Suscipit id delectus est consectetur sed distinctio amet est. In nemo nisi fugiat et hic fuga. Esse blanditiis possimus aut cupiditate et esse.",
                      "patient":  {
-                                     "name":  "Justyn Gusikowski",
+                                     "name":  "Dagmar Braun",
                                      "phone":  "0900000004"
                                  },
                      "doctor":  {
-                                    "name":  "Elinore Hegmann"
+                                    "name":  "Mara Keebler"
                                 },
-                     "created_at":  "2026-06-21 11:49:02"
+                     "created_at":  "2026-06-21 14:20:57"
                  }
              ],
     "pagination":  {
@@ -4453,6 +4404,7 @@ clinic_id=1
 }
 ```
 
+<div id="patient-records-show"></div>
 **`GET /api/clinic-system/clinic/clinic/patient-records/show/{id}`**
 
 Show patient record. Auth required.
@@ -4470,15 +4422,15 @@ Show patient record. Auth required.
                  "clinic_id":  1,
                  "appointment_id":  1,
                  "diagnosis_summary":  "Test diagnosis",
-                 "description":  "Ea modi laborum voluptas ex esse dolorum est quia. Dolorum voluptatem et eum nobis. Perspiciatis aut rem exercitationem repellendus.",
+                 "description":  "Nulla suscipit nam dolorum alias at magnam. Eum reprehenderit voluptas consequuntur molestiae ab ut iure. Quaerat dolores alias aperiam et eaque aut id.",
                  "status":  "open",
-                 "notes":  "Exercitationem fugit nihil nesciunt optio deleniti quo est aperiam. Accusantium esse eligendi ut quod sint. Dolorem laudantium quaerat earum. Quis et vitae molestias error nihil recusandae maiores.",
+                 "notes":  "A et eveniet quia odio rerum natus. Tempore tempore id impedit sit.",
                  "patient":  {
-                                 "name":  "Chad Hegmann",
+                                 "name":  "Everett Kunde",
                                  "phone":  "0900000004"
                              },
                  "doctor":  {
-                                "name":  "Zachery Langosh"
+                                "name":  "Tabitha Grimes"
                             },
                  "diseases":  [
 
@@ -4486,7 +4438,7 @@ Show patient record. Auth required.
                  "prescriptions":  [
 
                                    ],
-                 "created_at":  "2026-06-21 11:48:55"
+                 "created_at":  "2026-06-21 15:09:36"
              }
 }
 ```
@@ -4501,6 +4453,7 @@ Show patient record. Auth required.
 }
 ```
 
+<div id="patient-records-get-by-room"></div>
 **`POST /api/clinic-system/clinic/clinic/patient-records/rooms/search`**
 
 Search records by rooms. Auth required.
@@ -4508,7 +4461,9 @@ Search records by rooms. Auth required.
 **Request Body:**
 
 ```json
-{"room_ids":[1]}
+{
+    "room_ids": [1]                 // required, array, min:1, each exists:rooms
+}
 ```
 
 **Response (200) - Success:**
@@ -4525,17 +4480,17 @@ Search records by rooms. Auth required.
                      "clinic_id":  1,
                      "appointment_id":  1,
                      "diagnosis_summary":  "Test diagnosis",
-                     "description":  "Officia veniam tempore corrupti itaque. Non dolorum ipsa illo pariatur. Tenetur velit porro voluptatem ipsum dolore culpa.",
+                     "description":  "Tenetur veritatis non dolor sint. Suscipit nobis ab maxime sequi quia autem. Cumque adipisci consequuntur laudantium voluptatem in voluptas enim aut.",
                      "status":  "open",
-                     "notes":  "Magni odit delectus accusamus fugiat. Provident voluptas dolores accusamus porro est aut dolor.",
+                     "notes":  "Earum distinctio omnis ut accusamus laboriosam. Temporibus molestiae quia in aspernatur. Reprehenderit nam deleniti eum dolores quia non. Illum molestiae quaerat itaque nulla quis saepe. Optio et numquam excepturi aperiam dolores libero qui.",
                      "patient":  {
-                                     "name":  "Adalberto Schneider",
+                                     "name":  "Patricia Bechtelar",
                                      "phone":  "0900000004"
                                  },
                      "doctor":  {
-                                    "name":  "Carmen Herzog"
+                                    "name":  "Hilario Jones"
                                 },
-                     "created_at":  "2026-06-21 11:49:10"
+                     "created_at":  "2026-06-21 15:09:57"
                  }
              ]
 }
@@ -4554,6 +4509,7 @@ Search records by rooms. Auth required.
 }
 ```
 
+<div id="patient-records-store"></div>
 **`POST /api/clinic-system/clinic/clinic/patient-records`**
 
 Create patient record. Auth required.
@@ -4561,7 +4517,39 @@ Create patient record. Auth required.
 **Request Body:**
 
 ```json
-{"patient_id":1,"doctor_id":1,"clinic_id":1,"appointment_id":1,"diagnosis_summary":"hypertension","status":"open"}
+{
+    "patient_id": 1,                // required, exists:patient_infos
+    "doctor_id": 1,                 // required, exists:doctors
+    "clinic_id": 1,                 // required, exists:clinics
+    "appointment_id": 1,            // required, exists:appointments
+    "diagnosis_summary": "hypertension", // required, max:1000
+    "description": null,            // optional, max:1000
+    "status": "open",               // optional, in:open,closed,follow-up
+    "notes": null,                  // optional, max:2000
+    "diseases": [{                  // optional, array
+        "id": 1,                    // required_without:code, exists:diseases
+        "code": null,               // required_without:id
+        "en_name": "Diabetes",       // required_without:id
+        "ar_name": "...",           // required_without:id
+        "disease_nature": "chronic", // required_without:id
+        "description": null,        // optional
+        "status": "active",         // optional, in:active,resolved,chronic
+        "severity": "moderate"      // optional, in:mild,moderate,severe
+    }],
+    "prescription_items": [{        // optional, array
+        "id": null,                 // required_without:api_medicine_id
+        "api_medicine_id": null,    // required_without:id
+        "en_name": "Paracetamol",   // required_without:id
+        "ar_name": "...",           // required_without:id
+        "generic_name_en": null,    // required_without:id
+        "generic_name_ar": null,    // required_without:id
+        "form": "tablet",           // required_without:id
+        "strength": "500mg",        // required_without:id
+        "dosage_instruction": null, // optional
+        "frequency": null,          // optional
+        "duration": null            // optional
+    }]
+}
 ```
 
 **Response (201) - Success:**
@@ -4607,6 +4595,7 @@ Create patient record. Auth required.
 }
 ```
 
+<div id="patient-records-update"></div>
 **`PUT /api/clinic-system/clinic/clinic/patient-records/{id}`**
 
 Update patient record. Auth required.
@@ -4614,7 +4603,15 @@ Update patient record. Auth required.
 **Request Body:**
 
 ```json
-{"diagnosis_summary":"Updated","status":"follow-up"}
+{
+    "diagnosis_summary": "Updated", // optional, max:1000
+    "description": null,            // optional, max:1000
+    "status": "follow-up",          // optional, in:open,closed,follow-up
+    "notes": null,                  // optional, max:2000
+    "diseases": [{ ... }],          // optional (same structure as store)
+    "preid": null,                  // required_with:prescription_items, exists:prescriptions
+    "prescription_items": [{ ... }] // optional (same structure as store)
+}
 ```
 
 **Response (200) - Success:**
@@ -4634,11 +4631,11 @@ Update patient record. Auth required.
                  "status":  "follow-up",
                  "notes":  "Updated notes",
                  "patient":  {
-                                 "name":  "Johnson Gibson",
+                                 "name":  "Luz Hahn",
                                  "phone":  "0900000004"
                              },
                  "doctor":  {
-                                "name":  "Mossie Weber"
+                                "name":  "Leonel Stehr"
                             },
                  "diseases":  [
 
@@ -4646,11 +4643,12 @@ Update patient record. Auth required.
                  "prescriptions":  [
 
                                    ],
-                 "created_at":  "2026-06-21 11:48:57"
+                 "created_at":  "2026-06-21 15:09:39"
              }
 }
 ```
 
+<div id="patient-records-destroy"></div>
 **`DELETE /api/clinic-system/clinic/clinic/patient-records/{id}`**
 
 Delete patient record. Auth required.
@@ -4677,4 +4675,4 @@ Delete patient record. Auth required.
 
 ---
 
-_Generated from test fixtures in `tests/Fixtures/api-responses/`. 148 responses across 77 endpoints._
+_Generated from test fixtures in `tests/Fixtures/api-responses/`. 143 responses across 79 endpoints._

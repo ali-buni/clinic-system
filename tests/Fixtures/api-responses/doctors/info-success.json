@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:52:49 GMT"
+            "Sun, 21 Jun 2026 15:12:43 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -22,15 +22,15 @@
             "user_id": 3,
             "clinic_id": 1,
             "room_id": 1,
-            "name": "Curt Runolfsson",
+            "name": "Georgianna Herzog",
             "phone": "0900000002",
             "email": "doctor@test.com",
-            "dob": "1987-04-08 23:44:49",
-            "gender": "female",
+            "dob": "1976-08-30 08:44:36",
+            "gender": "unknown",
             "created_at": "2026-06-21",
             "appointment_duration": 30,
             "consultation_fee": 150,
-            "bio": "Id aut sequi eaque alias voluptatem commodi. Consequatur nisi reiciendis et et voluptate dolorem. Rem cum possimus quae est delectus harum molestias et. Ut distinctio in architecto ut.",
+            "bio": "Dolor officiis expedita non. Saepe tenetur quis quam blanditiis quas suscipit quis. Reiciendis molestiae suscipit porro excepturi accusantium cumque minima. Sed ea sunt quos rerum sequi minima.",
             "specialties": [
                 {
                     "ar_name": "الطب العام",

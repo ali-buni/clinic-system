@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:53:53 GMT"
+            "Sun, 21 Jun 2026 14:29:06 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -19,17 +19,17 @@
         "message": "Medical history retrieved successfully.",
         "data": {
             "id": 1,
-            "name": "Iliana Lehner",
+            "name": "Isai Weissnat",
             "phone": "0900000004",
             "email": "patient@test.com",
-            "gender": "unknown",
-            "dob": "1975-07-16",
+            "gender": "male",
+            "dob": "1972-06-03",
             "profile_image": null,
             "clinic_id": 1,
             "appointments": [
                 {
                     "id": 1,
-                    "doctor_name": "Rowland McClure",
+                    "doctor_name": "Shanna Gaylord",
                     "type": null,
                     "start_time": "2026-06-22 10:00",
                     "end_time": "2026-06-22 10:30",
@@ -40,9 +40,9 @@
             "records": [
                 {
                     "id": 1,
-                    "doctor_name": "Rowland McClure",
+                    "doctor_name": "Shanna Gaylord",
                     "diagnosis_summary": "Test diagnosis",
-                    "description": "Itaque dignissimos dolor laborum omnis facilis. Repudiandae ut natus dolores ut in porro et. Temporibus enim odio totam. Expedita illum aut totam eos ut.",
+                    "description": "Nihil eum debitis officia voluptatum. Ut necessitatibus est voluptatum molestiae et ut quo quis. Reprehenderit non est ipsa quia repellat iusto maiores facilis. Aut qui velit sequi natus veniam.",
                     "status": "open",
                     "diseases": [],
                     "prescriptions": [],

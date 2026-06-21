@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:44:49 GMT"
+            "Sun, 21 Jun 2026 15:12:39 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -348,11 +348,6 @@
                 "function": "run",
                 "class": "PHPUnit\\TextUI\\Application",
                 "type": "->"
-            },
-            {
-                "file": "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\bin\\phpunit",
-                "line": 122,
-                "function": "include"
             }
         ]
     }

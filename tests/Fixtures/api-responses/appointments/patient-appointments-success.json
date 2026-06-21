@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:51:50 GMT"
+            "Sun, 21 Jun 2026 15:07:23 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -23,11 +23,11 @@
                 "clinic_id": 1,
                 "doctor": {
                     "id": 1,
-                    "name": "Libby McLaughlin"
+                    "name": "Hardy Gulgowski"
                 },
                 "patient": {
                     "id": 1,
-                    "name": "Bryana Willms",
+                    "name": "Nona Gleason",
                     "phone": "0900000004"
                 },
                 "room": {

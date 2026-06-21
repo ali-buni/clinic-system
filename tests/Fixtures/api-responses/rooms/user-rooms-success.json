@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:26:12 GMT"
+            "Sun, 21 Jun 2026 14:29:27 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -26,13 +26,13 @@
                 "doctors": [
                     {
                         "id": 1,
-                        "name": "Nikita Swaniawski"
+                        "name": "Madeline Lind"
                     }
                 ],
                 "secretaries": [
                     {
                         "id": 1,
-                        "name": "Opal Hand"
+                        "name": "Derek Osinski"
                     }
                 ]
             }

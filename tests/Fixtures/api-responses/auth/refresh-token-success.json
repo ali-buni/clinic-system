@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:52:19 GMT"
+            "Sun, 21 Jun 2026 15:36:34 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -18,7 +18,7 @@
         "success": true,
         "message": "Token refreshed successfully",
         "data": {
-            "auth_token": "5|fVwgx2JCFmz1uPsFEhrCgroVgCn82om8VWRis69N44d3468f"
+            "auth_token": "5|ob6JuzrETSwz3qxPeFSrHw8sapdUWms9H1Pe0HCwb65aabf3"
         }
     }
 }

@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:53:37 GMT"
+            "Sun, 21 Jun 2026 14:28:38 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -25,17 +25,17 @@
                 "clinic_id": 1,
                 "appointment_id": 1,
                 "diagnosis_summary": "Test diagnosis",
-                "description": "Veritatis autem quasi et voluptatem cum accusamus voluptatum. Corporis necessitatibus qui voluptatem est vero nesciunt. Cumque fuga incidunt quia iste.",
+                "description": "Facilis quis ducimus aut ut neque labore vitae. Adipisci aut facilis hic perferendis in dolores velit. Enim est vel asperiores fuga perferendis. Et perferendis deserunt ducimus autem natus quas.",
                 "status": "open",
-                "notes": "Minus exercitationem nemo ipsam at quia laboriosam. Sit et consectetur commodi aliquam deleniti sapiente. Voluptatem ut possimus dolorem fugit aut. Sunt iste sit voluptates consequatur necessitatibus.",
+                "notes": "Eligendi quisquam sed odit error voluptatem inventore dolor exercitationem. Aut quia eos harum quisquam. Placeat ipsa ut eveniet laudantium autem officiis. Aut in harum officia veniam est modi repellendus.",
                 "patient": {
-                    "name": "Sylvan Franecki",
+                    "name": "Arch Fisher",
                     "phone": "0900000004"
                 },
                 "doctor": {
-                    "name": "Keenan Blanda"
+                    "name": "Naomie Schneider"
                 },
-                "created_at": "2026-06-21 13:53:37"
+                "created_at": "2026-06-21 14:28:38"
             }
         ]
     }

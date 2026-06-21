@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:54:22 GMT"
+            "Sun, 21 Jun 2026 14:22:30 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -21,7 +21,7 @@
             "id": 1,
             "doctor": {
                 "id": 1,
-                "name": "Jadon Howell"
+                "name": "Anibal Grimes"
             },
             "day_of_week": 0,
             "day_name": "Sunday",

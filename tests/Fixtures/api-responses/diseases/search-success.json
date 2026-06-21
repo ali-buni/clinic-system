@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:52:42 GMT"
+            "Sun, 21 Jun 2026 15:09:11 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -20,21 +20,25 @@
         "data": [
             {
                 "id": 1,
-                "code": "CXT237",
+                "code": "WFW180",
                 "ar_name": "السكري",
                 "en_name": "Diabetes",
-                "description": "Aut assumenda dolorem nobis sint excepturi impedit amet.",
+                "description": "Et sunt quis qui quia.",
                 "disease_nature": "chronic",
-                "created_at": "2026-06-21T13:52:39.000000Z",
-                "updated_at": "2026-06-21T13:52:39.000000Z",
+                "created_at": "2026-06-21T15:09:09.000000Z",
+                "updated_at": "2026-06-21T15:09:09.000000Z",
                 "is_custom": 1
             },
             {
-                "code": "D61.02",
-                "en_name": "Shwachman-Diamond syndrome",
-                "ar_name": null,
-                "disease_nature": "other",
-                "description": "ICD-10 International Classification"
+                "id": 2,
+                "code": "SUS919",
+                "ar_name": "suscipit",
+                "en_name": "Diabetes",
+                "description": "Eveniet occaecati sit recusandae.",
+                "disease_nature": "infectious",
+                "created_at": "2026-06-21T15:09:09.000000Z",
+                "updated_at": "2026-06-21T15:09:09.000000Z",
+                "is_custom": 1
             },
             {
                 "code": "E08.00",
@@ -74,6 +78,13 @@
             {
                 "code": "E08.22",
                 "en_name": "Diabetes mellitus due to underlying condition with diabetic chronic kidney disease",
+                "ar_name": null,
+                "disease_nature": "other",
+                "description": "ICD-10 International Classification"
+            },
+            {
+                "code": "E08.29",
+                "en_name": "Diabetes mellitus due to underlying condition with other diabetic kidney complication",
                 "ar_name": null,
                 "disease_nature": "other",
                 "description": "ICD-10 International Classification"

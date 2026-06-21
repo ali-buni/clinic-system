@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:44:26 GMT"
+            "Sun, 21 Jun 2026 15:36:38 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -19,9 +19,9 @@
         "message": "Success",
         "data": {
             "id": 1,
-            "title": "Pouros-Boyer Clinic",
-            "location": "9940 White Brook Suite 359\nEast Tania, SD 56242-3693",
-            "phone": "0996199058",
+            "title": "Kling-Stiedemann Clinic",
+            "location": "4450 Quinn Cape\nOraville, ID 60426-2304",
+            "phone": "0959316704",
             "rooms_count": {
                 "total": 1,
                 "details": [
@@ -34,7 +34,7 @@
             "created_at": "2026-06-21",
             "doctors": [
                 {
-                    "name": "Jairo Bailey",
+                    "name": "Rey Collins",
                     "specialities": [
                         {
                             "ar_name": "الطب العام",
@@ -47,7 +47,7 @@
             ],
             "secretaries": [
                 {
-                    "name": "Alexandre Goodwin",
+                    "name": "Abner Wyman",
                     "phone": "0900000003",
                     "room_ids": [
                         1

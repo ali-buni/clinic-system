@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:53:47 GMT"
+            "Sun, 21 Jun 2026 15:10:09 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -20,21 +20,21 @@
         "data": {
             "id": 1,
             "user_id": 5,
-            "name": "Berry Kohler",
+            "name": "Salvador Daugherty",
             "gender": "female",
             "profile_image": null,
             "clinic_id": 1,
-            "nationality": "United States of America",
-            "address": "95384 Mathilde Branch\nNorth Breanachester, WY 87470-9974",
-            "marital_status": "other",
-            "emergency_phone": "0958583441",
+            "nationality": "Saint Martin",
+            "address": "357 Jody Manors\nPort Camylle, MS 02399-4171",
+            "marital_status": "single",
+            "emergency_phone": "0905262508",
             "allergies": null,
-            "chronic_conditions": null,
-            "career": "Electrotyper",
-            "blood_type": "A+",
+            "chronic_conditions": "Iure dicta enim ea nam voluptas et quaerat.",
+            "career": "Textile Dyeing Machine Operator",
+            "blood_type": "AB+",
             "phone": "0900000004",
             "email": "patient@test.com",
-            "dob": "1983-02-26",
+            "dob": "1981-12-23",
             "created_at": "2026-06-21"
         }
     }

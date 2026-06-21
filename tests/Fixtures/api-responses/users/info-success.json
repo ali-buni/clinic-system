@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:54:34 GMT"
+            "Sun, 21 Jun 2026 14:30:26 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -19,23 +19,23 @@
         "message": "Success",
         "data": {
             "id": 5,
-            "name": "Patsy Walker",
+            "name": "Dandre Lockman",
             "phone": "0900000004",
             "email": "patient@test.com",
             "gender": "male",
-            "dob": "1981-07-05",
+            "dob": "1993-02-07",
             "profile_image": null,
             "created": "2026-06-21",
             "role": "patient",
             "clinic_id": 1,
-            "nationality": "Paraguay",
-            "address": "492 Coby Cliffs\nVickystad, KY 23523",
+            "nationality": "Martinique",
+            "address": "68759 Rebecca Fields Apt. 469\nJanychester, MN 52058",
             "marital_status": "single",
-            "emergency_phone": "0932430311",
+            "emergency_phone": "0943194555",
             "allergies": null,
             "chronic_conditions": null,
-            "career": "Supervisor Fire Fighting Worker",
-            "blood_type": "A-"
+            "career": "Dentist",
+            "blood_type": "AB-"
         }
     }
 }

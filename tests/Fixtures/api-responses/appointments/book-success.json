@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:51:35 GMT"
+            "Sun, 21 Jun 2026 15:07:12 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -22,11 +22,11 @@
             "clinic_id": 1,
             "doctor": {
                 "id": 1,
-                "name": "Vilma Kerluke"
+                "name": "Weldon Schneider"
             },
             "patient": {
                 "id": 1,
-                "name": "Lola Morissette",
+                "name": "Micaela Marquardt",
                 "phone": "0900000004"
             },
             "room": {

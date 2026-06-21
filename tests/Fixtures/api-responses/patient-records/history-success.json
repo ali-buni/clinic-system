@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:53:35 GMT"
+            "Sun, 21 Jun 2026 15:09:46 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -25,17 +25,17 @@
                 "clinic_id": 1,
                 "appointment_id": 1,
                 "diagnosis_summary": "Test diagnosis",
-                "description": "Et ut dolorem laboriosam corrupti voluptatibus nemo quae ut. Sed commodi fuga sed voluptas enim omnis aut. Ratione sint beatae quia quia accusamus ea quae. Unde delectus eius occaecati excepturi odit blanditiis.",
+                "description": "Quia nobis et est et. Laudantium commodi est occaecati reprehenderit sunt. Suscipit ab impedit labore praesentium reiciendis. Dolorem architecto quo distinctio aut in aspernatur animi.",
                 "status": "open",
-                "notes": "Corrupti quam velit voluptas et et explicabo aperiam praesentium. Perferendis et cumque sed labore pariatur sunt tempora. Omnis neque dolorem eum qui hic eaque. Provident rem sed non omnis.",
+                "notes": "Ducimus ea eos asperiores exercitationem voluptas. Quae dolores delectus consequatur consequatur. Et qui culpa nisi eos.",
                 "patient": {
-                    "name": "Eleonore Dickens",
+                    "name": "Joaquin Ondricka",
                     "phone": "0900000004"
                 },
                 "doctor": {
-                    "name": "Joshua Hyatt"
+                    "name": "Louie Emard"
                 },
-                "created_at": "2026-06-21 13:53:35"
+                "created_at": "2026-06-21 15:09:46"
             }
         ]
     }

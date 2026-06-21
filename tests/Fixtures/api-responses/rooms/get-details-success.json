@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Sun, 21 Jun 2026 13:54:05 GMT"
+            "Sun, 21 Jun 2026 14:29:24 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -25,11 +25,11 @@
             "doctors": [
                 {
                     "id": 1,
-                    "name": "Sarai Lebsack",
+                    "name": "Marco Cassin",
                     "phone": "0900000002",
                     "created": "2026-06-21",
-                    "gender": "unknown",
-                    "bio": "Eligendi qui minus saepe. Iure culpa laboriosam laudantium non debitis quaerat saepe. Et quibusdam quam unde maxime. Rerum et est sapiente reiciendis dignissimos repellat.",
+                    "gender": "male",
+                    "bio": "Dolor non rerum doloribus eos ut voluptates numquam. Vel consectetur mollitia qui mollitia impedit rerum et. Et consectetur placeat enim et.",
                     "specialties": [
                         {
                             "ar_name": "الطب العام",
@@ -41,10 +41,10 @@
             "secretaries": [
                 {
                     "id": 1,
-                    "name": "Keira Cole",
+                    "name": "Karina Collins",
                     "phone": "0900000003",
                     "created": "2026-06-21",
-                    "gender": "female"
+                    "gender": "unknown"
                 }
             ]
         }
