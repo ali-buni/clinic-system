@@ -1,0 +1,42 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:48:55 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "the record found",
+        "data": {
+            "id": 1,
+            "patient_id": 1,
+            "doctor_id": 1,
+            "clinic_id": 1,
+            "appointment_id": 1,
+            "diagnosis_summary": "Test diagnosis",
+            "description": "Ea modi laborum voluptas ex esse dolorum est quia. Dolorum voluptatem et eum nobis. Perspiciatis aut rem exercitationem repellendus.",
+            "status": "open",
+            "notes": "Exercitationem fugit nihil nesciunt optio deleniti quo est aperiam. Accusantium esse eligendi ut quod sint. Dolorem laudantium quaerat earum. Quis et vitae molestias error nihil recusandae maiores.",
+            "patient": {
+                "name": "Chad Hegmann",
+                "phone": "0900000004"
+            },
+            "doctor": {
+                "name": "Zachery Langosh"
+            },
+            "diseases": [],
+            "prescriptions": [],
+            "created_at": "2026-06-21 11:48:55"
+        }
+    }
+}

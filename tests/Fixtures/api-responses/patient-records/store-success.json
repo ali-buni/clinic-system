@@ -1,0 +1,22 @@
+{
+    "status": 201,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:48:51 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Record created successfully",
+        "data": null
+    }
+}

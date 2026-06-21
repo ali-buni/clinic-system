@@ -1,0 +1,28 @@
+{
+    "status": 422,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:50:12 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "message": "The login field is required. (and 1 more error)",
+        "errors": {
+            "login": [
+                "The login field is required."
+            ],
+            "password": [
+                "Password must be at least 8 characters"
+            ]
+        }
+    }
+}

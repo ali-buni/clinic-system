@@ -1,0 +1,41 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:50:06 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Success",
+        "data": {
+            "id": 5,
+            "name": "Mckayla Grant",
+            "phone": "0900000004",
+            "email": "patient@test.com",
+            "gender": "female",
+            "dob": "1979-09-19",
+            "profile_image": null,
+            "created": "2026-06-21",
+            "role": "patient",
+            "clinic_id": 1,
+            "nationality": "Austria",
+            "address": "70155 Kilback Glen\nPort Stonebury, MN 60563",
+            "marital_status": "other",
+            "emergency_phone": "0991668315",
+            "allergies": null,
+            "chronic_conditions": null,
+            "career": "Laundry OR Dry-Cleaning Worker",
+            "blood_type": "AB-"
+        }
+    }
+}

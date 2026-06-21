@@ -1,0 +1,52 @@
+{
+    "status": 201,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 12:18:45 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Appointment booked successfully",
+        "data": {
+            "id": 2,
+            "clinic_id": 1,
+            "doctor": {
+                "id": 1,
+                "name": "Kiarra Daniel"
+            },
+            "patient": {
+                "id": 1,
+                "name": "Dock Purdy",
+                "phone": "0900000004"
+            },
+            "room": {
+                "id": 1,
+                "name": "Test Room"
+            },
+            "appointment_type": {
+                "id": 1,
+                "ar_name": "استشارة عامة",
+                "en_name": "General Consultation"
+            },
+            "date": "2026-06-28",
+            "dayOfWeek": 0,
+            "start_time": "11:00",
+            "end_time": "11:30",
+            "status": "scheduled",
+            "visit_reason": "Routine checkup",
+            "cancel_reason": null,
+            "notes": null,
+            "created_at": "2026-06-21"
+        }
+    }
+}

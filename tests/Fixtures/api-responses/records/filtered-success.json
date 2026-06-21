@@ -1,0 +1,53 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 10:40:28 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Records retrieved successfully",
+        "data": [
+            {
+                "id": 1,
+                "patient_id": 1,
+                "doctor_id": 1,
+                "clinic_id": 1,
+                "appointment_id": 1,
+                "diagnosis_summary": "Ad ut provident unde quo et.",
+                "description": "Eaque quo vel esse harum porro. Molestiae mollitia rerum eum soluta. Deserunt id quae dolor occaecati aliquid. At sint explicabo dolorem. Aut est perferendis et cum debitis fugit.",
+                "status": "closed",
+                "notes": "Quas magni enim dolorum. Excepturi amet et alias sit occaecati voluptate ea. Voluptatem perspiciatis rerum incidunt aut consectetur magnam.",
+                "patient": {
+                    "name": "Cathryn Bashirian",
+                    "phone": "0900000004"
+                },
+                "doctor": {
+                    "name": "Juliana Rippin"
+                },
+                "created_at": "2026-06-21 10:40:28"
+            }
+        ],
+        "pagination": {
+            "total": 1,
+            "count": 1,
+            "per_page": 10,
+            "current_page": 1,
+            "last_page": 1,
+            "first_page_url": "http:\/\/localhost\/api\/clinic-system\/clinic\/clinic\/patient-records\/filtered?page=1",
+            "last_page_url": "http:\/\/localhost\/api\/clinic-system\/clinic\/clinic\/patient-records\/filtered?page=1",
+            "next_page_url": null,
+            "prev_page_url": null
+        }
+    }
+}

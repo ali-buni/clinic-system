@@ -1,0 +1,83 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 12:20:09 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Diseases search results retrieved successfully.",
+        "data": [
+            {
+                "id": 1,
+                "code": "VDK131",
+                "ar_name": "السكري",
+                "en_name": "Diabetes",
+                "description": "Aut aut cumque animi voluptatem hic sit.",
+                "disease_nature": "chronic",
+                "created_at": "2026-06-21T12:20:05.000000Z",
+                "updated_at": "2026-06-21T12:20:05.000000Z",
+                "is_custom": 1
+            },
+            {
+                "code": "D61.02",
+                "en_name": "Shwachman-Diamond syndrome",
+                "ar_name": null,
+                "disease_nature": "other",
+                "description": "ICD-10 International Classification"
+            },
+            {
+                "code": "E08.00",
+                "en_name": "Diabetes mellitus due to underlying condition with hyperosmolarity without nonketotic hyperglycemic-hyperosmolar coma (NKHHC)",
+                "ar_name": null,
+                "disease_nature": "other",
+                "description": "ICD-10 International Classification"
+            },
+            {
+                "code": "E08.01",
+                "en_name": "Diabetes mellitus due to underlying condition with hyperosmolarity with coma",
+                "ar_name": null,
+                "disease_nature": "other",
+                "description": "ICD-10 International Classification"
+            },
+            {
+                "code": "E08.10",
+                "en_name": "Diabetes mellitus due to underlying condition with ketoacidosis without coma",
+                "ar_name": null,
+                "disease_nature": "other",
+                "description": "ICD-10 International Classification"
+            },
+            {
+                "code": "E08.11",
+                "en_name": "Diabetes mellitus due to underlying condition with ketoacidosis with coma",
+                "ar_name": null,
+                "disease_nature": "other",
+                "description": "ICD-10 International Classification"
+            },
+            {
+                "code": "E08.21",
+                "en_name": "Diabetes mellitus due to underlying condition with diabetic nephropathy",
+                "ar_name": null,
+                "disease_nature": "other",
+                "description": "ICD-10 International Classification"
+            },
+            {
+                "code": "E08.22",
+                "en_name": "Diabetes mellitus due to underlying condition with diabetic chronic kidney disease",
+                "ar_name": null,
+                "disease_nature": "other",
+                "description": "ICD-10 International Classification"
+            }
+        ]
+    }
+}

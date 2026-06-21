@@ -1,0 +1,148 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:49:58 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Specialties retrieved successfully",
+        "data": [
+            {
+                "id": 1,
+                "ar_name": "الطب العام",
+                "en_name": "General Medicine"
+            },
+            {
+                "id": 2,
+                "ar_name": "الطب الباطني",
+                "en_name": "Internal Medicine"
+            },
+            {
+                "id": 3,
+                "ar_name": "أمراض القلب",
+                "en_name": "Cardiology"
+            },
+            {
+                "id": 4,
+                "ar_name": "أمراض الجهاز الهضمي",
+                "en_name": "Gastroenterology"
+            },
+            {
+                "id": 5,
+                "ar_name": "أمراض الصدر والجهاز التنفسي",
+                "en_name": "Pulmonology"
+            },
+            {
+                "id": 6,
+                "ar_name": "أمراض الكلى",
+                "en_name": "Nephrology"
+            },
+            {
+                "id": 7,
+                "ar_name": "الغدد الصم والسكري",
+                "en_name": "Endocrinology & Diabetes"
+            },
+            {
+                "id": 8,
+                "ar_name": "أمراض الأعصاب",
+                "en_name": "Neurology"
+            },
+            {
+                "id": 9,
+                "ar_name": "أمراض الأورام",
+                "en_name": "Oncology"
+            },
+            {
+                "id": 10,
+                "ar_name": "أمراض الروماتيزم والمفاصل",
+                "en_name": "Rheumatology"
+            },
+            {
+                "id": 11,
+                "ar_name": "طب الأطفال",
+                "en_name": "Pediatrics"
+            },
+            {
+                "id": 12,
+                "ar_name": "التوليد وأمراض النساء",
+                "en_name": "Obstetrics & Gynecology"
+            },
+            {
+                "id": 13,
+                "ar_name": "طب الشيخوخة",
+                "en_name": "Geriatrics"
+            },
+            {
+                "id": 14,
+                "ar_name": "الأمراض الجلدية",
+                "en_name": "Dermatology"
+            },
+            {
+                "id": 15,
+                "ar_name": "طب وجراحة العيون",
+                "en_name": "Ophthalmology"
+            },
+            {
+                "id": 16,
+                "ar_name": "أذن وأنف وحنجرة",
+                "en_name": "Otolaryngology (ENT)"
+            },
+            {
+                "id": 17,
+                "ar_name": "طب الأسنان",
+                "en_name": "Dentistry"
+            },
+            {
+                "id": 18,
+                "ar_name": "الطب النفسي",
+                "en_name": "Psychiatry"
+            },
+            {
+                "id": 19,
+                "ar_name": "الجراحة العامة",
+                "en_name": "General Surgery"
+            },
+            {
+                "id": 20,
+                "ar_name": "جراحة العظام",
+                "en_name": "Orthopedic Surgery"
+            },
+            {
+                "id": 21,
+                "ar_name": "جراحة التجميل والترميم",
+                "en_name": "Plastic Surgery"
+            },
+            {
+                "id": 22,
+                "ar_name": "أمراض وجراحة المسالك البولية",
+                "en_name": "Urology"
+            },
+            {
+                "id": 23,
+                "ar_name": "العلاج الفيزيائي وإعادة التأهيل",
+                "en_name": "Physical Therapy & Rehabilitation"
+            },
+            {
+                "id": 24,
+                "ar_name": "الأشعة والتصوير الطبي",
+                "en_name": "Radiology"
+            },
+            {
+                "id": 25,
+                "ar_name": "التخدير وتدبير الألم",
+                "en_name": "Anesthesiology"
+            }
+        ]
+    }
+}

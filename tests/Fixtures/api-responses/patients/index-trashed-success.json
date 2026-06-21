@@ -1,0 +1,33 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:49:28 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "success",
+        "data": [],
+        "pagination": {
+            "total": 0,
+            "count": 0,
+            "per_page": 15,
+            "current_page": 1,
+            "last_page": 1,
+            "first_page_url": "http:\/\/localhost\/api\/clinic-system\/clinic\/clinic\/patients\/trashed?page=1",
+            "last_page_url": "http:\/\/localhost\/api\/clinic-system\/clinic\/clinic\/patients\/trashed?page=1",
+            "next_page_url": null,
+            "prev_page_url": null
+        }
+    }
+}

@@ -1,0 +1,28 @@
+{
+    "status": 422,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:49:34 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "message": "A room name is required. (and 1 more error)",
+        "errors": {
+            "name": [
+                "A room name is required."
+            ],
+            "clinic_id": [
+                "A clinic id is required."
+            ]
+        }
+    }
+}

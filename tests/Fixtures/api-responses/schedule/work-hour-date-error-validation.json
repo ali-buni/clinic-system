@@ -1,0 +1,25 @@
+{
+    "status": 422,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 10:41:38 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "message": "The date field is required.",
+        "errors": {
+            "date": [
+                "The date field is required."
+            ]
+        }
+    }
+}

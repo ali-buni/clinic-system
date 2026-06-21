@@ -1,0 +1,24 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 12:21:16 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Token refreshed successfully",
+        "data": {
+            "auth_token": "5|5qNwWGDq8SiQvI092xccyhnyD7lpEE6tJWRtPVb49deb4052"
+        }
+    }
+}

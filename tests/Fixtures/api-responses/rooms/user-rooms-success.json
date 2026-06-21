@@ -1,0 +1,41 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:49:33 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Success",
+        "data": [
+            {
+                "id": 1,
+                "name": "Test Room",
+                "clinic_id": 1,
+                "created": "2026-06-21",
+                "doctors": [
+                    {
+                        "id": 1,
+                        "name": "Torey Eichmann"
+                    }
+                ],
+                "secretaries": [
+                    {
+                        "id": 1,
+                        "name": "Shakira Lemke"
+                    }
+                ]
+            }
+        ]
+    }
+}

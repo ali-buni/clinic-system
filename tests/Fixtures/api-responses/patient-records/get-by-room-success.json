@@ -1,0 +1,42 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:49:10 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Records retrieved successfully",
+        "data": [
+            {
+                "id": 1,
+                "patient_id": 1,
+                "doctor_id": 1,
+                "clinic_id": 1,
+                "appointment_id": 1,
+                "diagnosis_summary": "Test diagnosis",
+                "description": "Officia veniam tempore corrupti itaque. Non dolorum ipsa illo pariatur. Tenetur velit porro voluptatem ipsum dolore culpa.",
+                "status": "open",
+                "notes": "Magni odit delectus accusamus fugiat. Provident voluptas dolores accusamus porro est aut dolor.",
+                "patient": {
+                    "name": "Adalberto Schneider",
+                    "phone": "0900000004"
+                },
+                "doctor": {
+                    "name": "Carmen Herzog"
+                },
+                "created_at": "2026-06-21 11:49:10"
+            }
+        ]
+    }
+}

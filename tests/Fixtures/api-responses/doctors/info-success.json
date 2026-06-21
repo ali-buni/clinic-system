@@ -1,0 +1,42 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 12:20:17 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Success",
+        "data": {
+            "id": 1,
+            "user_id": 3,
+            "clinic_id": 1,
+            "room_id": 1,
+            "name": "Vivienne Gerlach",
+            "phone": "0900000002",
+            "email": "doctor@test.com",
+            "dob": "1992-09-26 07:35:31",
+            "gender": "female",
+            "created_at": "2026-06-21",
+            "appointment_duration": 30,
+            "consultation_fee": 150,
+            "bio": "Et nesciunt repellendus aut. Incidunt iste tenetur provident. Laboriosam beatae consequatur cum.",
+            "specialties": [
+                {
+                    "ar_name": "الطب العام",
+                    "en_name": "General Medicine"
+                }
+            ]
+        }
+    }
+}

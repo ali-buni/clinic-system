@@ -1,0 +1,28 @@
+{
+    "status": 422,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:49:23 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "message": "The selected patient does not exist. (and 1 more error)",
+        "errors": {
+            "patient_id": [
+                "The selected patient does not exist."
+            ],
+            "blood_type": [
+                "Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-."
+            ]
+        }
+    }
+}

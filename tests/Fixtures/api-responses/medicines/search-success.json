@@ -1,0 +1,171 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:48:44 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Medicines search results retrieved successfully.",
+        "data": [
+            {
+                "id": 1,
+                "ar_name": "باراسيتامول",
+                "en_name": "Paracetamol",
+                "generic_name_ar": null,
+                "generic_name_en": "nulla",
+                "strength": "500mg",
+                "form": "tablet",
+                "created_at": "2026-06-21T11:48:41.000000Z",
+                "updated_at": "2026-06-21T11:48:41.000000Z",
+                "api_medicine_id": null,
+                "is_custom": 1
+            },
+            {
+                "api_medicine_id": "83027-0122_37909445-becc-47ba-9ed4-008f7027b8f0",
+                "en_name": "B Complex Liquescence",
+                "ar_name": null,
+                "generic_name_en": "Cholinum (Choline), Inositol (Vitamin B8), Folic Acid (Vitamin B9), Pantothenic Acid (Calcium Pantothenate, Vitamin B5), Thiaminum Hydrochloricum (Vitamin B1), Heart (Bovine), Hepar (Bovine), Methylcobalamin (Vitamin B12), Nicotinamidum (Vitamin B3), PABA (Para Aminobenzoic Acid Vitamin B10), Pyridoxinum Hydrochloricum (Vitamin B6), Biotin (Vitamin B7), Hordeum Vulgare, Riboflavinum (Vitamin B2), Torula Cerevisiae",
+                "generic_name_ar": null,
+                "strength": "6 [hp_X]\/mL",
+                "form": "tablet"
+            },
+            {
+                "api_medicine_id": "64616-102_462ee395-047c-8300-e063-6294a90a251d",
+                "en_name": "Para-BN",
+                "ar_name": null,
+                "generic_name_en": "Parathyroid Booster",
+                "generic_name_ar": null,
+                "strength": "7 [hp_X]\/mL",
+                "form": "tablet"
+            },
+            {
+                "api_medicine_id": "55714-2594_27d4f0eb-04b6-cf82-e063-6394a90a897e",
+                "en_name": "Para-Si",
+                "ar_name": null,
+                "generic_name_en": "Juglans reg, Abrotanum, Aesculus hipp, Allium sat, Arsenicum alb, Artemisia, Baptisia, Cina, Cuprum met, Filix mas, Granatum, Ipecac, Lacheis, Lycopodium, Merc viv, Naphthalinum, Nat mur, Nux vom, Pulsatilla, Ratanhia, Ruta, Sabadilla, Santoninum, Silicea, Spigelia anth, Terebinthina, Teucrium mar, Thymolum, Zingiber",
+                "generic_name_ar": null,
+                "strength": "15 [hp_X]\/g",
+                "form": "tablet"
+            },
+            {
+                "api_medicine_id": "55714-2593_27d41614-3a78-e814-e063-6394a90a94bc",
+                "en_name": "Para-Si",
+                "ar_name": null,
+                "generic_name_en": "Juglans reg, Abrotanum, Aesculus hipp, Allium sat, Arsenicum alb, Artemisia, Baptisia, Cina, Cuprum met, Filix mas, Granatum, Ipecac, Lachesis, Lycopodium, Merc viv, Naphthalinum, Nat mur, Nux vom, Pulsatilla, Ratanhia, Ruta, Sabadilla, Santoninum, Silicea, Spigelia anth, Terebinthina, Teucrium mar, Thymolum, Zingiber",
+                "generic_name_ar": null,
+                "strength": "15 [hp_X]\/mL",
+                "form": "tablet"
+            },
+            {
+                "api_medicine_id": "0942-9603_71e5dcd0-4aa3-4cb6-89b3-8229f73c75fc",
+                "en_name": "Solucion InterSol",
+                "ar_name": null,
+                "generic_name_en": "Solucion aditiva para plaquetas 3",
+                "generic_name_ar": null,
+                "strength": "442 mg\/100mL",
+                "form": "injection"
+            },
+            {
+                "api_medicine_id": "84219-003_15078c5d-2c0c-7e71-e063-6394a90ad193",
+                "en_name": "Insect Sting Relief Pad TOALLITAS PARA PICADURAS DE INSECTOS",
+                "ar_name": null,
+                "generic_name_en": "BENZOCAINE, ALCOHOL",
+                "generic_name_ar": null,
+                "strength": "60 g\/100g",
+                "form": "ointment"
+            },
+            {
+                "api_medicine_id": "69710-115_40e5d3f5-5380-5a99-e063-6294a90aaa24",
+                "en_name": "SYMBIO PARA DROPS",
+                "ar_name": null,
+                "generic_name_en": "Candida parapsilosis",
+                "generic_name_ar": null,
+                "strength": "4 [hp_X]\/mL",
+                "form": "tablet"
+            },
+            {
+                "api_medicine_id": "69710-165_40e5e3bf-76fa-7552-e063-6294a90af768",
+                "en_name": "SYMBIO PARA\/ROQUEFORTI DROPS",
+                "ar_name": null,
+                "generic_name_en": "Candida parapsilosis, Penicillium roqueforti",
+                "generic_name_ar": null,
+                "strength": "4 [hp_X]\/mL",
+                "form": "tablet"
+            },
+            {
+                "api_medicine_id": "14141-307_3ce46bfb-8d6d-05f6-e063-6394a90aac2f",
+                "en_name": "CYZONE CY PLAY CREAMY LIP BALM HIDRATANTE EN BARRA PARA LABIOS 24H FPS 12 PINK CREAMY",
+                "ar_name": null,
+                "generic_name_en": "OCTINOXATE, ZINC OXIDE",
+                "generic_name_ar": null,
+                "strength": "25 mg\/g",
+                "form": "ointment"
+            },
+            {
+                "api_medicine_id": "61626-0107_b9492b5a-908a-4f3c-e053-2a95a90a6650",
+                "en_name": "Para Solve",
+                "ar_name": null,
+                "generic_name_en": "Calc carb, Chenopodium anth, Cina, Croton, Filix Mas, Gambocia, Granatum, Lycopodium, Merc corros, Nat phos, Santoninum, Senna, Spigelia anth, Stannum met, Tanacetum, Teuricum mar, Zingiber",
+                "generic_name_ar": null,
+                "strength": "12 [hp_X]\/59.1mL",
+                "form": "tablet"
+            },
+            {
+                "api_medicine_id": "14141-306_3ce46bfb-8d6d-05f6-e063-6394a90aac2f",
+                "en_name": "CYZONE CY PLAY CREAMY LIP BALM HIDRATANTE EN BARRA PARA LABIOS 24H FPS 12 FUCHSIA CREAMY",
+                "ar_name": null,
+                "generic_name_en": "OCTINOXATE, ZINC OXIDE",
+                "generic_name_ar": null,
+                "strength": "25 mg\/g",
+                "form": "ointment"
+            },
+            {
+                "api_medicine_id": "14141-308_3ce46bfb-8d6d-05f6-e063-6394a90aac2f",
+                "en_name": "CYZONE CY PLAY CREAMY LIP BALM HIDRATANTE EN BARRA PARA LABIOS 24H FPS 12 NUDE CREAMY",
+                "ar_name": null,
+                "generic_name_en": "OCTINOXATE, ZINC OXIDE",
+                "generic_name_ar": null,
+                "strength": "25 mg\/g",
+                "form": "ointment"
+            },
+            {
+                "api_medicine_id": "14141-309_3ce46bfb-8d6d-05f6-e063-6394a90aac2f",
+                "en_name": "CYZONE CY PLAY CREAMY LIP BALM HIDRATANTE EN BARRA PARA LABIOS 24H FPS 12 CORAL CREAMY",
+                "ar_name": null,
+                "generic_name_en": "OCTINOXATE, ZINC OXIDE",
+                "generic_name_ar": null,
+                "strength": "25 mg\/g",
+                "form": "ointment"
+            },
+            {
+                "api_medicine_id": "14141-348_3ce46bfb-8d6d-05f6-e063-6394a90aac2f",
+                "en_name": "CYZONE CY PLAY CREAMY LIP BALM HIDRATANTE EN BARRA PARA LABIOS 24H FPS 12 BERRY CREAMY",
+                "ar_name": null,
+                "generic_name_en": "OCTINOXATE, ZINC OXIDE",
+                "generic_name_ar": null,
+                "strength": "25 mg\/g",
+                "form": "ointment"
+            },
+            {
+                "api_medicine_id": "55714-4859_27d587ec-b67e-ea05-e063-6394a90a9aac",
+                "en_name": "Para-Si",
+                "ar_name": null,
+                "generic_name_en": "Juglans reg, Abrotanum, Aesculus hipp, Allium sat, Arsenicum alb, Artemisia, Baptisia, Cina, Cuprum met, Filix mas, Granatum, Ipecac, Lachesis, Lycopodium, Merc viv, Naphthalinum, Nat mur Nux vom, Pulsatilla, Ratanhia, Ruta, Sabadilla, Santoninum, Silicea, Spigelia anth, Terebinthina, Teucrium mar, Thymolum, Zingiber",
+                "generic_name_ar": null,
+                "strength": "20 [hp_X]\/mL",
+                "form": "tablet"
+            }
+        ]
+    }
+}

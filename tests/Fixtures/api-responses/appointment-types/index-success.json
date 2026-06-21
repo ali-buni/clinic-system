@@ -1,0 +1,93 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 12:19:06 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Appointment types retrieved",
+        "data": [
+            {
+                "id": 10,
+                "ar_name": "مراجعة",
+                "en_name": "Review",
+                "types": "1",
+                "created_at": "2026-06-21 12:19:06"
+            },
+            {
+                "id": 9,
+                "ar_name": "جلسة طويلة",
+                "en_name": "Long Session",
+                "types": "3",
+                "created_at": "2026-06-21 12:19:06"
+            },
+            {
+                "id": 8,
+                "ar_name": "جلسة متوسطة",
+                "en_name": "Medium Session",
+                "types": "2",
+                "created_at": "2026-06-21 12:19:06"
+            },
+            {
+                "id": 7,
+                "ar_name": "جلسة قصيرة",
+                "en_name": "Short Session",
+                "types": "1",
+                "created_at": "2026-06-21 12:19:06"
+            },
+            {
+                "id": 6,
+                "ar_name": "فحص",
+                "en_name": "Examination",
+                "types": "1",
+                "created_at": "2026-06-21 12:19:06"
+            },
+            {
+                "id": 5,
+                "ar_name": "طوارئ",
+                "en_name": "Emergency",
+                "types": "1",
+                "created_at": "2026-06-21 12:19:06"
+            },
+            {
+                "id": 4,
+                "ar_name": "متابعة 3",
+                "en_name": "Follow Up 3",
+                "types": "3",
+                "created_at": "2026-06-21 12:19:06"
+            },
+            {
+                "id": 3,
+                "ar_name": "متابعة 2",
+                "en_name": "Follow Up 2",
+                "types": "2",
+                "created_at": "2026-06-21 12:19:06"
+            },
+            {
+                "id": 2,
+                "ar_name": "متابعة 1",
+                "en_name": "Follow Up 1",
+                "types": "1",
+                "created_at": "2026-06-21 12:19:06"
+            },
+            {
+                "id": 1,
+                "ar_name": "استشارة عامة",
+                "en_name": "General Consultation",
+                "types": "1",
+                "created_at": "2026-06-21 12:19:06"
+            }
+        ]
+    }
+}

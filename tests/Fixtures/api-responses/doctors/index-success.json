@@ -1,0 +1,55 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 12:20:26 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Doctors collection retrieved successfully.",
+        "data": [
+            {
+                "id": 1,
+                "user_id": 3,
+                "clinic_id": 1,
+                "room_id": 1,
+                "name": "Ardella Erdman",
+                "phone": "0900000002",
+                "email": "doctor@test.com",
+                "dob": "1986-10-02 01:51:57",
+                "gender": "female",
+                "created_at": "2026-06-21",
+                "appointment_duration": 30,
+                "consultation_fee": 150,
+                "bio": "Dolorem omnis eum ea et optio. Deserunt dolorum et blanditiis qui aut quos. Dolores voluptates qui earum est. Fuga quia accusantium expedita officia corporis. Sed ipsa porro praesentium eaque reprehenderit quia.",
+                "specialties": [
+                    {
+                        "ar_name": "الطب العام",
+                        "en_name": "General Medicine"
+                    }
+                ]
+            }
+        ],
+        "pagination": {
+            "total": 1,
+            "count": 1,
+            "per_page": 15,
+            "current_page": 1,
+            "last_page": 1,
+            "first_page_url": "http:\/\/localhost\/api\/clinic-system\/clinic\/clinic\/doctors\/filter?page=1",
+            "last_page_url": "http:\/\/localhost\/api\/clinic-system\/clinic\/clinic\/doctors\/filter?page=1",
+            "next_page_url": null,
+            "prev_page_url": null
+        }
+    }
+}

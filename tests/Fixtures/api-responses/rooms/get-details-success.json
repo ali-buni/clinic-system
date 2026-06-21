@@ -1,0 +1,52 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:49:31 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Success",
+        "data": {
+            "id": 1,
+            "clinic_id": 1,
+            "name": "Test Room",
+            "created": "2026-06-21",
+            "doctors": [
+                {
+                    "id": 1,
+                    "name": "Terrence Wisozk",
+                    "phone": "0900000002",
+                    "created": "2026-06-21",
+                    "gender": "unknown",
+                    "bio": "Libero incidunt qui reprehenderit et. Officia architecto omnis iure molestias sed distinctio excepturi. Laudantium consequatur animi provident minima eum. Nostrum sint totam non aut.",
+                    "specialties": [
+                        {
+                            "ar_name": "الطب العام",
+                            "en_name": "General Medicine"
+                        }
+                    ]
+                }
+            ],
+            "secretaries": [
+                {
+                    "id": 1,
+                    "name": "Elouise Reichert",
+                    "phone": "0900000003",
+                    "created": "2026-06-21",
+                    "gender": "female"
+                }
+            ]
+        }
+    }
+}

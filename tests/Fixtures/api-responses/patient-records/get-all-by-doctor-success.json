@@ -1,0 +1,42 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:49:12 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Doctor records retrieved successfully",
+        "data": [
+            {
+                "id": 1,
+                "patient_id": 1,
+                "doctor_id": 1,
+                "clinic_id": 1,
+                "appointment_id": 1,
+                "diagnosis_summary": "Test diagnosis",
+                "description": "Provident laborum laudantium delectus. Iure est hic maiores id perspiciatis. Eligendi suscipit libero odio tenetur. Et ipsum unde corrupti beatae.",
+                "status": "open",
+                "notes": "Animi qui modi ullam alias earum. Id hic numquam assumenda aspernatur non ipsa. Nostrum aliquid id corrupti qui aliquam pariatur.",
+                "patient": {
+                    "name": "Emile Morar",
+                    "phone": "0900000004"
+                },
+                "doctor": {
+                    "name": "Daisy Gislason"
+                },
+                "created_at": "2026-06-21 11:49:12"
+            }
+        ]
+    }
+}

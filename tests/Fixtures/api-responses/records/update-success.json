@@ -1,0 +1,42 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 10:40:23 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "Record updated successfully",
+        "data": {
+            "id": 1,
+            "patient_id": 1,
+            "doctor_id": 1,
+            "clinic_id": 1,
+            "appointment_id": 1,
+            "diagnosis_summary": "Updated diagnosis",
+            "description": "Voluptas reprehenderit odit fugiat quaerat voluptas magni fugiat. Est et voluptatum ipsam ut aut dolor. Molestias quis voluptates temporibus ratione facilis laudantium.",
+            "status": "closed",
+            "notes": "Updated notes",
+            "patient": {
+                "name": "Madaline Grimes",
+                "phone": "0900000004"
+            },
+            "doctor": {
+                "name": "Olga Ferry"
+            },
+            "diseases": [],
+            "prescriptions": [],
+            "created_at": "2026-06-21 10:40:22"
+        }
+    }
+}

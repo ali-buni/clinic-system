@@ -1,0 +1,41 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:49:19 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "the patient data.",
+        "data": {
+            "id": 1,
+            "user_id": 5,
+            "name": "Jamal Grady",
+            "gender": "unknown",
+            "profile_image": null,
+            "clinic_id": 1,
+            "nationality": "Central African Republic",
+            "address": "3518 Schaden Spur\nNorth Genoveva, MD 81071-4722",
+            "marital_status": "other",
+            "emergency_phone": "0992410433",
+            "allergies": null,
+            "chronic_conditions": "Natus eum ratione illum repellendus voluptatem autem commodi.",
+            "career": "Press Machine Setter, Operator",
+            "blood_type": "B-",
+            "phone": "0900000004",
+            "email": "patient@test.com",
+            "dob": "1994-06-19",
+            "created_at": "2026-06-21"
+        }
+    }
+}

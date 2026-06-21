@@ -1,0 +1,38 @@
+{
+    "status": 422,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 12:21:03 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "message": "First name is required. (and 5 more errors)",
+        "errors": {
+            "fname": [
+                "First name is required."
+            ],
+            "lname": [
+                "Last name is required."
+            ],
+            "email": [
+                "Please provide a valid email address."
+            ],
+            "password": [
+                "Password must be at least 8 characters.",
+                "Password confirmation does not match."
+            ],
+            "clinic_id": [
+                "Please select a clinic."
+            ]
+        }
+    }
+}

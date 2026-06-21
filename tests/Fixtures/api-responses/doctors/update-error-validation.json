@@ -1,0 +1,28 @@
+{
+    "status": 422,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 12:20:25 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "message": "The appointment duration field must be at least 5. (and 1 more error)",
+        "errors": {
+            "appointment_duration": [
+                "The appointment duration field must be at least 5."
+            ],
+            "consultation_fee": [
+                "The consultation fee field must be at least 0."
+            ]
+        }
+    }
+}

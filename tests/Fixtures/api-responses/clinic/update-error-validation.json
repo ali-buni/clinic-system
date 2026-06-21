@@ -1,0 +1,32 @@
+{
+    "status": 422,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 12:19:50 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "message": "Please enter a valid 10-digit phone number. (and 3 more errors)",
+        "errors": {
+            "phone": [
+                "Please enter a valid 10-digit phone number.",
+                "The phone number must start with 09 (e.g., 0912345678)."
+            ],
+            "location": [
+                "Please provide a more detailed location (minimum 10 characters)."
+            ],
+            "title": [
+                "The title must be at least 6 characters long."
+            ]
+        }
+    }
+}

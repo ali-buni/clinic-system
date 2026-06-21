@@ -1,0 +1,31 @@
+{
+    "status": 422,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 12:19:09 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "message": "The ar name field is required. (and 2 more errors)",
+        "errors": {
+            "ar_name": [
+                "The ar name field is required."
+            ],
+            "en_name": [
+                "The en name field is required."
+            ],
+            "types": [
+                "The types field must be at least 1."
+            ]
+        }
+    }
+}

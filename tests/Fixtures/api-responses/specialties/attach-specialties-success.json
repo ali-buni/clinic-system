@@ -1,0 +1,33 @@
+{
+    "status": 200,
+    "headers": {
+        "cache-control": [
+            "no-cache, private"
+        ],
+        "date": [
+            "Sun, 21 Jun 2026 11:49:59 GMT"
+        ],
+        "content-type": [
+            "application\/json"
+        ],
+        "access-control-allow-origin": [
+            "*"
+        ]
+    },
+    "body": {
+        "success": true,
+        "message": "current_specialties",
+        "data": [
+            {
+                "id": 1,
+                "ar": "الطب العام",
+                "en": "General Medicine"
+            },
+            {
+                "id": 26,
+                "ar": "اختبار",
+                "en": "Test Spec"
+            }
+        ]
+    }
+}
