@@ -77,11 +77,6 @@ class PatientRequest extends FormRequest
             'dob.before' => 'Date of birth must be before today.',
             'dob.after' => 'Date of birth is invalid.',
 
-            // Phone
-            'phone.string' => 'Phone number must be a string.',
-            'phone.digits' => 'Phone number must be exactly 10 digits.',
-            'phone.unique' => 'This phone number is already registered to another patient.',
-
             // Gender
             'gender.in' => 'Gender must be male, female, other, or unknown.',
 
