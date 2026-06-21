@@ -192,6 +192,7 @@ Accept: application/json
 Public authentication endpoints.
 
 <div id="auth-refresh-token"></div>
+
 **`POST /api/clinic-system/refresh-token`**
 
 Refresh authentication token. Auth required.
@@ -225,6 +226,7 @@ Refresh authentication token. Auth required.
 ```
 
 <div id="auth-reset-password"></div>
+
 **`POST /api/clinic-system/reset-password`**
 
 Reset password (authenticated). Auth required.
@@ -261,6 +263,7 @@ Reset password (authenticated). Auth required.
 ```
 
 <div id="auth-reset-with-code"></div>
+
 **`POST /api/clinic-system/reset-password-with-code`**
 
 Reset password using verification code. Public.
@@ -297,6 +300,7 @@ Reset password using verification code. Public.
 ```
 
 <div id="auth-signout"></div>
+
 **`POST /api/clinic-system/signout`**
 
 Revoke current token. Auth required.
@@ -320,6 +324,7 @@ Revoke current token. Auth required.
 ```
 
 <div id="auth-login"></div>
+
 **`POST /api/clinic-system/login`**
 
 Authenticate user credentials. Public.
@@ -370,6 +375,7 @@ Authenticate user credentials. Public.
 ```
 
 <div id="auth-register"></div>
+
 **`POST /api/clinic-system/register`**
 
 Register a new user. Public.
@@ -448,6 +454,7 @@ Register a new user. Public.
 ```
 
 <div id="auth-forgot-password"></div>
+
 **`POST /api/clinic-system/forgot-password`**
 
 Send password reset link. Public.
@@ -503,6 +510,7 @@ Send password reset link. Public.
 Email verification.
 
 <div id="verification-resend-code"></div>
+
 **`POST /api/clinic-system/resend-code`**
 
 Resend verification code. Public.
@@ -543,6 +551,7 @@ Resend verification code. Public.
 ```
 
 <div id="verification-verify-code"></div>
+
 **`POST /api/clinic-system/verify-code`**
 
 Verify email verification code. Public.
@@ -583,6 +592,7 @@ Verify email verification code. Public.
 Appointment type CRUD.
 
 <div id="appointment-types-index"></div>
+
 **`GET /api/clinic-system/appointment-types`**
 
 List all appointment types. Public.
@@ -669,6 +679,7 @@ List all appointment types. Public.
 ```
 
 <div id="appointment-types-add"></div>
+
 **`POST /api/clinic-system/appointment-types`**
 
 Create a new appointment type. Public.
@@ -713,6 +724,7 @@ Create a new appointment type. Public.
 ```
 
 <div id="appointment-types-delete"></div>
+
 **`DELETE /api/clinic-system/appointment-types/{id}`**
 
 Delete an appointment type. Public.
@@ -744,6 +756,7 @@ Delete an appointment type. Public.
 FCM device token registration.
 
 <div id="devices-register-token"></div>
+
 **`POST /api/clinic-system/devices/register-token`**
 
 Register FCM device token. Auth required.
@@ -779,6 +792,7 @@ Register FCM device token. Auth required.
 Medical specialty management.
 
 <div id="specialties-get-all-specialties"></div>
+
 **`GET /api/clinic-system/clinic/specialty/getAll`**
 
 Show all doctor specialties. Auth required.
@@ -800,6 +814,7 @@ Show all doctor specialties. Auth required.
 ```
 
 <div id="specialties-show-primary"></div>
+
 **`GET /api/clinic-system/clinic/specialty/showPrimary/{doctorId}`**
 
 Show primary specialty. Auth required.
@@ -819,6 +834,7 @@ Show primary specialty. Auth required.
 ```
 
 <div id="specialties-index"></div>
+
 **`GET /api/clinic-system/clinic/specialty/index`**
 
 List all specialties. Public.
@@ -960,6 +976,7 @@ List all specialties. Public.
 ```
 
 <div id="specialties-change-primary"></div>
+
 **`POST /api/clinic-system/clinic/specialty/changePrimary/{specialtyId}`**
 
 Change primary specialty. Auth required.
@@ -975,6 +992,7 @@ Change primary specialty. Auth required.
 ```
 
 <div id="specialties-attach-specialties"></div>
+
 **`POST /api/clinic-system/clinic/specialty/add`**
 
 Attach specialties to doctor. Auth required.
@@ -1030,6 +1048,7 @@ Attach specialties to doctor. Auth required.
 ```
 
 <div id="specialties-detach-specialty"></div>
+
 **`DELETE /api/clinic-system/clinic/specialty/delete/{specialId}`**
 
 Detach specialty from doctor. Auth required.
@@ -1053,6 +1072,7 @@ Detach specialty from doctor. Auth required.
 Doctor work hours and schedules.
 
 <div id="schedules-get-weekly"></div>
+
 **`GET /api/clinic-system/clinic/schedule/get-weekly/{doctorId}`**
 
 Get weekly schedule for a doctor. Public.
@@ -1095,6 +1115,7 @@ Get weekly schedule for a doctor. Public.
 ```
 
 <div id="schedules-work-hour-by-date"></div>
+
 **`GET /api/clinic-system/clinic/schedule/work-hour/{doctorId}`**
 
 Get work hours for a specific date. Public.
@@ -1144,6 +1165,7 @@ date=2026-06-28
 ```
 
 <div id="schedules-store"></div>
+
 **`POST /api/clinic-system/clinic/schedule/add`**
 
 Create work hour entry. Auth required.
@@ -1219,6 +1241,7 @@ Create work hour entry. Auth required.
 ```
 
 <div id="schedules-update"></div>
+
 **`PUT /api/clinic-system/clinic/schedule/edit`**
 
 Update work hour. Auth required.
@@ -1264,6 +1287,7 @@ Update work hour. Auth required.
 ```
 
 <div id="schedules-destroy"></div>
+
 **`DELETE /api/clinic-system/clinic/schedule/delete/{dayOfWeek}/{doctorId}`**
 
 Delete work hour. Auth required.
@@ -1285,6 +1309,7 @@ Delete work hour. Auth required.
 Medicine search and creation.
 
 <div id="medicines-search"></div>
+
 **`GET /api/clinic-system/clinic/medicines/search`**
 
 Search medicines by name. Public.
@@ -1346,6 +1371,7 @@ query=para
 ```
 
 <div id="medicines-store"></div>
+
 **`POST /api/clinic-system/clinic/medicines/store`**
 
 Create custom medicine. Auth required.
@@ -1403,335 +1429,7 @@ Create custom medicine. Auth required.
     "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Exceptions\\Handler.php",
     "line":  640,
     "trace":  [
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Exceptions\\Handler.php",
-                      "line":  584,
-                      "function":  "prepareException",
-                      "class":  "Illuminate\\Foundation\\Exceptions\\Handler",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Pipeline.php",
-                      "line":  51,
-                      "function":  "render",
-                      "class":  "Illuminate\\Foundation\\Exceptions\\Handler",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  172,
-                      "function":  "handleException",
-                      "class":  "Illuminate\\Routing\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php",
-                      "line":  51,
-                      "function":  "{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():168}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Routing\\Middleware\\SubstituteBindings",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php",
-                      "line":  64,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Auth\\Middleware\\Authenticate",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  127,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
-                      "line":  807,
-                      "function":  "then",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
-                      "line":  786,
-                      "function":  "runRouteWithinStack",
-                      "class":  "Illuminate\\Routing\\Router",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
-                      "line":  750,
-                      "function":  "runRoute",
-                      "class":  "Illuminate\\Routing\\Router",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
-                      "line":  739,
-                      "function":  "dispatchToRoute",
-                      "class":  "Illuminate\\Routing\\Router",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php",
-                      "line":  201,
-                      "function":  "dispatch",
-                      "class":  "Illuminate\\Routing\\Router",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  170,
-                      "function":  "{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():198}",
-                      "class":  "Illuminate\\Foundation\\Http\\Kernel",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php",
-                      "line":  21,
-                      "function":  "{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():168}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php",
-                      "line":  31,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php",
-                      "line":  21,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php",
-                      "line":  51,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\TrimStrings",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php",
-                      "line":  27,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Http\\Middleware\\ValidatePostSize",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php",
-                      "line":  110,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php",
-                      "line":  62,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Http\\Middleware\\HandleCors",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php",
-                      "line":  58,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Http\\Middleware\\TrustProxies",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php",
-                      "line":  22,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  127,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php",
-                      "line":  176,
-                      "function":  "then",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php",
-                      "line":  145,
-                      "function":  "sendRequestThroughRouter",
-                      "class":  "Illuminate\\Foundation\\Http\\Kernel",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Testing\\Concerns\\MakesHttpRequests.php",
-                      "line":  607,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Kernel",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Testing\\Concerns\\MakesHttpRequests.php",
-                      "line":  573,
-                      "function":  "call",
-                      "class":  "Illuminate\\Foundation\\Testing\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Testing\\Concerns\\MakesHttpRequests.php",
-                      "line":  411,
-                      "function":  "json",
-                      "class":  "Illuminate\\Foundation\\Testing\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\tests\\Feature\\Api\\MedicineTest.php",
-                      "line":  66,
-                      "function":  "postJson",
-                      "class":  "Illuminate\\Foundation\\Testing\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestCase.php",
-                      "line":  1548,
-                      "function":  "test_store_unauthorized",
-                      "class":  "Tests\\Feature\\Api\\MedicineTest",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestCase.php",
-                      "line":  686,
-                      "function":  "runTest",
-                      "class":  "PHPUnit\\Framework\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestRunner.php",
-                      "line":  106,
-                      "function":  "runBare",
-                      "class":  "PHPUnit\\Framework\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestCase.php",
-                      "line":  516,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestRunner",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestSuite.php",
-                      "line":  374,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestSuite.php",
-                      "line":  374,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestSuite",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestSuite.php",
-                      "line":  374,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestSuite",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\TextUI\\TestRunner.php",
-                      "line":  64,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestSuite",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\TextUI\\Application.php",
-                      "line":  204,
-                      "function":  "run",
-                      "class":  "PHPUnit\\TextUI\\TestRunner",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\phpunit",
-                      "line":  104,
-                      "function":  "run",
-                      "class":  "PHPUnit\\TextUI\\Application",
-                      "type":  "-\u003e"
-                  }
+
               ]
 }
 ```
@@ -1762,6 +1460,7 @@ Create custom medicine. Auth required.
 Disease search and creation.
 
 <div id="diseases-search"></div>
+
 **`GET /api/clinic-system/clinic/diseases/search`**
 
 Search diseases by name. Public.
@@ -1868,6 +1567,7 @@ query=dia
 ```
 
 <div id="diseases-store"></div>
+
 **`POST /api/clinic-system/clinic/diseases/store`**
 
 Create custom disease. Auth required.
@@ -1920,335 +1620,7 @@ Create custom disease. Auth required.
     "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Exceptions\\Handler.php",
     "line":  640,
     "trace":  [
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Exceptions\\Handler.php",
-                      "line":  584,
-                      "function":  "prepareException",
-                      "class":  "Illuminate\\Foundation\\Exceptions\\Handler",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Pipeline.php",
-                      "line":  51,
-                      "function":  "render",
-                      "class":  "Illuminate\\Foundation\\Exceptions\\Handler",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  172,
-                      "function":  "handleException",
-                      "class":  "Illuminate\\Routing\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php",
-                      "line":  51,
-                      "function":  "{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():168}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Routing\\Middleware\\SubstituteBindings",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php",
-                      "line":  64,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Auth\\Middleware\\Authenticate",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  127,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
-                      "line":  807,
-                      "function":  "then",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
-                      "line":  786,
-                      "function":  "runRouteWithinStack",
-                      "class":  "Illuminate\\Routing\\Router",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
-                      "line":  750,
-                      "function":  "runRoute",
-                      "class":  "Illuminate\\Routing\\Router",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php",
-                      "line":  739,
-                      "function":  "dispatchToRoute",
-                      "class":  "Illuminate\\Routing\\Router",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php",
-                      "line":  201,
-                      "function":  "dispatch",
-                      "class":  "Illuminate\\Routing\\Router",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  170,
-                      "function":  "{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():198}",
-                      "class":  "Illuminate\\Foundation\\Http\\Kernel",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php",
-                      "line":  21,
-                      "function":  "{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():168}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php",
-                      "line":  31,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php",
-                      "line":  21,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php",
-                      "line":  51,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\TrimStrings",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\ValidatePostSize.php",
-                      "line":  27,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Http\\Middleware\\ValidatePostSize",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php",
-                      "line":  110,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php",
-                      "line":  62,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Http\\Middleware\\HandleCors",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php",
-                      "line":  58,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Http\\Middleware\\TrustProxies",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks.php",
-                      "line":  22,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  209,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php",
-                      "line":  127,
-                      "function":  "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():184}:185}",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php",
-                      "line":  176,
-                      "function":  "then",
-                      "class":  "Illuminate\\Pipeline\\Pipeline",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php",
-                      "line":  145,
-                      "function":  "sendRequestThroughRouter",
-                      "class":  "Illuminate\\Foundation\\Http\\Kernel",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Testing\\Concerns\\MakesHttpRequests.php",
-                      "line":  607,
-                      "function":  "handle",
-                      "class":  "Illuminate\\Foundation\\Http\\Kernel",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Testing\\Concerns\\MakesHttpRequests.php",
-                      "line":  573,
-                      "function":  "call",
-                      "class":  "Illuminate\\Foundation\\Testing\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Testing\\Concerns\\MakesHttpRequests.php",
-                      "line":  411,
-                      "function":  "json",
-                      "class":  "Illuminate\\Foundation\\Testing\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\tests\\Feature\\Api\\DiseaseTest.php",
-                      "line":  67,
-                      "function":  "postJson",
-                      "class":  "Illuminate\\Foundation\\Testing\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestCase.php",
-                      "line":  1548,
-                      "function":  "test_store_unauthorized",
-                      "class":  "Tests\\Feature\\Api\\DiseaseTest",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestCase.php",
-                      "line":  686,
-                      "function":  "runTest",
-                      "class":  "PHPUnit\\Framework\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestRunner.php",
-                      "line":  106,
-                      "function":  "runBare",
-                      "class":  "PHPUnit\\Framework\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestCase.php",
-                      "line":  516,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestRunner",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestSuite.php",
-                      "line":  374,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestCase",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestSuite.php",
-                      "line":  374,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestSuite",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\Framework\\TestSuite.php",
-                      "line":  374,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestSuite",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\TextUI\\TestRunner.php",
-                      "line":  64,
-                      "function":  "run",
-                      "class":  "PHPUnit\\Framework\\TestSuite",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\src\\TextUI\\Application.php",
-                      "line":  204,
-                      "function":  "run",
-                      "class":  "PHPUnit\\TextUI\\TestRunner",
-                      "type":  "-\u003e"
-                  },
-                  {
-                      "file":  "C:\\Files\\code\\laravelEX\\clinic-system\\vendor\\phpunit\\phpunit\\phpunit",
-                      "line":  104,
-                      "function":  "run",
-                      "class":  "PHPUnit\\TextUI\\Application",
-                      "type":  "-\u003e"
-                  }
+
               ]
 }
 ```
@@ -2279,6 +1651,7 @@ Create custom disease. Auth required.
 Clinic management (all routes require auth:sanctum).
 
 <div id="clinic-create-secretary"></div>
+
 **`POST /api/clinic-system/clinic/clinic/secretary/register`**
 
 Create secretary (owner only). Auth required.
@@ -2339,6 +1712,7 @@ Create secretary (owner only). Auth required.
 ```
 
 <div id="clinic-create-doctor"></div>
+
 **`POST /api/clinic-system/clinic/clinic/doctor/register`**
 
 Create doctor (owner only). Auth required.
@@ -2418,6 +1792,7 @@ Create doctor (owner only). Auth required.
 Room management (auth required).
 
 <div id="rooms-user-rooms"></div>
+
 **`GET /api/clinic-system/clinic/clinic/rooms/userRooms/get`**
 
 Get current user's rooms. Auth required.
@@ -2452,6 +1827,7 @@ Get current user's rooms. Auth required.
 ```
 
 <div id="rooms-index"></div>
+
 **`GET /api/clinic-system/clinic/clinic/rooms/{clinicId}`**
 
 List rooms in a clinic. Auth required.
@@ -2509,6 +1885,7 @@ List rooms in a clinic. Auth required.
 ```
 
 <div id="rooms-index-with-info"></div>
+
 **`GET /api/clinic-system/clinic/clinic/rooms/{clinicId}/info`**
 
 List rooms with additional info. Auth required.
@@ -2543,6 +1920,7 @@ List rooms with additional info. Auth required.
 ```
 
 <div id="rooms-add-doctor-to-room"></div>
+
 **`POST /api/clinic-system/clinic/clinic/rooms/sync/doctorRoom`**
 
 Add doctor to room. Auth required.
@@ -2567,6 +1945,7 @@ Add doctor to room. Auth required.
 ```
 
 <div id="rooms-add-sec-to-room"></div>
+
 **`POST /api/clinic-system/clinic/clinic/rooms/sync/secRooms`**
 
 Add secretary to room. Auth required.
@@ -2591,6 +1970,7 @@ Add secretary to room. Auth required.
 ```
 
 <div id="rooms-del-sec-from-room"></div>
+
 **`DELETE /api/clinic-system/clinic/clinic/rooms/detach/secRooms`**
 
 Remove secretary from room. Auth required.
@@ -2615,6 +1995,7 @@ Remove secretary from room. Auth required.
 ```
 
 <div id="rooms-del-doctor-from-room"></div>
+
 **`DELETE /api/clinic-system/clinic/clinic/rooms/detach/doctorRoom`**
 
 Remove doctor from room. Auth required.
@@ -2645,6 +2026,7 @@ Remove doctor from room. Auth required.
 Secretary management (auth required).
 
 <div id="secretaries-info"></div>
+
 **`GET /api/clinic-system/clinic/clinic/secretaries/{id}`**
 
 Get secretary info. Auth required.
@@ -2688,6 +2070,7 @@ Get secretary info. Auth required.
 ```
 
 <div id="secretaries-update"></div>
+
 **`POST /api/clinic-system/clinic/clinic/secretaries/update`**
 
 Update secretary info. Auth required.
@@ -2737,6 +2120,7 @@ Update secretary info. Auth required.
 Patient management (auth required).
 
 <div id="patients-medical-history"></div>
+
 **`GET /api/clinic-system/clinic/clinic/patients/{patientId}/medical-history`**
 
 Get patient medical history. Auth required.
@@ -2801,6 +2185,7 @@ Get patient medical history. Auth required.
 ```
 
 <div id="patients-restore"></div>
+
 **`GET /api/clinic-system/clinic/clinic/patients/restore`**
 
 Restore soft-deleted patient. Auth required.
@@ -2822,6 +2207,7 @@ patient_id=1
 ```
 
 <div id="patients-show"></div>
+
 **`GET /api/clinic-system/clinic/clinic/patients/{patientId}/show`**
 
 Get patient details. Auth required.
@@ -2866,6 +2252,7 @@ Get patient details. Auth required.
 ```
 
 <div id="patients-index"></div>
+
 **`GET /api/clinic-system/clinic/clinic/patients`**
 
 List patients (requires clinic_id). Auth required.
@@ -2948,6 +2335,7 @@ clinic_id=1
 ```
 
 <div id="patients-index-trashed"></div>
+
 **`GET /api/clinic-system/clinic/clinic/patients/trashed`**
 
 List soft-deleted patients. Auth required.
@@ -2982,6 +2370,7 @@ clinic_id=1
 ```
 
 <div id="patients-update"></div>
+
 **`POST /api/clinic-system/clinic/clinic/patients/update`**
 
 Update patient info. Auth required.
@@ -3034,6 +2423,7 @@ Update patient info. Auth required.
 ```
 
 <div id="patients-destroy"></div>
+
 **`DELETE /api/clinic-system/clinic/clinic/patients/delete`**
 
 Soft-delete patient. Auth required.
@@ -3063,6 +2453,7 @@ Soft-delete patient. Auth required.
 User profile management (auth required).
 
 <div id="users-image-url"></div>
+
 **`GET /api/clinic-system/clinic/clinic/users/image-url`**
 
 Get user profile image URL. Auth required.
@@ -3080,6 +2471,7 @@ Get user profile image URL. Auth required.
 ```
 
 <div id="users-info"></div>
+
 **`GET /api/clinic-system/clinic/clinic/users/info`**
 
 Get authenticated user info. Auth required.
@@ -3122,6 +2514,7 @@ Get authenticated user info. Auth required.
 ```
 
 <div id="users-update-image"></div>
+
 **`POST /api/clinic-system/clinic/clinic/users/update-image`**
 
 Update user profile image. Auth required.
@@ -3146,6 +2539,7 @@ Update user profile image. Auth required.
 Doctor management (auth required).
 
 <div id="doctors-info"></div>
+
 **`GET /api/clinic-system/clinic/clinic/doctors/{id}/info`**
 
 Get doctor info. Auth required.
@@ -3199,6 +2593,7 @@ Get doctor info. Auth required.
 ```
 
 <div id="doctors-index"></div>
+
 **`GET /api/clinic-system/clinic/clinic/doctors/filter`**
 
 List doctors with filters. Auth required.
@@ -3253,6 +2648,7 @@ clinic_id=1
 ```
 
 <div id="doctors-restore"></div>
+
 **`POST /api/clinic-system/clinic/clinic/doctors/{id}/restore`**
 
 Restore soft-deleted doctor. Auth required.
@@ -3285,6 +2681,7 @@ Restore soft-deleted doctor. Auth required.
 ```
 
 <div id="doctors-update"></div>
+
 **`POST /api/clinic-system/clinic/clinic/doctors/update`**
 
 Update doctor info. Auth required.
@@ -3332,6 +2729,7 @@ Update doctor info. Auth required.
 ```
 
 <div id="doctors-force-delete"></div>
+
 **`DELETE /api/clinic-system/clinic/clinic/doctors/{id}/force`**
 
 Force-delete doctor. Auth required.
@@ -3347,6 +2745,7 @@ Force-delete doctor. Auth required.
 ```
 
 <div id="doctors-destroy"></div>
+
 **`DELETE /api/clinic-system/clinic/clinic/doctors/{id}/leave`**
 
 Soft-delete doctor. Auth required.
@@ -3368,6 +2767,7 @@ Soft-delete doctor. Auth required.
 Appointment booking and management (auth required).
 
 <div id="appointments-clinic-appointments"></div>
+
 **`GET /api/clinic-system/clinic/clinic/appointments/clinic/{clinicId}`**
 
 List clinic appointments. Auth required.
@@ -3426,6 +2826,7 @@ List clinic appointments. Auth required.
 ```
 
 <div id="appointments-doctor-appointments"></div>
+
 **`GET /api/clinic-system/clinic/clinic/appointments/doctor/{doctorId}`**
 
 List doctor appointments. Auth required.
@@ -3480,6 +2881,7 @@ List doctor appointments. Auth required.
 ```
 
 <div id="appointments-available-slots"></div>
+
 **`GET /api/clinic-system/clinic/clinic/appointments/get/available-slots`**
 
 Get available appointment slots. Auth required.
@@ -3582,6 +2984,7 @@ doctor_id=1&date=2026-06-28
 ```
 
 <div id="appointments-clinic-schedule"></div>
+
 **`GET /api/clinic-system/clinic/clinic/appointments/clinic/{clinicId}/schedule`**
 
 Get clinic schedule for a date. Auth required.
@@ -3635,6 +3038,7 @@ date=2026-06-28
 ```
 
 <div id="appointments-doctor-schedule"></div>
+
 **`GET /api/clinic-system/clinic/clinic/appointments/doctor/{doctorId}/schedule`**
 
 Get doctor schedule for a date. Auth required.
@@ -3688,6 +3092,7 @@ date=2026-06-28
 ```
 
 <div id="appointments-room-appointments"></div>
+
 **`GET /api/clinic-system/clinic/clinic/appointments/room/appo`**
 
 List room appointments. Auth required.
@@ -3752,6 +3157,7 @@ roomIds[0]=1
 ```
 
 <div id="appointments-show"></div>
+
 **`GET /api/clinic-system/clinic/clinic/appointments/{id}`**
 
 Show appointment details. Auth required.
@@ -3807,6 +3213,7 @@ Show appointment details. Auth required.
 ```
 
 <div id="appointments-patient-appointments"></div>
+
 **`GET /api/clinic-system/clinic/clinic/appointments/patient/{patientId}`**
 
 List patient appointments. Auth required.
@@ -3865,6 +3272,7 @@ List patient appointments. Auth required.
 ```
 
 <div id="appointments-book"></div>
+
 **`POST /api/clinic-system/clinic/clinic/appointments/book`**
 
 Book a new appointment. Auth required.
@@ -3961,6 +3369,7 @@ Book a new appointment. Auth required.
 ```
 
 <div id="appointments-cancel"></div>
+
 **`POST /api/clinic-system/clinic/clinic/appointments/{id}/cancel`**
 
 Cancel an appointment. Auth required.
@@ -3994,6 +3403,7 @@ Cancel an appointment. Auth required.
 ```
 
 <div id="appointments-reschedule"></div>
+
 **`POST /api/clinic-system/clinic/clinic/appointments/{id}/reschedule`**
 
 Reschedule an appointment. Auth required.
@@ -4066,6 +3476,7 @@ Reschedule an appointment. Auth required.
 ```
 
 <div id="appointments-complete"></div>
+
 **`POST /api/clinic-system/clinic/clinic/appointments/{id}/complete`**
 
 Complete a confirmed appointment. Auth required.
@@ -4091,6 +3502,7 @@ Complete a confirmed appointment. Auth required.
 ```
 
 <div id="appointments-mark-confirmed"></div>
+
 **`POST /api/clinic-system/clinic/clinic/appointments/{id}/confirmed`**
 
 Mark appointment as confirmed. Auth required.
@@ -4112,6 +3524,7 @@ Mark appointment as confirmed. Auth required.
 Phone number management (auth required).
 
 <div id="phone-verify-update"></div>
+
 **`POST /api/clinic-system/phone/verify-update`**
 
 Verify phone update with code. Auth required.
@@ -4155,6 +3568,7 @@ Verify phone update with code. Auth required.
 ```
 
 <div id="phone-update"></div>
+
 **`POST /api/clinic-system/phone/update`**
 
 Request phone update (sends code if already set). Auth required.
@@ -4208,6 +3622,7 @@ Request phone update (sends code if already set). Auth required.
 Patient medical records (auth required).
 
 <div id="patient-records-get-all-by-doctor"></div>
+
 **`GET /api/clinic-system/clinic/clinic/patient-records/doctor/{doctorId}/all`**
 
 Get all records for a doctor. Auth required.
@@ -4253,6 +3668,7 @@ Get all records for a doctor. Auth required.
 ```
 
 <div id="patient-records-get-by-doctor"></div>
+
 **`GET /api/clinic-system/clinic/clinic/patient-records/patient/{patientId}/doctor/{doctorId}`**
 
 Get records by patient and doctor. Auth required.
@@ -4308,6 +3724,7 @@ Get records by patient and doctor. Auth required.
 ```
 
 <div id="patient-records-history"></div>
+
 **`GET /api/clinic-system/clinic/clinic/patient-records/patient/{patientId}/history`**
 
 Get patient medical history records. Auth required.
@@ -4353,6 +3770,7 @@ Get patient medical history records. Auth required.
 ```
 
 <div id="patient-records-index"></div>
+
 **`GET /api/clinic-system/clinic/clinic/patient-records/filtered`**
 
 List filtered patient records. Auth required.
@@ -4405,6 +3823,7 @@ clinic_id=1&search=&status=open&date_from=&date_to=&disease_code=
 ```
 
 <div id="patient-records-show"></div>
+
 **`GET /api/clinic-system/clinic/clinic/patient-records/show/{id}`**
 
 Show patient record. Auth required.
@@ -4454,6 +3873,7 @@ Show patient record. Auth required.
 ```
 
 <div id="patient-records-get-by-room"></div>
+
 **`POST /api/clinic-system/clinic/clinic/patient-records/rooms/search`**
 
 Search records by rooms. Auth required.
@@ -4510,6 +3930,7 @@ Search records by rooms. Auth required.
 ```
 
 <div id="patient-records-store"></div>
+
 **`POST /api/clinic-system/clinic/clinic/patient-records`**
 
 Create patient record. Auth required.
@@ -4596,6 +4017,7 @@ Create patient record. Auth required.
 ```
 
 <div id="patient-records-update"></div>
+
 **`PUT /api/clinic-system/clinic/clinic/patient-records/{id}`**
 
 Update patient record. Auth required.
@@ -4649,6 +4071,7 @@ Update patient record. Auth required.
 ```
 
 <div id="patient-records-destroy"></div>
+
 **`DELETE /api/clinic-system/clinic/clinic/patient-records/{id}`**
 
 Delete patient record. Auth required.
