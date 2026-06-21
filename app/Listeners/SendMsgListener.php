@@ -29,7 +29,10 @@ class SendMsgListener
      */
     public function handle(SendMsgEvent $event): void
     {
-        // Logic to send message
+        if (empty($this->url)) {
+            return;
+        }
+
         $phone = $event->phone;
         $msg = $event->msg;
 

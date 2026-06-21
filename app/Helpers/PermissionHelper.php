@@ -41,6 +41,7 @@ class PermissionHelper
      */
     public static function revokeRoomPermission(\App\Models\User $user, int $roomId): void
     {
+        self::ensureRoomPermission($roomId);
         $user->revokePermissionTo(self::viewRoom($roomId));
     }
 }

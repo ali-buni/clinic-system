@@ -77,11 +77,11 @@ Route::prefix('/clinic-system')->group(function () {
         // no auth
         Route::prefix('medicines')->controller(MedicineController::class)->group(function () {
             Route::get('search', 'searchMedicine');
-            Route::post('store', 'store');
+            Route::post('store', 'store')->middleware('auth:sanctum');
         });
         Route::prefix('diseases')->controller(DiseaseController::class)->group(function () {
             Route::get('search', 'searchDisease');
-            Route::post('store', 'store');
+            Route::post('store', 'store')->middleware('auth:sanctum');
         });
 
         // auth

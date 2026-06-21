@@ -6,6 +6,7 @@ use App\Models\Doctor;
 use App\Models\Work_hour;
 use Exception;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DoctorScheduleService
 {
@@ -106,12 +107,16 @@ class DoctorScheduleService
         $isDelete = isset($newData['delete']);
         $dayChanged = isset($newData['day_of_week']) && $newData['day_of_week'] != $currentWorkHour->day_of_week;
 
+        $dayOfWeekExpr = DB::connection()->getDriverName() === 'mysql'
+            ? 'DAYOFWEEK(start_time) - 1 = ?'
+            : "CAST(strftime('%w', start_time) AS INTEGER) = ?";
+
         // If deleting or changing day, check appointments on the current day
         if ($isDelete || $dayChanged) {
             return $doctor->appointments()
                 ->whereDate('start_time', '>', now())
                 ->where('status', 'cancelled')
-                ->whereRaw('DAYOFWEEK(start_time) - 1 = ?', [$currentWorkHour->day_of_week])
+                ->whereRaw($dayOfWeekExpr, [$currentWorkHour->day_of_week])
                 ->exists();
         }
 
@@ -122,7 +127,7 @@ class DoctorScheduleService
         return $doctor->appointments()
             ->whereDate('start_time', '>', now())
             ->where('status', 'cancelled')
-            ->whereRaw('DAYOFWEEK(start_time) - 1 = ?', [$currentWorkHour->day_of_week])
+            ->whereRaw($dayOfWeekExpr, [$currentWorkHour->day_of_week])
             ->where(function ($query) use ($newStart, $newEnd) {
                 $query->whereTime('start_time', '<', $newStart)
                     ->orWhereTime('end_time', '>', $newEnd);

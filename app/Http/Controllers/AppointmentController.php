@@ -83,7 +83,7 @@ class AppointmentController extends Controller
             $doctor = Doctor::findOrFail($appointment->doctor_id);
 
             $date = Carbon::parse($validated['date'])->format('Y-m-d');
-            $start = Carbon::parse($appointment->start_time)->format('H:i');
+            $start = $validated['start_time'];
 
             $slotsCount = $type->types;
             $slotMinutes = $doctor->appointment_duration ?? 30;

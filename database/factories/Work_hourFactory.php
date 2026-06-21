@@ -6,7 +6,7 @@ use App\Models\Doctor;
 use App\Models\Work_hour;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class WorkHourFactory extends Factory
+class Work_hourFactory extends Factory
 {
     protected $model = Work_hour::class;
 

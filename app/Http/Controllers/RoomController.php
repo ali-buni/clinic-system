@@ -27,17 +27,12 @@ class RoomController extends Controller
     public function index($clinicId)
     {
         try {
-            $rooms = $this->roomServices->getRooms($clinicId)->map(function ($room) {
-                return [
-                    'id' => $room->id,
-                    'name' => $room->name,
-                ];
-            });
+            $rooms = $this->roomServices->getRooms($clinicId);
 
-            if (count($rooms) === 0) {
+            if ($rooms->isEmpty()) {
                 return ApiResponse::error('Room not found', 404);
             }
-            return ApiResponse::success(RoomResource::collection($rooms));
+            return ApiResponse::success($rooms->map->only(['id', 'name']));
         } catch (Exception $e) {
             return ApiResponse::error('error in fetch rooms' . $e->getMessage(), 500);
         }

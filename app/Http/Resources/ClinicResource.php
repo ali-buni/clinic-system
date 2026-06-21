@@ -46,7 +46,7 @@ class ClinicResource extends JsonResource
                 return [
                     'name' => $secretary->user->fname . ' ' . $secretary->user->lname,
                     'phone' => $secretary->user->phone,
-                    'room_ids' => $secretary->whenLoaded('rooms', fn() => $secretary->rooms->pluck('id')),
+                    'room_ids' => $secretary->rooms->pluck('id'),
                 ];
             }),
         ];

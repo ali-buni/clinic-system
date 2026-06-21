@@ -46,7 +46,7 @@ class DoctorScheduleController extends Controller
     public function update(StoreWorkHourRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $doctor = Doctor::where('doctor_id', $validated['doctor_id'])->first();
+        $doctor = Doctor::find($validated['doctor_id']);
         if (!$doctor) {
             return ApiResponse::error('Doctor profile not found.', 404);
         }
@@ -67,20 +67,24 @@ class DoctorScheduleController extends Controller
 
     public function destroy(int $dayOfWeek, int $doctorId): JsonResponse
     {
-        $doctor = Doctor::where('doctor_id', $doctorId)->first();
+        $doctor = Doctor::find($doctorId);
         if (!$doctor) {
             return ApiResponse::error('Doctor profile not found.', 404);
         }
 
         try {
-            $this->scheduleService->deleteWorkHour($doctor, $dayOfWeek);
+            $workHour = $doctor->workHours()->where('day_of_week', $dayOfWeek)->first();
+            if (!$workHour) {
+                return ApiResponse::error('Record not found or unauthorized.', 404);
+            }
+            $this->scheduleService->deleteWorkHour($doctor, $workHour->id);
 
             return ApiResponse::success(null, 'Work hour deleted successfully (Soft Deleted).');
         } catch (Exception $e) {
             return match ($e->getMessage()) {
                 'record_not_found'      => ApiResponse::error('Record not found or unauthorized.', 404),
                 'appointment_conflict'  => ApiResponse::error('لا يمكن حذف هذا اليوم. يوجد مواعيد مستقبلية مجدولة للمرضى في هذا الوقت!', 422),
-                default                 => ApiResponse::error('حدث خطأ غير متوقع بالسيستم.', 500),
+                    default                 => ApiResponse::error('حدث خطأ غير متوقع بالسيستم.', 500),
             };
         }
     }
