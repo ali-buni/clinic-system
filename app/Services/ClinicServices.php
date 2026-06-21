@@ -25,17 +25,15 @@ class ClinicServices
             $temporaryPassword = random_int(10000000, 99999999);
             $roomId = $data['room_id'];
 
-            // Create user account
             $user = User::create([
                 'fname' => $data['fname'],
                 'lname' => $data['lname'],
-                'phone' => $data['phone'],
+                'email' => $data['email'],
                 'dob' => $data['dob'],
                 'gender' => $data['gender'],
                 'password' => bcrypt($temporaryPassword),
             ]);
 
-            // Assign role and permissions
             $user->assignRole('doctor');
             PermissionHelper::grantRoomPermission($user, $roomId);
 
@@ -45,21 +43,21 @@ class ClinicServices
                 'clinic_id' => $data['clinic_id'],
                 'room_id' => $roomId,
                 'appointment_duration' => $data['appointment_duration'],
-                'bio' => $data['bio'],
+                'bio' => $data['bio'] ?? null,
                 'consultation_fee' => $data['consultation_fee'],
             ]);
 
-            // Assign specialties
             $doctor->specialties()->syncWithoutDetaching($data['specialty_ids']);
 
-            try {
-                // Send credential via SMS
-                event(new SendMsgEvent(
-                    $user->phone,
-                    config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
-                ));
-            } catch (\Exception $e) {
-                throw new RuntimeException('Failed to send SMS: ' . $e->getMessage());
+            if ($user->phone) {
+                try {
+                    event(new SendMsgEvent(
+                        $user->phone,
+                        config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
+                    ));
+                } catch (\Exception $e) {
+                    throw new RuntimeException('Failed to send SMS: ' . $e->getMessage());
+                }
             }
             return true;
         }, attempts: 3);
@@ -77,17 +75,15 @@ class ClinicServices
             $temporaryPassword = random_int(10000000, 99999999);
             $roomIds = $data['room_ids'];
 
-            // Create user account
             $user = User::create([
                 'fname' => $data['fname'],
                 'lname' => $data['lname'],
-                'phone' => $data['phone'],
+                'email' => $data['email'],
                 'dob' => $data['dob'],
                 'gender' => $data['gender'],
                 'password' => bcrypt($temporaryPassword),
             ]);
 
-            // Assign role and permissions
             $user->assignRole('secretary');
 
             // Create secretary profile
@@ -104,13 +100,15 @@ class ClinicServices
                     PermissionHelper::grantRoomPermission($user, $rId);
                 }
             }
-            try {
-                dispatch(new SendMsgEvent(
-                    $user->phone,
-                    config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
-                ));
-            } catch (\Exception $e) {
-                throw new RuntimeException('Failed to send SMS: ' . $e->getMessage());
+            if ($user->phone) {
+                try {
+                    event(new SendMsgEvent(
+                        $user->phone,
+                        config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
+                    ));
+                } catch (\Exception $e) {
+                    throw new RuntimeException('Failed to send SMS: ' . $e->getMessage());
+                }
             }
 
             return true;

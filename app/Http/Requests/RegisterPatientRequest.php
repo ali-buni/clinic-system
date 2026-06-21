@@ -18,14 +18,13 @@ class RegisterPatientRequest extends FormRequest
             'lname' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'phone' => 'nullable|string|digits_between:10,13',
             'dob' => 'nullable|date|before:today|after:1900-01-01',
             'gender' => 'nullable|in:male,female,other,unknown',
             'clinic_id' => 'required|exists:clinics,id',
             'nationality' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
             'marital_status' => 'nullable|in:married,single,divorced,widowed,other',
-            'emergency_phone' => 'nullable|string|digits_between:10,13|different:phone',
+            'emergency_phone' => 'nullable|string|digits_between:10,13',
             'allergies' => 'nullable|string|max:1000',
             'chronic_conditions' => 'nullable|string|max:1000',
             'career' => 'nullable|string|max:255',
@@ -52,7 +51,6 @@ class RegisterPatientRequest extends FormRequest
             'gender.in' => 'Gender must be male, female, other, or unknown.',
             'marital_status.in' => 'Marital status is invalid.',
             'emergency_phone.digits_between' => 'Emergency phone must be between 10 and 13 digits.',
-            'emergency_phone.different' => 'Emergency phone must be different from primary phone.',
             'blood_type.in' => 'Blood type must be A+, A-, B+, B-, AB+, AB-, O+, or O-.',
         ];
     }

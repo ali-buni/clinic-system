@@ -30,7 +30,8 @@ class NewSecretaryRequest extends FormRequest
         return [
             'fname' => 'required|string|min:2|max:50',
             'lname' => 'required|string|min:2|max:50',
-            'phone' => 'required|digits:10|starts_with:09|unique:users,phone',
+            'email' => 'required|email|max:255|unique:users,email',
+
             'dob' => 'required|date|before:today',
             'gender' => 'required|in:male,female,unknown',
             'clinic_id' => 'required|exists:clinics,id',
@@ -54,10 +55,10 @@ class NewSecretaryRequest extends FormRequest
             'lname.min' => 'Last name must be at least 2 characters.',
             'lname.max' => 'Last name cannot exceed 50 characters.',
 
-            // phone validation messages
-            'phone.required' => 'Phone number is required.',
-            'phone.digits' => 'Phone number must be exactly 10 digits.',
-            'phone.starts_with' => 'Phone number must start with 09.',
+            // email validation messages
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please provide a valid email address.',
+            'email.unique' => 'This email is already registered.',
 
             // dob validation messages
             'dob.required' => 'Date of birth is required.',

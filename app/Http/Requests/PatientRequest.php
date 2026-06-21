@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class PatientRequest extends FormRequest
 {
@@ -45,13 +44,6 @@ class PatientRequest extends FormRequest
             ],
 
             'gender' => 'nullable|in:male,female,other,unknown',
-
-            'phone' => [
-                'sometimes',
-                'string',
-                'digits:10',
-                Rule::unique('patient_infos', 'phone')->ignore($this->patient_id),
-            ],
 
             'nationality' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',

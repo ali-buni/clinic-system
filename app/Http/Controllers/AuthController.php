@@ -50,15 +50,13 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'login'    => 'required|string',
+            'login'    => 'required|email',
             'password' => 'required|string|min:8',
         ]);
 
-        $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
-
         $credentials = [
-            $loginField => $request->login,
-            'password'  => $request->password,
+            'email'    => $request->login,
+            'password' => $request->password,
         ];
 
         if (!Auth::attempt($credentials)) {
@@ -66,7 +64,7 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-        return $this->verification->sendVerificationCode($user, $loginField);
+        return $this->verification->sendVerificationCode($user, 'email');
     }
 
     public function register(RegisterPatientRequest $request)

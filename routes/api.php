@@ -21,6 +21,7 @@ use App\Http\Controllers\DiseaseController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\userController;
 use App\Http\Controllers\AppointmentTypeController;
+use App\Http\Controllers\UserPhoneController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -46,6 +47,11 @@ Route::prefix('/clinic-system')->group(function () {
     Route::controller(VerificationController::class)->group(function () {
         Route::post('/verify-code', 'verifyCode');
         Route::post('/resend-code', 'resendVerificationCode');
+    });
+
+    Route::middleware('auth:sanctum')->prefix('/phone')->controller(UserPhoneController::class)->group(function () {
+        Route::post('/update', 'updatePhone');
+        Route::post('/verify-update', 'verifyPhoneUpdate');
     });
 
     Route::prefix('/clinic')->group(function () {

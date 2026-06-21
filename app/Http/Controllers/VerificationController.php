@@ -20,11 +20,9 @@ class VerificationController extends Controller
     {
         $validated = $request->validated();
 
-        $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
-
         $credentials = [
-            $loginField => $request->login,
-            'password'  => $request->password,
+            'email'    => $request->login,
+            'password' => $request->password,
         ];
 
         if (!Auth::attempt($credentials)) {
@@ -34,8 +32,7 @@ class VerificationController extends Controller
         if (!$user) {
             return $this->api->error('no user found!');
         }
-        $type = 'email';
-        return $this->verification->sendVerificationCode($user, $type);
+        return $this->verification->sendVerificationCode($user, 'email');
     }
 
     public function verifyCode(VerifyCodeRequest $request)

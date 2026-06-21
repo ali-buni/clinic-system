@@ -27,7 +27,6 @@ class PatientRegistrationService
                 'fname'         => $data['fname'],
                 'lname'         => $data['lname'],
                 'email'         => $data['email'],
-                'phone'         => $data['phone'] ?? null,
                 'password'      => Hash::make($data['password']),
                 'dob'           => $data['dob'] ?? null,
                 'gender'        => $data['gender'] ?? 'unknown',
