@@ -30,6 +30,8 @@ class User extends Authenticatable
         'dob',
         'gender',
         'profile_image',
+        'google_id',
+        'provider',
     ];
 
     /**
@@ -66,7 +68,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(PatientInfo::class, 'user_id');
     }
-    
+
     public function secretaryProfile(): HasOne
     {
         return $this->hasOne(Secretary::class);

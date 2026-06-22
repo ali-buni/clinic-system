@@ -13,21 +13,30 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+
+            // basic info
             $table->string('fname')->nullable();
             $table->string('lname')->nullable();
             $table->string('email')->unique();
-            $table->string('phone')->nullable();
-            $table->timestamp('phone_verified_at')->nullable();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+
+            // social login
+            $table->string('google_id')->nullable()->unique();
+            $table->string('provider')->nullable()->unique();
+
+            // metadata
+            $table->string('phone')->nullable()->unique();
             $table->string('profile_image')->nullable();
             $table->dateTime('dob')->nullable();
             $table->enum('gender', ['female', 'male', 'unknown'])->default('unknown');
+
+            // auth
+            $table->timestamp('phone_verified_at')->nullable();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password')->nullable();
             $table->rememberToken();
             $table->timestamps();
-            $table->softDeletes();
 
-            $table->unique(['phone'], 'uniq_phone');
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

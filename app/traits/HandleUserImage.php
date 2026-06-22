@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 trait HandleUserImage
@@ -11,6 +12,14 @@ trait HandleUserImage
     {
         $name = now()->format('Ymd_His') . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
         return $image->storeAs('profile_images', $name, 'public');
+    }
+
+    public function uploadUserImageFromUrl(string $url): string
+    {
+        $name = now()->format('Ymd_His') . '_' . uniqid() . '.jpg';
+        $contents = Http::timeout(10)->get($url)->body();
+        Storage::disk('public')->put('profile_images/' . $name, $contents);
+        return 'profile_images/' . $name;
     }
 
     public function defaultUserImage(): string
