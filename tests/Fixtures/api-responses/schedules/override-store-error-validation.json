@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Mon, 22 Jun 2026 13:51:20 GMT"
+            "Mon, 22 Jun 2026 13:51:25 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -15,10 +15,13 @@
         ]
     },
     "body": {
-        "message": "The date field must match the format Y-m-d.",
+        "message": "The doctor id field must be an integer. (and 1 more error)",
         "errors": {
-            "date": [
-                "The date field must match the format Y-m-d."
+            "doctor_id": [
+                "The doctor id field must be an integer."
+            ],
+            "override_date": [
+                "صيغة التاريخ يجب أن تكون Y-m-d."
             ]
         }
     }

@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Mon, 22 Jun 2026 13:51:17 GMT"
+            "Mon, 22 Jun 2026 13:51:42 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -16,22 +16,20 @@
     },
     "body": {
         "success": true,
-        "message": "Schedule retrieved successfully.",
+        "message": "Overrides retrieved successfully.",
         "data": [
             {
                 "id": 1,
                 "doctor": {
                     "id": 1,
-                    "name": "Trycia Herman"
+                    "name": "Rebeca Purdy"
                 },
-                "day_of_week": 1,
-                "day_name": "Monday",
-                "start_time": "09:00",
-                "end_time": "17:00",
-                "break_start": "13:00",
-                "break_end": "14:00",
-                "max_patients_per_day": 20,
-                "duration_minutes": 480,
+                "override_date": "2026-06-24",
+                "override_type": "closed",
+                "start_time": "12:00",
+                "end_time": "14:00",
+                "reason": null,
+                "is_closed": 0,
                 "created_at": "2026-06-22"
             }
         ]

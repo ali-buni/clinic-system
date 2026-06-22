@@ -25,6 +25,8 @@ Accept: application/json
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| GET | [/auth/google](#auth-google-redirect) | Redirect to Google OAuth. |
+| GET | [/auth/google/callback](#auth-google-callback) | Handle Google OAuth callback. |
 | POST | [/refresh-token](#auth-refresh-token) | Refresh authentication token. |
 | POST | [/reset-password](#auth-reset-password) | Reset password (authenticated). |
 | POST | [/reset-password-with-code](#auth-reset-with-code) | Reset password using verification code. |
@@ -74,6 +76,18 @@ Accept: application/json
 | POST | [/clinic/schedule/add](#schedules-store) | Create work hour entry. |
 | PUT | [/clinic/schedule/edit](#schedules-update) | Update work hour. |
 | DELETE | [/clinic/schedule/delete/{dayOfWeek}/{doctorId}](#schedules-destroy) | Delete work hour. |
+
+### Schedule Overrides
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | [/clinic/schedule/override](#overrides-index) | List overrides for a doctor. |
+| GET | [/clinic/schedule/override/{id}](#overrides-show) | Get a single override. |
+| POST | [/clinic/schedule/override/add](#overrides-store) | Create a schedule override. |
+| PUT | [/clinic/schedule/override/{id}/edit](#overrides-update) | Update a schedule override. |
+| DELETE | [/clinic/schedule/override/{id}/delete](#overrides-destroy) | Delete a schedule override. |
+| GET | [/clinic/schedule/override/date/single](#overrides-get-by-date) | Get override by exact date. |
+| GET | [/clinic/schedule/override/date/range](#overrides-get-by-date-range) | Get overrides in a date range. |
 
 ### Medicines
 
@@ -500,6 +514,68 @@ Send password reset link. Public.
                                  "Please provide a valid email address."
                              ]
                }
+}
+```
+
+---
+
+## Google Auth
+
+Google OAuth2 authentication.
+
+<div id="auth-google-redirect"></div>
+
+**`GET /api/auth/google`**
+
+Redirect to Google OAuth. Public.
+
+**Response (200) - Success:**
+
+```json
+{
+    "success":  true,
+    "message":  "Success",
+    "data":  {
+                 "url":  "https://accounts.google.com/o/oauth2/auth?client_id=..."
+             }
+}
+```
+
+<div id="auth-google-callback"></div>
+
+**`GET /api/auth/google/callback`**
+
+Handle Google OAuth callback. Public (called by Google).
+
+**Query Parameters:**
+
+```
+code=4/0AfJohX...
+```
+
+**Response (200) - Success:**
+
+```json
+{
+    "success":  true,
+    "message":  "Success",
+    "data":  {
+                 "access_token":  "1|abc123token",
+                 "token_type":  "bearer",
+                 "id":  1,
+                 "name":  "John",
+                 "role":  "patient"
+             }
+}
+```
+
+**Response (401) - Error: invalid-credentials:**
+
+```json
+{
+    "success":  false,
+    "message":  "Invalid credentials from Google.",
+    "data":  null
 }
 ```
 
@@ -1299,6 +1375,403 @@ Delete work hour. Auth required.
     "success":  true,
     "message":  "Work hour deleted successfully (Soft Deleted).",
     "data":  null
+}
+```
+
+---
+
+## Schedule Overrides
+
+Schedule override management for doctors (closed days or time adjustments).
+
+<div id="overrides-index"></div>
+
+**`GET /api/clinic-system/clinic/schedule/override`**
+
+List overrides for a doctor. Public.
+
+**Query Parameters:**
+
+```
+doctor_id=1
+```
+
+**Response (200) - Success:**
+
+```json
+{
+    "success":  true,
+    "message":  "Overrides retrieved successfully.",
+    "data":  [
+                 {
+                     "id":  1,
+                     "doctor":  {
+                                    "id":  1,
+                                    "name":  "Dr. Smith"
+                                },
+                     "override_date":  "2026-07-01",
+                     "override_type":  "time_change",
+                     "start_time":  "14:00",
+                     "end_time":  "16:00",
+                     "reason":  "Personal appointment",
+                     "is_closed":  false,
+                     "created_at":  "2026-06-21 15:00",
+                     "updated_at":  "2026-06-21 15:00"
+                 },
+                 {
+                     "id":  2,
+                     "doctor":  {
+                                    "id":  1,
+                                    "name":  "Dr. Smith"
+                                },
+                     "override_date":  "2026-07-04",
+                     "override_type":  "closed",
+                     "start_time":  null,
+                     "end_time":  null,
+                     "reason":  "Public holiday",
+                     "is_closed":  true,
+                     "created_at":  "2026-06-21 15:00",
+                     "updated_at":  "2026-06-21 15:00"
+                 }
+             ]
+}
+```
+
+**Response (404) - Error: not-found:**
+
+```json
+{
+    "success":  false,
+    "message":  "Doctor profile not found.",
+    "data":  null
+}
+```
+
+<div id="overrides-show"></div>
+
+**`GET /api/clinic-system/clinic/schedule/override/{id}`**
+
+Get a single override. Public.
+
+**Query Parameters:**
+
+```
+doctor_id=1
+```
+
+**Response (200) - Success:**
+
+```json
+{
+    "success":  true,
+    "message":  "Success",
+    "data":  {
+                 "id":  1,
+                 "doctor":  {
+                                "id":  1,
+                                "name":  "Dr. Smith"
+                            },
+                 "override_date":  "2026-07-01",
+                 "override_type":  "time_change",
+                 "start_time":  "14:00",
+                 "end_time":  "16:00",
+                 "reason":  "Personal appointment",
+                 "is_closed":  false,
+                 "created_at":  "2026-06-21 15:00",
+                 "updated_at":  "2026-06-21 15:00"
+             }
+}
+```
+
+**Response (404) - Error: not-found:**
+
+```json
+{
+    "success":  false,
+    "message":  "Override not found.",
+    "data":  null
+}
+```
+
+<div id="overrides-store"></div>
+
+**`POST /api/clinic-system/clinic/schedule/override/add`**
+
+Create a schedule override. Auth required.
+
+**Request Body:**
+
+```json
+{
+    "doctor_id": 1,                 // required, integer, exists:doctors
+    "override_date": "2026-07-01",  // required, date_format:Y-m-d
+    "override_type": "time_change", // optional, string, max:50
+    "start_time": "14:00",          // nullable, format:H:i
+    "end_time": "16:00",            // nullable, format:H:i, after:start_time
+    "reason": "Personal appointment", // optional, string, max:500
+    "is_closed": false              // optional, boolean
+}
+```
+
+**Response (201) - Success:**
+
+```json
+{
+    "success":  true,
+    "message":  "Override added successfully.",
+    "data":  {
+                 "id":  1,
+                 "doctor":  {
+                                "id":  1,
+                                "name":  "Dr. Smith"
+                            },
+                 "override_date":  "2026-07-01",
+                 "override_type":  "time_change",
+                 "start_time":  "14:00",
+                 "end_time":  "16:00",
+                 "reason":  "Personal appointment",
+                 "is_closed":  false,
+                 "created_at":  "2026-06-21 15:00",
+                 "updated_at":  "2026-06-21 15:00"
+             }
+}
+```
+
+**Response (401) - Error: unauthorized:**
+
+```json
+{
+    "message":  "Unauthenticated."
+}
+```
+
+**Response (422) - Error: validation:**
+
+```json
+{
+    "message":  "The doctor id field is required. (and 1 more error)",
+    "errors":  {
+                   "doctor_id":  [
+                                     "الطبيب مطلوب."
+                                 ],
+                   "override_date":  [
+                                         "التاريخ مطلوب."
+                                     ]
+               }
+}
+```
+
+**Response (422) - Error: date-conflict:**
+
+```json
+{
+    "success":  false,
+    "message":  "يوجد بالفعل استثناء لهذا التاريخ.",
+    "data":  null
+}
+```
+
+<div id="overrides-update"></div>
+
+**`PUT /api/clinic-system/clinic/schedule/override/{id}/edit`**
+
+Update a schedule override. Auth required.
+
+**Request Body:**
+
+```json
+{
+    "doctor_id": 1,                 // sometimes, integer, exists:doctors
+    "override_date": "2026-07-01",  // sometimes, date_format:Y-m-d
+    "override_type": "extended",    // optional, string, max:50
+    "start_time": "10:00",          // nullable, format:H:i
+    "end_time": "14:00",            // nullable, format:H:i, after:start_time
+    "reason": "Extended training",  // optional, string, max:500
+    "is_closed": false              // optional, boolean
+}
+```
+
+**Response (200) - Success:**
+
+```json
+{
+    "success":  true,
+    "message":  "Override updated successfully.",
+    "data":  {
+                 "id":  1,
+                 "doctor":  {
+                                "id":  1,
+                                "name":  "Dr. Smith"
+                            },
+                 "override_date":  "2026-07-01",
+                 "override_type":  "extended",
+                 "start_time":  "10:00",
+                 "end_time":  "14:00",
+                 "reason":  "Extended training",
+                 "is_closed":  false,
+                 "created_at":  "2026-06-21 15:00",
+                 "updated_at":  "2026-06-21 15:00"
+             }
+}
+```
+
+**Response (422) - Error: conflict:**
+
+```json
+{
+    "success":  false,
+    "message":  "الأوقات المدخلة تتعارض مع استثناء موجود مسبقاً.",
+    "data":  null
+}
+```
+
+<div id="overrides-destroy"></div>
+
+**`DELETE /api/clinic-system/clinic/schedule/override/{id}/delete`**
+
+Delete a schedule override (soft delete). Auth required.
+
+**Request Body:**
+
+```json
+{
+    "doctor_id": 1                  // required, integer, exists:doctors
+}
+```
+
+**Response (200) - Success:**
+
+```json
+{
+    "success":  true,
+    "message":  "Override deleted successfully.",
+    "data":  null
+}
+```
+
+**Response (404) - Error: not-found:**
+
+```json
+{
+    "success":  false,
+    "message":  "السجل غير موجود.",
+    "data":  null
+}
+```
+
+<div id="overrides-get-by-date"></div>
+
+**`GET /api/clinic-system/clinic/schedule/override/date/single`**
+
+Get override by exact date. Public.
+
+**Query Parameters:**
+
+```
+doctor_id=1&date=2026-07-01
+```
+
+**Response (200) - Success:**
+
+```json
+{
+    "success":  true,
+    "message":  "Override retrieved successfully.",
+    "data":  {
+                 "id":  1,
+                 "doctor":  {
+                                "id":  1,
+                                "name":  "Dr. Smith"
+                            },
+                 "override_date":  "2026-07-01",
+                 "override_type":  "closed",
+                 "start_time":  null,
+                 "end_time":  null,
+                 "reason":  "Holiday",
+                 "is_closed":  true,
+                 "created_at":  "2026-06-21 15:00",
+                 "updated_at":  "2026-06-21 15:00"
+             }
+}
+```
+
+**Response (404) - Error: not-found:**
+
+```json
+{
+    "success":  false,
+    "message":  "No override for this date.",
+    "data":  null
+}
+```
+
+**Response (422) - Error: validation:**
+
+```json
+{
+    "message":  "The date field must match the format Y-m-d.",
+    "errors":  {
+                   "date":  [
+                                "The date field must match the format Y-m-d."
+                            ]
+               }
+}
+```
+
+<div id="overrides-get-by-date-range"></div>
+
+**`GET /api/clinic-system/clinic/schedule/override/date/range`**
+
+Get overrides in a date range. Public.
+
+**Query Parameters:**
+
+```
+doctor_id=1&from=2026-07-01&to=2026-07-07
+```
+
+**Response (200) - Success:**
+
+```json
+{
+    "success":  true,
+    "message":  "Overrides retrieved successfully.",
+    "data":  [
+                 {
+                     "id":  1,
+                     "doctor":  {
+                                    "id":  1,
+                                    "name":  "Dr. Smith"
+                                },
+                     "override_date":  "2026-07-01",
+                     "override_type":  "time_change",
+                     "start_time":  "12:00",
+                     "end_time":  "14:00",
+                     "reason":  null,
+                     "is_closed":  false,
+                     "created_at":  "2026-06-21 15:00",
+                     "updated_at":  "2026-06-21 15:00"
+                 }
+             ]
+}
+```
+
+**Response (422) - Error: validation:**
+
+```json
+{
+    "message":  "The from field is required. (and 2 more errors)",
+    "errors":  {
+                   "from":  [
+                                "The from field is required."
+                            ],
+                   "to":  [
+                              "The to field is required."
+                          ],
+                   "doctor_id":  [
+                                     "The doctor id field is required."
+                                 ]
+               }
 }
 ```
 
@@ -4098,4 +4571,4 @@ Delete patient record. Auth required.
 
 ---
 
-_Generated from test fixtures in `tests/Fixtures/api-responses/`. 143 responses across 79 endpoints._
+_Generated from test fixtures in `tests/Fixtures/api-responses/`. 143 responses across 88 endpoints._

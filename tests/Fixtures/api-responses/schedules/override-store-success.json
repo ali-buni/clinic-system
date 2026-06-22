@@ -1,11 +1,11 @@
 {
-    "status": 200,
+    "status": 201,
     "headers": {
         "cache-control": [
             "no-cache, private"
         ],
         "date": [
-            "Mon, 22 Jun 2026 13:51:16 GMT"
+            "Mon, 22 Jun 2026 13:51:22 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -16,21 +16,19 @@
     },
     "body": {
         "success": true,
-        "message": "Work hour updated successfully.",
+        "message": "Override added successfully.",
         "data": {
             "id": 1,
             "doctor": {
                 "id": 1,
-                "name": "Skye Parisian"
+                "name": "Kennith Nitzsche"
             },
-            "day_of_week": 1,
-            "day_name": "Monday",
-            "start_time": "10:00",
+            "override_date": "2026-06-27",
+            "override_type": null,
+            "start_time": "14:00",
             "end_time": "16:00",
-            "break_start": "13:00",
-            "break_end": "14:00",
-            "max_patients_per_day": 10,
-            "duration_minutes": 360,
+            "reason": "Personal appointment",
+            "is_closed": false,
             "created_at": "2026-06-22"
         }
     }

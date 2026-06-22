@@ -5,7 +5,7 @@
             "no-cache, private"
         ],
         "date": [
-            "Mon, 22 Jun 2026 13:51:16 GMT"
+            "Mon, 22 Jun 2026 13:51:39 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -16,21 +16,19 @@
     },
     "body": {
         "success": true,
-        "message": "Work hour updated successfully.",
+        "message": "Override retrieved successfully.",
         "data": {
             "id": 1,
             "doctor": {
                 "id": 1,
-                "name": "Skye Parisian"
+                "name": "Marvin Stark"
             },
-            "day_of_week": 1,
-            "day_name": "Monday",
-            "start_time": "10:00",
-            "end_time": "16:00",
-            "break_start": "13:00",
-            "break_end": "14:00",
-            "max_patients_per_day": 10,
-            "duration_minutes": 360,
+            "override_date": "2026-07-17",
+            "override_type": "extended",
+            "start_time": "09:00",
+            "end_time": "15:00",
+            "reason": "Et rerum facilis consectetur et sed accusamus ipsum sint.",
+            "is_closed": 1,
             "created_at": "2026-06-22"
         }
     }

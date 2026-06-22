@@ -1,11 +1,11 @@
 {
-    "status": 404,
+    "status": 200,
     "headers": {
         "cache-control": [
             "no-cache, private"
         ],
         "date": [
-            "Mon, 22 Jun 2026 13:51:18 GMT"
+            "Mon, 22 Jun 2026 13:51:33 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -15,8 +15,8 @@
         ]
     },
     "body": {
-        "success": false,
-        "message": "Doctor profile not found.",
+        "success": true,
+        "message": "Override deleted successfully.",
         "data": null
     }
 }

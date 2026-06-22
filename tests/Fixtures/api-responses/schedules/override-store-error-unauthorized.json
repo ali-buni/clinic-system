@@ -1,11 +1,11 @@
 {
-    "status": 404,
+    "status": 401,
     "headers": {
         "cache-control": [
             "no-cache, private"
         ],
         "date": [
-            "Mon, 22 Jun 2026 13:51:18 GMT"
+            "Mon, 22 Jun 2026 13:51:27 GMT"
         ],
         "content-type": [
             "application\/json"
@@ -15,8 +15,6 @@
         ]
     },
     "body": {
-        "success": false,
-        "message": "Doctor profile not found.",
-        "data": null
+        "message": "Unauthenticated."
     }
 }

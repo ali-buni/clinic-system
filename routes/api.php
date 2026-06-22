@@ -69,15 +69,28 @@ Route::prefix('/clinic-system')->group(function () {
             // store
             // delete
         });
-        Route::prefix('/schedule')->controller(DoctorScheduleController::class)->group(function () {
+        Route::prefix('/schedule')->group(function () {
+            Route::controller(DoctorScheduleController::class)->group(function () {
             Route::middleware('auth:sanctum')->group(function () {
                 Route::post('/add', 'store');
                 Route::put('/edit', 'update');
                 Route::delete('/delete/{dayOfWeek}/{doctorId}', 'destroy');
             });
-            // no auth
             Route::get('/get-weekly/{doctorId}', 'getWeeklySchedule');
             Route::get('/work-hour/{doctorId}', 'getWorkHourByDate');
+            });
+
+            Route::prefix('/override')->controller(ScheduleOverrideController::class)->group(function () {
+                Route::middleware('auth:sanctum')->group(function () {
+                    Route::post('/add', 'store');
+                    Route::put('/{id}/edit', 'update');
+                    Route::delete('/{id}/delete', 'destroy');
+                });
+                Route::get('/{id}', 'show');
+                Route::get('/', 'index');
+                Route::get('/date/single', 'getByDate');
+                Route::get('/date/range', 'getByDateRange');
+            });
         });
 
         // no auth
