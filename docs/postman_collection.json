@@ -76,6 +76,220 @@
             "name": "Auth",
             "item": [
                 {
+                    "name": "Redirect to Google OAuth.",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/google",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "google"
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 2xx\", function () {",
+                                    "    pm.response.to.be.success;",
+                                    "});",
+                                    "pm.test(\"Response has valid structure\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Success",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/auth/google",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "google"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Success\",\n    \"data\": {\n        \"url\": \"https://accounts.google.com/o/oauth2/auth?client_id=...\"\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Handle Google OAuth callback.",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/google/callback?code=4/0AfJohX...",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "google",
+                                "callback"
+                            ],
+                            "query": [
+                                {
+                                    "key": "code",
+                                    "value": "4/0AfJohX..."
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 2xx\", function () {",
+                                    "    pm.response.to.be.success;",
+                                    "});",
+                                    "pm.test(\"Response has valid structure\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});",
+                                    "if (pm.response.code === 200 || pm.response.code === 201) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    if (jsonData.data && jsonData.data.access_token) {",
+                                    "        pm.collectionVariables.set('access_token', jsonData.data.access_token);",
+                                    "    }",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Error invalid credentials",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/auth/google/callback?code=4/0AfJohX...",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "google",
+                                        "callback"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "code",
+                                            "value": "4/0AfJohX..."
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "Error",
+                            "code": 401,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": false,\n    \"message\": \"Invalid credentials from Google.\",\n    \"data\": null\n}"
+                        },
+                        {
+                            "name": "Success",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/auth/google/callback?code=4/0AfJohX...",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "google",
+                                        "callback"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "code",
+                                            "value": "4/0AfJohX..."
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Success\",\n    \"data\": {\n        \"access_token\": \"1|abc123token\",\n        \"token_type\": \"bearer\",\n        \"id\": 1,\n        \"name\": \"John\",\n        \"role\": \"patient\"\n    }\n}"
+                        }
+                    ]
+                },
+                {
                     "name": "Authenticate user credentials.",
                     "request": {
                         "method": "POST",
@@ -2957,6 +3171,815 @@
                                 }
                             ],
                             "body": "{\n    \"success\": true,\n    \"message\": \"Work hour deleted successfully (Soft Deleted).\",\n    \"data\": null\n}"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Schedule Overrides",
+            "item": [
+                {
+                    "name": "List overrides for a doctor.",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override?doctor_id={{doctor_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "clinic-system",
+                                "clinic",
+                                "schedule",
+                                "override"
+                            ],
+                            "query": [
+                                {
+                                    "key": "doctor_id",
+                                    "value": "{{doctor_id}}"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 2xx\", function () {",
+                                    "    pm.response.to.be.success;",
+                                    "});",
+                                    "pm.test(\"Response has valid structure\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Success",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override?doctor_id={{doctor_id}}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "clinic-system",
+                                        "clinic",
+                                        "schedule",
+                                        "override"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "doctor_id",
+                                            "value": "{{doctor_id}}"
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Overrides retrieved successfully.\",\n    \"data\": []\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get a single override.",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/1?doctor_id={{doctor_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "clinic-system",
+                                "clinic",
+                                "schedule",
+                                "override",
+                                "1"
+                            ],
+                            "query": [
+                                {
+                                    "key": "doctor_id",
+                                    "value": "{{doctor_id}}"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 2xx\", function () {",
+                                    "    pm.response.to.be.success;",
+                                    "});",
+                                    "pm.test(\"Response has valid structure\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Error not found",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/1?doctor_id={{doctor_id}}",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "clinic-system",
+                                        "clinic",
+                                        "schedule",
+                                        "override",
+                                        "1"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "doctor_id",
+                                            "value": "{{doctor_id}}"
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "Error",
+                            "code": 404,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": false,\n    \"message\": \"Override not found.\",\n    \"data\": null\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Create a schedule override.",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/add",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "clinic-system",
+                                "clinic",
+                                "schedule",
+                                "override",
+                                "add"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"doctor_id\": {{doctor_id}},\n    \"override_date\": \"2026-07-01\",\n    \"override_type\": \"time_change\",\n    \"start_time\": \"14:00\",\n    \"end_time\": \"16:00\",\n    \"reason\": \"Personal appointment\",\n    \"is_closed\": false\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 2xx\", function () {",
+                                    "    pm.response.to.be.success;",
+                                    "});",
+                                    "pm.test(\"Response has valid structure\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Error unauthorized",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{access_token}}",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/add",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "clinic-system",
+                                        "clinic",
+                                        "schedule",
+                                        "override",
+                                        "add"
+                                    ]
+                                }
+                            },
+                            "status": "Error",
+                            "code": 401,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"message\": \"Unauthenticated.\"\n}"
+                        },
+                        {
+                            "name": "Success",
+                            "originalRequest": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{access_token}}",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/add",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "clinic-system",
+                                        "clinic",
+                                        "schedule",
+                                        "override",
+                                        "add"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 201,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Override added successfully.\",\n    \"data\": {\n        \"id\": 1,\n        \"doctor\": {\n            \"id\": 1,\n            \"name\": \"Dr. Smith\"\n        },\n        \"override_date\": \"2026-07-01\",\n        \"override_type\": \"time_change\",\n        \"start_time\": \"14:00\",\n        \"end_time\": \"16:00\",\n        \"reason\": \"Personal appointment\",\n        \"is_closed\": false,\n        \"created_at\": \"2026-06-21 15:00\",\n        \"updated_at\": \"2026-06-21 15:00\"\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Update a schedule override.",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/1/edit",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "clinic-system",
+                                "clinic",
+                                "schedule",
+                                "override",
+                                "1",
+                                "edit"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"doctor_id\": {{doctor_id}},\n    \"start_time\": \"10:00\",\n    \"end_time\": \"14:00\",\n    \"reason\": \"Extended training\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 2xx\", function () {",
+                                    "    pm.response.to.be.success;",
+                                    "});",
+                                    "pm.test(\"Response has valid structure\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Success",
+                            "originalRequest": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{access_token}}",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/1/edit",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "clinic-system",
+                                        "clinic",
+                                        "schedule",
+                                        "override",
+                                        "1",
+                                        "edit"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Override updated successfully.\",\n    \"data\": {\n        \"id\": 1,\n        \"doctor\": {\n            \"id\": 1,\n            \"name\": \"Dr. Smith\"\n        },\n        \"override_date\": \"2026-07-01\",\n        \"override_type\": \"time_change\",\n        \"start_time\": \"10:00\",\n        \"end_time\": \"14:00\",\n        \"reason\": \"Extended training\",\n        \"is_closed\": false,\n        \"created_at\": \"2026-06-21 15:00\",\n        \"updated_at\": \"2026-06-21 15:00\"\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete a schedule override.",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/1/delete",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "clinic-system",
+                                "clinic",
+                                "schedule",
+                                "override",
+                                "1",
+                                "delete"
+                            ]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"doctor_id\": {{doctor_id}}\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 2xx\", function () {",
+                                    "    pm.response.to.be.success;",
+                                    "});",
+                                    "pm.test(\"Response has valid structure\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Success",
+                            "originalRequest": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    },
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{access_token}}",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/1/delete",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "clinic-system",
+                                        "clinic",
+                                        "schedule",
+                                        "override",
+                                        "1",
+                                        "delete"
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Override deleted successfully.\",\n    \"data\": null\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get override by exact date.",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/date/single?doctor_id={{doctor_id}}&date=2026-07-01",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "clinic-system",
+                                "clinic",
+                                "schedule",
+                                "override",
+                                "date",
+                                "single"
+                            ],
+                            "query": [
+                                {
+                                    "key": "doctor_id",
+                                    "value": "{{doctor_id}}"
+                                },
+                                {
+                                    "key": "date",
+                                    "value": "2026-07-01"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 2xx\", function () {",
+                                    "    pm.response.to.be.success;",
+                                    "});",
+                                    "pm.test(\"Response has valid structure\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Error validation",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/date/single?doctor_id={{doctor_id}}&date=2026-07-01",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "clinic-system",
+                                        "clinic",
+                                        "schedule",
+                                        "override",
+                                        "date",
+                                        "single"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "doctor_id",
+                                            "value": "{{doctor_id}}"
+                                        },
+                                        {
+                                            "key": "date",
+                                            "value": "2026-07-01"
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "Error",
+                            "code": 422,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"message\": \"The date field must match the format Y-m-d.\",\n    \"errors\": {\n        \"date\": [\n            \"The date field must match the format Y-m-d.\"\n        ]\n    }\n}"
+                        },
+                        {
+                            "name": "Success",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/date/single?doctor_id={{doctor_id}}&date=2026-07-01",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "clinic-system",
+                                        "clinic",
+                                        "schedule",
+                                        "override",
+                                        "date",
+                                        "single"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "doctor_id",
+                                            "value": "{{doctor_id}}"
+                                        },
+                                        {
+                                            "key": "date",
+                                            "value": "2026-07-01"
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Override retrieved successfully.\",\n    \"data\": {\n        \"id\": 1,\n        \"doctor\": {\n            \"id\": 1,\n            \"name\": \"Dr. Smith\"\n        },\n        \"override_date\": \"2026-07-01\",\n        \"override_type\": \"closed\",\n        \"start_time\": null,\n        \"end_time\": null,\n        \"reason\": \"Holiday\",\n        \"is_closed\": true,\n        \"created_at\": \"2026-06-21 15:00\",\n        \"updated_at\": \"2026-06-21 15:00\"\n    }\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Get overrides in a date range.",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/date/range?doctor_id={{doctor_id}}&from=2026-07-01&to=2026-07-07",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "api",
+                                "clinic-system",
+                                "clinic",
+                                "schedule",
+                                "override",
+                                "date",
+                                "range"
+                            ],
+                            "query": [
+                                {
+                                    "key": "doctor_id",
+                                    "value": "{{doctor_id}}"
+                                },
+                                {
+                                    "key": "from",
+                                    "value": "2026-07-01"
+                                },
+                                {
+                                    "key": "to",
+                                    "value": "2026-07-07"
+                                }
+                            ]
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test(\"Status code is 2xx\", function () {",
+                                    "    pm.response.to.be.success;",
+                                    "});",
+                                    "pm.test(\"Response has valid structure\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success');",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "response": [
+                        {
+                            "name": "Success",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Accept",
+                                        "value": "application/json",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/clinic-system/clinic/schedule/override/date/range?doctor_id={{doctor_id}}&from=2026-07-01&to=2026-07-07",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "api",
+                                        "clinic-system",
+                                        "clinic",
+                                        "schedule",
+                                        "override",
+                                        "date",
+                                        "range"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "doctor_id",
+                                            "value": "{{doctor_id}}"
+                                        },
+                                        {
+                                            "key": "from",
+                                            "value": "2026-07-01"
+                                        },
+                                        {
+                                            "key": "to",
+                                            "value": "2026-07-07"
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "body": "{\n    \"success\": true,\n    \"message\": \"Overrides retrieved successfully.\",\n    \"data\": [\n        {\n            \"id\": 1,\n            \"doctor\": {\n                \"id\": 1,\n                \"name\": \"Dr. Smith\"\n            },\n            \"override_date\": \"2026-07-01\",\n            \"override_type\": \"time_change\",\n            \"start_time\": \"12:00\",\n            \"end_time\": \"14:00\",\n            \"reason\": null,\n            \"is_closed\": false,\n            \"created_at\": \"2026-06-21 15:00\",\n            \"updated_at\": \"2026-06-21 15:00\"\n        }\n    ]\n}"
                         }
                     ]
                 }
