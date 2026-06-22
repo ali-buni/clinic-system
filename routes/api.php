@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AuthController;
@@ -22,11 +23,16 @@ use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\userController;
 use App\Http\Controllers\AppointmentTypeController;
 use App\Http\Controllers\UserPhoneController;
+use App\Http\Controllers\ScheduleOverrideController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::prefix('auth')->controller(GoogleAuthController::class)->group(function () {
+    Route::get('google', 'redirectToGoogle');
+    Route::get('google/callback', 'handleGoogleCallback');
+});
 
 Route::prefix('/clinic-system')->group(function () {
     Route::post('/devices/register-token', [FcmTokenController::class, 'registerDeviceToken'])->middleware('auth:sanctum');

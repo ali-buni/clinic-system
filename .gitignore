@@ -17,3 +17,9 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+*.key
+*.pem
+*.crt
+*.p12
+storage/keys/
+bootstrap/cache/
