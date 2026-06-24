@@ -14,7 +14,7 @@ class ResetPasswordWithCodeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|exists:users,email',
+            'email' => 'required|email',
             'code' => 'required|string|digits:6',
             'password' => 'required|string|min:8|confirmed',
         ];

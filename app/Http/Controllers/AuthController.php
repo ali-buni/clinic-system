@@ -54,16 +54,12 @@ class AuthController extends Controller
             'password' => 'required|string|min:8',
         ]);
 
-        $credentials = [
-            'email'    => $request->login,
-            'password' => $request->password,
-        ];
+        $user = User::byEmail($request->login)->first();
 
-        if (!Auth::attempt($credentials)) {
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return $this->api->error('invalid credentials.', 401);
         }
 
-        $user = Auth::user();
         return $this->verification->sendVerificationCode($user, 'email');
     }
 

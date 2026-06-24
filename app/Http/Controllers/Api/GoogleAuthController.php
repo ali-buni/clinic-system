@@ -29,7 +29,7 @@ class GoogleAuthController extends Controller
         }
 
         $user = User::where('google_id', $googleUser->id)
-            ->orWhere('email', $googleUser->email)
+            ->orWhere(fn($q) => $q->byEmail($googleUser->email))
             ->first();
 
         if (!$user) {

@@ -10,11 +10,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use ParagonIE\CipherSweet\BlindIndex;
+use ParagonIE\CipherSweet\EncryptedRow;
+use Spatie\LaravelCipherSweet\Concerns\UsesCipherSweet;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles, HasApiTokens;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens, UsesCipherSweet;
 
     /**
      * The attributes that are mass assignable.
@@ -54,6 +57,20 @@ class User extends Authenticatable
         'phone_verified_at' => 'datetime',
     ];
 
+    public static function getEncryptedColumns(): array
+    {
+        return ['email'];
+    }
+
+    // configure the encryption for the email
+    public static function configureCipherSweet(EncryptedRow $encryptedRow): void
+    {
+        $encryptedRow
+            ->addField('email')  // Encrypts the email column
+            ->addBlindIndex('email', new BlindIndex('email_index'));  // Enables searching
+    }
+
+
     public function clinicOwner(): HasOne
     {
         return $this->hasOne(Clinic::class);
@@ -92,6 +109,6 @@ class User extends Authenticatable
      */
     public function scopeByEmail(Builder $query, string $email): Builder
     {
-        return $query->where('email', $email);
+        return self::whereBlind('email', 'email_index', $email);
     }
 }

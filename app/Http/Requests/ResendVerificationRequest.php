@@ -22,7 +22,7 @@ class ResendVerificationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'login' => 'required|email|exists:users,email',
+            'login' => 'required|email',
             'password' => 'required|string|min:8',
         ];
     }
