@@ -6,7 +6,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "codelieutenant/laravel-crypto": "^2.0",
         "laravel/framework": "^11.0",
         "laravel/passport": "^13.7",
         "laravel/sanctum": "^4.0",
