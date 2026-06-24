@@ -48,6 +48,11 @@ class ModelFilter
         // Get all columns dynamically from base table
         $baseColumns = Schema::getColumnListing($table);
 
+        // Auto-detect encrypted columns to exclude from search/sort
+        $encryptedColumns = method_exists($baseModel, 'getEncryptedColumns')
+            ? $baseModel->getEncryptedColumns()
+            : [];
+
         $search = $filters['search'] ?? null;
         $column = $filters['column'] ?? null;
 
@@ -56,8 +61,12 @@ class ModelFilter
             // Split columns by comma and trim whitespace
             $searchColumns = array_map('trim', explode(',', $column));
 
-            $query->where(function ($q) use ($searchColumns, $search, $baseColumns, $baseModel) {
+            $query->where(function ($q) use ($searchColumns, $search, $baseColumns, $baseModel, $encryptedColumns) {
                 foreach ($searchColumns as $searchColumn) {
+                    if (in_array($searchColumn, $encryptedColumns)) {
+                        continue;
+                    }
+
                     // Check if it's a relationship column (contains dot)
                     if (str_contains($searchColumn, '.')) {
                         [$relation, $relationColumn] = explode('.', $searchColumn, 2);
@@ -89,13 +98,16 @@ class ModelFilter
             $sortColumns = array_map('trim', explode(',', $sort));
 
             foreach ($sortColumns as $sortColumn) {
+                if (in_array($sortColumn, $encryptedColumns)) {
+                    continue;
+                }
                 if (in_array($sortColumn, $baseColumns)) {
                     $query->orderBy($sortColumn, $direction);
                 }
             }
         } else {
             // Single column sort
-            if (in_array($sort, $baseColumns)) {
+            if (!in_array($sort, $encryptedColumns) && in_array($sort, $baseColumns)) {
                 $query->orderBy($sort, $direction);
             }
         }

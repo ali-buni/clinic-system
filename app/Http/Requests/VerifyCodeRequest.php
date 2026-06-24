@@ -14,7 +14,7 @@ class VerifyCodeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'login' => 'required|email|exists:users,email',
+            'login' => 'required|email',
             'code' => 'required|string|digits:6',
             'type' => 'required|string|in:phone,email',
         ];
