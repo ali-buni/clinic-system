@@ -26,7 +26,7 @@ class AppointmentFactory extends Factory
             'start_time' => $start,
             'end_time' => (clone $start)->modify("+{$duration} minutes"),
             'status' => fake()->randomElement(['scheduled', 'completed', 'cancelled', 'no_show']),
-            'cancel_reason' => null,
+            'cancel_reason' => 'no cancel',
             'visit_reason' => fake()->sentence(),
             'visit_in_time' => fake()->boolean(75),
         ];
