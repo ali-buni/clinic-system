@@ -23,8 +23,8 @@ class PatientInfoFactory extends Factory
             'address' => fake()->address(),
             'marital_status' => fake()->randomElement(['married', 'single', 'other']),
             'emergency_phone' => fake()->numerify('09########'),
-            'allergies' => fake()->boolean(30) ? fake()->sentence() : null,
-            'chronic_conditions' => fake()->boolean(25) ? fake()->sentence() : null,
+            'allergies' => fake()->sentence(),
+            'chronic_conditions' => fake()->sentence(),
             'career' => fake()->jobTitle(),
             'blood_type' => fake()->randomElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
         ];

@@ -11,10 +11,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use ParagonIE\CipherSweet\BlindIndex;
+use ParagonIE\CipherSweet\Constants;
 use ParagonIE\CipherSweet\EncryptedRow;
 use Spatie\LaravelCipherSweet\Concerns\UsesCipherSweet;
+use Spatie\LaravelCipherSweet\Contracts\CipherSweetEncrypted;
 
-class PatientInfo extends Model
+class PatientInfo extends Model implements CipherSweetEncrypted
 {
     use HasFactory, SoftDeletes, UsesCipherSweet;
 
@@ -28,12 +30,12 @@ class PatientInfo extends Model
     public static function configureCipherSweet(EncryptedRow $encryptedRow): void
     {
         $encryptedRow
-            ->addField('nationality')
-            ->addField('address')
-            ->addField('emergency_phone')
-            ->addField('allergies')
-            ->addField('chronic_conditions')
-            ->addField('blood_type')
+            ->addField('nationality', Constants::TYPE_OPTIONAL_TEXT)
+            ->addField('address', Constants::TYPE_OPTIONAL_TEXT)
+            ->addField('emergency_phone', Constants::TYPE_OPTIONAL_TEXT)
+            ->addField('allergies', Constants::TYPE_OPTIONAL_TEXT)
+            ->addField('chronic_conditions', Constants::TYPE_OPTIONAL_TEXT)
+            ->addField('blood_type', Constants::TYPE_OPTIONAL_TEXT)
             ->addBlindIndex('emergency_phone', new BlindIndex('emergency_phone_index'))
             ->addBlindIndex('nationality', new BlindIndex('nationality_index'));
     }
