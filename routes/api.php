@@ -21,6 +21,7 @@ use App\Http\Controllers\DiseaseController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\userController;
 use App\Http\Controllers\AppointmentTypeController;
+use App\Http\Controllers\Api\AnalyticsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -196,3 +197,29 @@ Route::prefix('/clinic-system')->group(function () {
 
 //     return response()->json(['message' => 'تم إرسال الإشعار إلى الفايربيس الخاص بالمتلقي بنجاح!']);
 // });
+// جميع المسارات محمية بـ auth:sanctum لضمان أن مدير العيادة فقط من يستعلم
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::prefix('clinic-system/analytics')->group(function () {
+        // التحليل التشغيلي
+        Route::get('/operational', [AnalyticsController::class, 'getOperationalReport']);
+
+        // التحليل المالي
+        Route::get('/financial', [AnalyticsController::class, 'getFinancialReport']);
+
+        // تحليل المرضى
+        Route::get('/patients', [AnalyticsController::class, 'getPatientReport']);
+
+        // التحليل الطبي
+        Route::get('/medical', [AnalyticsController::class, 'getMedicalReport']);
+
+        // التنبؤات
+        Route::get('/predictive', [AnalyticsController::class, 'getPredictiveReport']);
+
+        // الذكاء الاصطناعي التوليدي (الاستعلام باللغة الطبيعية)
+        Route::post('/nla', [AnalyticsController::class, 'askAnalytics']);
+
+        // مؤشر الصحة العام
+        Route::get('/health-score', [AnalyticsController::class, 'getHealthScore']);
+    });
+});
