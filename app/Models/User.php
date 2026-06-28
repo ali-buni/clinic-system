@@ -110,6 +110,6 @@ class User extends Authenticatable implements CipherSweetEncrypted
      */
     public function scopeByEmail(Builder $query, string $email): Builder
     {
-        return self::whereBlind('email', 'email_index', $email);
+        return $query->whereBlind('email', 'email_index', $email);
     }
 }
