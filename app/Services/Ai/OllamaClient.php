@@ -2,17 +2,18 @@
 
 namespace App\Services\Ai;
 
+use App\Services\Ai\Contracts\AiProviderInterface;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class OllamaClient
+class OllamaClient implements AiProviderInterface
 {
     public function chat(array $messages, array $options = []): ?string
     {
-        $response = Http::timeout(config('ai.timeout', 180))->post(
-            config('ai.url') . '/api/chat',
+        $response = Http::timeout(config('ai.providers.ollama.timeout', 180))->post(
+            config('ai.providers.ollama.url') . '/api/chat',
             array_merge_recursive([
-                'model' => config('ai.model', 'qwen2.5:1.5b'),
+                'model' => config('ai.providers.ollama.model', 'qwen2.5:1.5b'),
                 'messages' => $messages,
                 'stream' => false,
                 'options' => [
