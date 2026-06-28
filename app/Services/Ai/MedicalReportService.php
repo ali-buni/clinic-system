@@ -4,6 +4,7 @@ namespace App\Services\Ai;
 
 use App\constant\Prompt;
 use App\Models\Patient_record;
+use App\Services\Ai\Contracts\AiProviderInterface;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class MedicalReportService
 {
-    public function __construct(protected OllamaClient $ollama) {}
+    public function __construct(protected AiProviderInterface $ai) {}
 
     public function summarize(int $recordId)
     {
@@ -29,7 +30,7 @@ class MedicalReportService
 
         $context = $this->buildContext($record);
 
-        $response = $this->ollama->chat(
+        $response = $this->ai->chat(
             messages: [
                 ['role' => 'system', 'content' => $this->systemPrompt()],
                 ['role' => 'user', 'content' => $context],
@@ -54,7 +55,7 @@ class MedicalReportService
 
     private function systemPrompt(): string
     {
-        return !Auth::user()->hasRole('doctor') ? Prompt::DOCTOR_SUMMARY_PROMPT : Prompt::PATIENT_SUMMARY_PROMPT;
+        return Auth::user()->hasRole('doctor') ? Prompt::DOCTOR_SUMMARY_PROMPT : Prompt::PATIENT_SUMMARY_PROMPT;
     }
 
     private function buildContext(Patient_record $record): string
@@ -89,7 +90,7 @@ class MedicalReportService
 
     private function parseResponse(string $response, Patient_record $record): array
     {
-        $parsed = $this->ollama->parseJson($response);
+        $parsed = $this->ai->parseJson($response);
 
         if (!$parsed) {
             return [

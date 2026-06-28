@@ -89,7 +89,7 @@ class ClinicSystemSeeder extends Seeder
             'clinic_id' => $clinic->id,
         ]);
 
-        $patients = PatientInfo::factory()->count(20)->for($clinic)->create();
+        $patients = PatientInfo::factory()->count(20)->create();
 
         $diseases = Disease::all();
         $medicines = Medicine::all();
