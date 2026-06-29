@@ -272,10 +272,14 @@ Route::prefix('/clinic-system')->group(function () {
                 });
 
                 Route::prefix('ai')->group(function () {
-                    Route::post('report/summarize', [MedicalReportController::class, 'summarize']);
-                    Route::post('appointment/assist', [AppointmentAssistantController::class, 'assist']);
-                    Route::post('chat/patient', [PatientChatbotController::class, 'chat']);
-                    Route::get('chat/patient/history', [PatientChatbotController::class, 'history']);
+                    Route::post('report/summarize', [MedicalReportController::class, 'summarize'])
+                        ->middleware('checkaccess:role:doctor,patient');
+                    Route::post('appointment/assist', [AppointmentAssistantController::class, 'assist'])
+                        ->middleware('checkaccess:role:patient,doctor,secretary');
+                    Route::post('chat/patient', [PatientChatbotController::class, 'chat'])
+                        ->middleware('checkaccess:role:patient');
+                    Route::get('chat/patient/history', [PatientChatbotController::class, 'history'])
+                        ->middleware('checkaccess:role:patient');
                 });
             });
         });

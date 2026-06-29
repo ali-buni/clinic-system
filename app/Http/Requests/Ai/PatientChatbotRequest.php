@@ -19,4 +19,21 @@ class PatientChatbotRequest extends FormRequest
             'patient_id' => 'required|integer|exists:patient_infos,id',
         ];
     }
+
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'patient_id' => $this->route('patient_id') ?? $this->input('patient_id'),
+        ]);
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $user = $this->user();
+            if ($user && $user->patientProfile && (int) $this->patient_id !== (int) $user->patientProfile->id) {
+                $validator->errors()->add('patient_id', 'You can only access your own patient data.');
+            }
+        });
+    }
 }
