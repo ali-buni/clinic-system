@@ -21,6 +21,7 @@ class Invoice extends Model
         'status',
         'total_cost',
         'description',
+        'created_at',
     ];
 
     protected $casts = [

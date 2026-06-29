@@ -24,6 +24,7 @@ use App\Http\Controllers\userController;
 use App\Http\Controllers\AppointmentTypeController;
 use App\Http\Controllers\UserPhoneController;
 use App\Http\Controllers\ScheduleOverrideController;
+use App\Http\Controllers\Api\AnalyticsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -280,4 +281,52 @@ Route::prefix('/clinic-system')->group(function () {
 // TODO: testing
 Route::get('/filter', function (Request $request) {
     return ApiResponse::pagination(ModelFilter::filter(new User(), $request->all()));
+});
+
+// Route::post('/send-notification', function (Request $request) {
+
+//     $receiver = User::findOrFail($request->receiver_id);
+//     if (!$receiver->fcm_token) {
+//         return response()->json(['error' => 'هذا المستخدم لا يملك توكن فايربيس مسجل'], 422);
+//     }
+
+//     $receiver->notify(new MobileNotification(
+//         'مرحباً بك!',
+//         'تم تفعيل حسابك بنجاح على تطبيق الجوال.',
+//         ['screen' => 'profile', 'badge' => '1']
+//     ));
+
+//     return response()->json(['message' => 'تم إرسال الإشعار إلى الفايربيس الخاص بالمتلقي بنجاح!']);
+// });
+// جميع المسارات محمية بـ auth:sanctum لضمان أن مدير العيادة فقط من يستعلم
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::prefix('clinic-system/analytics')->group(function () {
+        // التحليل التشغيلي
+        Route::post('/operational', [AnalyticsController::class, 'getOperationalReport']);
+
+        // التحليل المالي
+        Route::post('/financial', [AnalyticsController::class, 'getFinancialReport']);
+
+        // تحليل المرضى
+        Route::post('/patients', [AnalyticsController::class, 'getPatientReport']);
+
+        // التحليل الطبي
+        Route::get('/medical', [AnalyticsController::class, 'getMedicalReport']);
+
+        // التنبؤات
+        Route::post('/predictive', [AnalyticsController::class, 'getPredictiveReport']);
+
+        // الذكاء الاصطناعي التوليدي (الاستعلام باللغة الطبيعية)
+        Route::post('/nla', [AnalyticsController::class, 'askAnalytics']);
+
+        // مؤشر الصحة العام
+        Route::post('/health-score', [AnalyticsController::class, 'getHealthScore']);
+
+        // لوحة المعلومات السريعة
+        Route::post('/dashboard', [AnalyticsController::class, 'getDashboard']);
+
+        // حفظ لقطة بيانات
+        Route::post('/snapshot', [AnalyticsController::class, 'storeSnapshot']);
+    });
 });

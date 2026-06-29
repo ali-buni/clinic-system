@@ -57,7 +57,6 @@ class PatientInfo extends Model implements CipherSweetEncrypted
 
     protected $fillable = [
         'user_id',
-        'clinic_id',
         'nationality',
         'address',
         'marital_status',
