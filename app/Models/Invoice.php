@@ -50,4 +50,14 @@ class Invoice extends Model
     {
         return $this->hasMany(Payment::class);
     }
+    public function getRemainingBalance(): float
+    {
+        // بنجيب مجموع المدفوعات عبر علاقة الـ payments الموجودة بالموديل نفسه
+        $totalPaidSoFar = $this->payments()
+            ->whereNotNull('paid_at')
+            ->whereNull('deleted_at')
+            ->sum('amount');
+
+        return (float) $this->total_cost - $totalPaidSoFar;
+    }
 }

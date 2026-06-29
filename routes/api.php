@@ -24,6 +24,10 @@ use App\Http\Controllers\userController;
 use App\Http\Controllers\AppointmentTypeController;
 use App\Http\Controllers\UserPhoneController;
 use App\Http\Controllers\ScheduleOverrideController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentMethodController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -206,6 +210,25 @@ Route::prefix('/clinic-system')->group(function () {
         Route::delete('/{id}', 'delete');
     });
 });
+
+
+Route::prefix('/clinic-system')->group(function () {
+    Route::prefix('invoices')->controller(InvoiceController::class)->group(function () {
+        Route::post('/create', 'createInvoice');
+        Route::put('/update', 'updateInvoice');
+        Route::delete('/delete', 'deleteInvoice');
+        Route::get('/patient/{Patient_id}', 'getPatientInvoices');
+        Route::post('/rooms', 'getRoomsInvoices');
+        Route::get('/doctor/{doctorId}', 'getDoctorInvoices');
+        Route::get('/details/{invoice_id}', 'getInvoiceWithPayments');
+        Route::get('/filtered', 'getAllInvoicesFiltered');
+    });
+    Route::get('/payment_method',[PaymentMethodController::class,'getPaymentMethods']);
+    Route::post('/payments/process', [PaymentController::class, 'processPayment']);        // دفع الفاتورة وتسجيل مبلغ (جزئي/كلي)[cite: 1]
+    Route::delete('/payments/{payment_id}/cancel', [PaymentController::class, 'cancelPayment']);
+    Route::post('/stripe/webhook', [WebhookController::class, 'handleStripeWebhook']);
+});
+
 
 
 // Route::post('/send-notification', function (Request $request) {
