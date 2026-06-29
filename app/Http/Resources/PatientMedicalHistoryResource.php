@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Helpers\ResourceSecurityHelper;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,13 +10,15 @@ class PatientMedicalHistoryResource extends JsonResource
 {
     public function toArray($request)
     {
+        $requester = $request->user();
         $user = $this->user;
+        $ownerId = $this->user_id;
 
         return [
             'id'            => $this->id,
             'name'          => $user ? trim(($user->fname ?? '') . ' ' . ($user->lname ?? '')) : null,
-            'phone'         => $user?->phone,
-            'email'         => $user?->email,
+            'phone'         => ResourceSecurityHelper::maskPhone($user?->phone, $requester, $ownerId),
+            'email'         => ResourceSecurityHelper::maskEmail($user?->email, $requester, $ownerId),
             'gender'        => $user?->gender,
             'dob'           => $user?->dob ? Carbon::parse($user->dob)->format('Y-m-d') : null,
             'profile_image' => $user?->profile_image,
@@ -28,14 +31,14 @@ class PatientMedicalHistoryResource extends JsonResource
                 'start_time'  => $a->start_time?->format('Y-m-d H:i'),
                 'end_time'    => $a->end_time?->format('Y-m-d H:i'),
                 'status'      => $a->status,
-                'visit_reason' => $a->visit_reason,
+                'visit_reason' => ResourceSecurityHelper::gateField('visit_reason', $a->visit_reason, $requester, $ownerId),
             ]),
 
             'records' => $this->records->map(fn($r) => [
                 'id'                => $r->id,
                 'doctor_name'       => $r->doctor?->user?->fname . ' ' . $r->doctor?->user?->lname,
-                'diagnosis_summary' => $r->diagnosis_summary,
-                'description'       => $r->description,
+                'diagnosis_summary' => ResourceSecurityHelper::gateField('diagnosis_summary', $r->diagnosis_summary, $requester, $ownerId),
+                'description'       => ResourceSecurityHelper::gateField('description', $r->description, $requester, $ownerId),
                 'status'            => $r->status,
                 'diseases'          => $r->diseases->map(fn($d) => [
                     'id'       => $d->id,

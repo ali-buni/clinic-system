@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Helpers\ResourceSecurityHelper;
 use Carbon\Carbon;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,6 +10,9 @@ class AppointmentResource extends JsonResource
 {
     public function toArray($request)
     {
+        $requester = $request->user();
+        $ownerId = $this->patient?->user_id;
+
         return [
             'id' => $this->id,
             'clinic_id' => $this->clinic_id,
@@ -22,7 +26,7 @@ class AppointmentResource extends JsonResource
                 return [
                     'id' => $this->patient->id ?? null,
                     'name' => $this->patient->user?->fname . ' ' . $this->patient->user?->lname,
-                    'phone' => $this->patient->user?->phone,
+                    'phone' => ResourceSecurityHelper::maskPhone($this->patient->user?->phone, request()->user(), $this->patient?->user_id),
                 ];
             }),
             'room' => $this->whenLoaded('room', function () {
@@ -43,8 +47,8 @@ class AppointmentResource extends JsonResource
             'start_time' => Carbon::parse($this->start_time)->format('H:i'),
             'end_time' => Carbon::parse($this->end_time)->format('H:i'),
             'status' => $this->status,
-            'visit_reason' => $this->visit_reason,
-            'cancel_reason' => $this->cancel_reason,
+            'visit_reason' => ResourceSecurityHelper::gateField('visit_reason', $this->visit_reason, $requester, $ownerId),
+            'cancel_reason' => ResourceSecurityHelper::gateField('cancel_reason', $this->cancel_reason, $requester, $ownerId),
             'notes' => $this->notes,
             'created_at' => Carbon::parse($this->created_at)->format('Y-m-d'),
         ];

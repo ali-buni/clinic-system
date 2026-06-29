@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Helpers\ResourceSecurityHelper;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -10,6 +11,8 @@ class userResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $requester = $request->user();
+        $ownerId = $this->id;
         $role = $this->getRoleNames()->first() ?? 'secretary';
         $info = [];
         $isShow = request()->route()?->getActionMethod() === 'show';
@@ -26,25 +29,24 @@ class userResource extends JsonResource
 
         if ($role === 'patient') {
             $p = $this->patientProfile;
-            $u = $p?->user;
             if ($p) {
                 $info['clinic_id'] = $p->clinic_id;
-                $info['nationality'] = $p->nationality;
-                $info['address'] = $p->address;
+                $info['nationality'] = ResourceSecurityHelper::gateField('nationality', $p->nationality, $requester, $ownerId);
+                $info['address'] = ResourceSecurityHelper::gateField('address', $p->address, $requester, $ownerId);
                 $info['marital_status'] = $p->marital_status;
-                $info['emergency_phone'] = $p->emergency_phone;
-                $info['allergies'] = $p->allergies;
-                $info['chronic_conditions'] = $p->chronic_conditions;
+                $info['emergency_phone'] = ResourceSecurityHelper::gateField('emergency_phone', $p->emergency_phone, $requester, $ownerId);
+                $info['allergies'] = ResourceSecurityHelper::gateField('allergies', $p->allergies, $requester, $ownerId);
+                $info['chronic_conditions'] = ResourceSecurityHelper::gateField('chronic_conditions', $p->chronic_conditions, $requester, $ownerId);
                 $info['career'] = $p->career;
-                $info['blood_type'] = $p->blood_type;
+                $info['blood_type'] = ResourceSecurityHelper::gateField('blood_type', $p->blood_type, $requester, $ownerId);
             }
         }
 
         return [
             'id'            => $this->id,
             'name'          => $this->fname . ' ' . $this->lname,
-            'phone'         => $this->phone,
-            'email'         => $this->email,
+            'phone'         => ResourceSecurityHelper::maskPhone($this->phone, $requester, $ownerId),
+            'email'         => ResourceSecurityHelper::maskEmail($this->email, $requester, $ownerId),
             'gender'        => $this->gender,
             'dob'           => Carbon::parse($this->dob)->format('Y-m-d'),
             'profile_image' => $this->profile_image,

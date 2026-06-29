@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Helpers\ResourceSecurityHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,14 +10,17 @@ class DoctorResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $requester = $request->user();
+        $ownerId = $this->user_id;
+
         return [
             'id'                    => $this->id,
             'user_id'               => $this->user_id,
             'clinic_id'             => $this->clinic_id,
             'room_id'               => $this->room_id,
             'name'                  => $this->user?->fname . ' ' . $this->user?->lname,
-            'phone'                 => $this->user?->phone,
-            'email'                 => $this->user?->email,
+            'phone'                 => ResourceSecurityHelper::maskPhone($this->user?->phone, $requester, $ownerId),
+            'email'                 => ResourceSecurityHelper::maskEmail($this->user?->email, $requester, $ownerId),
             'dob'                   => $this->user?->dob,
             'gender'                => $this->user?->gender,
             'created_at'            => $this->created_at?->format('Y-m-d'),

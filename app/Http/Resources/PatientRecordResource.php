@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Helpers\ResourceSecurityHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -9,6 +10,9 @@ class PatientRecordResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $requester = $request->user();
+        $ownerId = $this->patient?->user_id;
+
         return [
             'id' => $this->id,
             'patient_id' => $this->patient_id,
@@ -16,15 +20,15 @@ class PatientRecordResource extends JsonResource
             'clinic_id' => $this->clinic_id,
             'appointment_id' => $this->appointment_id,
 
-            'diagnosis_summary' => $this->diagnosis_summary,
-            'description' => $this->description,
+            'diagnosis_summary' => ResourceSecurityHelper::gateField('diagnosis_summary', $this->diagnosis_summary, $requester, $ownerId),
+            'description' => ResourceSecurityHelper::gateField('description', $this->description, $requester, $ownerId),
             'status' => $this->status,
-            'notes' => $this->notes,
+            'notes' => ResourceSecurityHelper::gateField('notes', $this->notes, $requester, $ownerId),
 
             'patient' => $this->whenLoaded('patient', function () {
                 return [
                     'name' => $this->patient->user?->fname . ' ' . $this->patient->user?->lname,
-                    'phone' => $this->patient->user?->phone,
+                    'phone' => ResourceSecurityHelper::maskPhone($this->patient->user?->phone, request()->user(), $this->patient?->user_id),
                 ];
             }),
 
