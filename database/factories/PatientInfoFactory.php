@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Clinic;
 use App\Models\PatientInfo;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -18,7 +17,6 @@ class PatientInfoFactory extends Factory
 
         return [
             'user_id' => $user->id,
-            'clinic_id' => Clinic::factory(),
             'nationality' => fake()->country(),
             'address' => fake()->address(),
             'marital_status' => fake()->randomElement(['married', 'single', 'other']),

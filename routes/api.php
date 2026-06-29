@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Ai\AppointmentAssistantController;
+use App\Http\Controllers\Ai\MedicalReportController;
+use App\Http\Controllers\Ai\PatientChatbotController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\AppointmentController;
@@ -126,7 +129,11 @@ Route::prefix('/clinic-system')->group(function () {
                 ->middleware(['auth:sanctum', 'checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:manage m/d']);
         });
 
-        Route::middleware('auth:sanctum')->prefix('/clinic')->group(function () {
+        // auth
+        Route::middleware('auth:sanctum')->group(function () {
+            Route::controller(ClinicController::class)->group(function () {
+                Route::get('/info', 'clinicInfo');
+                Route::post('/update/{clinicId}', 'updateClinic');
 
             Route::controller(ClinicController::class)->group(function () {
                 Route::get('/info', 'clinicInfo')
@@ -262,6 +269,13 @@ Route::prefix('/clinic-system')->group(function () {
                     ->middleware(['checkaccess:role:doctor,secretary']);
                 Route::get('/doctor/{doctorId}/all', 'getAllByDoctor')
                     ->middleware(['checkaccess:role:doctor', 'checkaccess:permission:access records']);
+            });
+
+            Route::prefix('ai')->group(function () {
+                Route::post('report/summarize', [MedicalReportController::class, 'summarize']);
+                Route::post('appointment/assist', [AppointmentAssistantController::class, 'assist']);
+                Route::post('chat/patient', [PatientChatbotController::class, 'chat']);
+                Route::get('chat/patient/history', [PatientChatbotController::class, 'history']);
             });
         });
     });

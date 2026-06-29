@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['user_id', 'clinic_id']);
+            $table->unique(['user_id']);
             $table->index('user_id');
         });
     }
