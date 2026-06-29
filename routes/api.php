@@ -31,7 +31,7 @@ use App\Http\Controllers\Api\AnalyticsController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
-})->middleware(['auth:sanctum', 'checkaccess:role:patient,doctor,secretary,owner']);
+})->middleware(['auth:sanctum', 'throttle:100,1', 'checkaccess:role:patient,doctor,secretary,owner']);
 
 Route::prefix('auth')->controller(GoogleAuthController::class)->group(function () {
     Route::get('google', 'redirectToGoogle');
@@ -40,15 +40,15 @@ Route::prefix('auth')->controller(GoogleAuthController::class)->group(function (
 
 Route::prefix('/clinic-system')->group(function () {
     Route::post('/devices/register-token', [FcmTokenController::class, 'registerDeviceToken'])
-        ->middleware(['auth:sanctum', 'checkaccess:role:patient,doctor,secretary,owner']);
+        ->middleware(['auth:sanctum', 'throttle:100,1', 'checkaccess:role:patient,doctor,secretary,owner']);
 
     Route::controller(AuthController::class)->group(function () {
-        Route::post('/login', 'login');
-        Route::post('/register', 'register');
-        Route::post('/forgot-password', 'forgotPassword');
+        Route::post('/login', 'login')->middleware('throttle:5,1');
+        Route::post('/register', 'register')->middleware('throttle:5,1');
+        Route::post('/forgot-password', 'forgotPassword')->middleware('throttle:5,1');
         Route::post('/reset-password-with-code', 'resetWithCode');
 
-        Route::middleware(['auth:sanctum', 'checkaccess:role:patient,doctor,secretary,owner'])->group(function () {
+        Route::middleware(['auth:sanctum', 'throttle:100,1', 'checkaccess:role:patient,doctor,secretary,owner'])->group(function () {
             Route::post('/signout', 'signOut');
             Route::post('/reset-password', 'resetPassword');
             Route::post('/refresh-token', 'refreshToken');
@@ -56,11 +56,11 @@ Route::prefix('/clinic-system')->group(function () {
     });
 
     Route::controller(VerificationController::class)->group(function () {
-        Route::post('/verify-code', 'verifyCode');
-        Route::post('/resend-code', 'resendVerificationCode');
+        Route::post('/verify-code', 'verifyCode')->middleware('throttle:3,1');
+        Route::post('/resend-code', 'resendVerificationCode')->middleware('throttle:3,1');
     });
 
-    Route::middleware(['auth:sanctum', 'checkaccess:role:patient,doctor,secretary,owner'])
+    Route::middleware(['auth:sanctum', 'throttle:100,1', 'checkaccess:role:patient,doctor,secretary,owner'])
         ->prefix('/phone')->controller(UserPhoneController::class)->group(function () {
             Route::post('/update', 'updatePhone');
             Route::post('/verify-update', 'verifyPhoneUpdate');
@@ -69,7 +69,7 @@ Route::prefix('/clinic-system')->group(function () {
     Route::prefix('/clinic')->group(function () {
 
         Route::prefix('/specialty')->controller(DoctorSpecialtyController::class)->group(function () {
-            Route::middleware(['auth:sanctum', 'checkaccess:role:owner,doctor'])->group(function () {
+            Route::middleware(['auth:sanctum', 'throttle:100,1', 'checkaccess:role:owner,doctor'])->group(function () {
                 Route::post('/add', 'attachSpecialties');
                 Route::delete('/delete/{specialId}', 'detachSpecialty');
                 Route::post('/changePrimary/{specialtyId}', 'changePrimary');
@@ -83,6 +83,7 @@ Route::prefix('/clinic-system')->group(function () {
             Route::controller(DoctorScheduleController::class)->group(function () {
                 Route::middleware([
                     'auth:sanctum',
+                    'throttle:100,1',
                     'checkaccess:role:owner,doctor',
                     'checkaccess:permission:manage schedules',
                 ])->group(function () {
@@ -97,6 +98,7 @@ Route::prefix('/clinic-system')->group(function () {
             Route::prefix('/override')->controller(ScheduleOverrideController::class)->group(function () {
                 Route::middleware([
                     'auth:sanctum',
+                    'throttle:100,1',
                     'checkaccess:role:doctor,secretary,owner',
                     'checkaccess:permission:manage overrides',
                 ])->group(function () {
@@ -106,6 +108,7 @@ Route::prefix('/clinic-system')->group(function () {
                 });
                 Route::middleware([
                     'auth:sanctum',
+                    'throttle:100,1',
                     'checkaccess:role:doctor,secretary,owner',
                     'checkaccess:permission:view overrides'
                 ])->group(function () {
@@ -120,17 +123,17 @@ Route::prefix('/clinic-system')->group(function () {
         Route::prefix('medicines')->controller(MedicineController::class)->group(function () {
             Route::get('search', 'searchMedicine');
             Route::post('store', 'store')
-                ->middleware(['auth:sanctum', 'checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:manage m/d']);
+                ->middleware(['auth:sanctum', 'throttle:100,1', 'checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:manage m/d']);
         });
 
         Route::prefix('diseases')->controller(DiseaseController::class)->group(function () {
             Route::get('search', 'searchDisease');
             Route::post('store', 'store')
-                ->middleware(['auth:sanctum', 'checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:manage m/d']);
+                ->middleware(['auth:sanctum', 'throttle:100,1', 'checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:manage m/d']);
         });
 
         // auth
-        Route::middleware('auth:sanctum')->group(function () {
+        Route::middleware(['auth:sanctum', 'throttle:100,1'])->group(function () {
             Route::controller(ClinicController::class)->group(function () {
                 Route::get('/info', 'clinicInfo');
                 Route::post('/update/{clinicId}', 'updateClinic');
@@ -273,13 +276,13 @@ Route::prefix('/clinic-system')->group(function () {
 
                 Route::prefix('ai')->group(function () {
                     Route::post('report/summarize', [MedicalReportController::class, 'summarize'])
-                        ->middleware('checkaccess:role:doctor,patient');
+                        ->middleware(['throttle:5,1', 'checkaccess:role:doctor,patient']);
                     Route::post('appointment/assist', [AppointmentAssistantController::class, 'assist'])
-                        ->middleware('checkaccess:role:patient,doctor,secretary');
+                        ->middleware(['throttle:5,1', 'checkaccess:role:patient,doctor,secretary']);
                     Route::post('chat/patient', [PatientChatbotController::class, 'chat'])
-                        ->middleware('checkaccess:role:patient');
+                        ->middleware(['throttle:5,1', 'checkaccess:role:patient']);
                     Route::get('chat/patient/history', [PatientChatbotController::class, 'history'])
-                        ->middleware('checkaccess:role:patient');
+                        ->middleware(['throttle:5,1', 'checkaccess:role:patient']);
                 });
             });
         });
@@ -291,9 +294,9 @@ Route::prefix('/clinic-system')->group(function () {
     Route::prefix('appointment-types')->controller(AppointmentTypeController::class)->group(function () {
         Route::get('/', 'index');
         Route::post('/', 'add')
-            ->middleware(['auth:sanctum', 'checkaccess:role:owner', 'checkaccess:permission:admin']);
+            ->middleware(['auth:sanctum', 'throttle:100,1', 'checkaccess:role:owner', 'checkaccess:permission:admin']);
         Route::delete('/{id}', 'delete')
-            ->middleware(['auth:sanctum', 'checkaccess:role:owner', 'checkaccess:permission:admin']);
+            ->middleware(['auth:sanctum', 'throttle:100,1', 'checkaccess:role:owner', 'checkaccess:permission:admin']);
     });
 });
 
@@ -318,7 +321,7 @@ Route::get('/filter', function (Request $request) {
 //     return response()->json(['message' => 'تم إرسال الإشعار إلى الفايربيس الخاص بالمتلقي بنجاح!']);
 // });
 // جميع المسارات محمية بـ auth:sanctum لضمان أن مدير العيادة فقط من يستعلم
-Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'throttle:100,1'])->group(function () {
 
     Route::prefix('clinic-system/analytics')->group(function () {
         // التحليل التشغيلي
