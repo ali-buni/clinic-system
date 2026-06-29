@@ -13,13 +13,15 @@ class ActivityLogService
      * @param Model|null $subject
      * @param Authenticatable|null $causer
      * @param array $details
+     * @param string|null $event
      */
     public function log(
         string $logName,
         string $description,
         ?Model $subject = null,
         ?Authenticatable $causer = null,
-        array $details = []
+        array $details = [],
+        ?string $event = null
     ) {
         $user = auth()->user();
         $userId = auth()->id() ?? ($user->getAuthIdentifier() ?? null);
@@ -33,7 +35,7 @@ class ActivityLogService
             $new = $subject->getAttributes();
         }
 
-        activity($logName)
+        $log = activity($logName)
             ->performedOn($subject)
             ->causedBy($causer)
             ->withProperties(array_merge(
@@ -45,7 +47,12 @@ class ActivityLogService
                     'old_value' => $old,
                     'new_value' => $new,
                 ]
-            ))
-            ->log($description);
+            ));
+
+        if ($event !== null) {
+            $log->event($event);
+        }
+
+        $log->log($description);
     }
 }

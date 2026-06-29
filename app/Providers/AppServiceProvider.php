@@ -2,6 +2,18 @@
 
 namespace App\Providers;
 
+use App\Models\Appointment;
+use App\Models\Doctor;
+use App\Models\Invoice;
+use App\Models\PatientInfo;
+use App\Models\Patient_record;
+use App\Models\User;
+use App\Observers\AppointmentObserver;
+use App\Observers\DoctorObserver;
+use App\Observers\InvoiceObserver;
+use App\Observers\PatientInfoObserver;
+use App\Observers\PatientRecordObserver;
+use App\Observers\UserObserver;
 use App\Services\Analytics\SettingService;
 use App\Services\Ai\Contracts\AiProviderInterface;
 use App\Services\Ai\MultiProviderRouter;
@@ -66,6 +78,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        Appointment::observe(AppointmentObserver::class);
+        Patient_record::observe(PatientRecordObserver::class);
+        PatientInfo::observe(PatientInfoObserver::class);
+        Doctor::observe(DoctorObserver::class);
+        User::observe(UserObserver::class);
+        Invoice::observe(InvoiceObserver::class);
     }
 }

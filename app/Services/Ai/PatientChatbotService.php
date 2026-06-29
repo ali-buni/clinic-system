@@ -60,13 +60,24 @@ class PatientChatbotService
         }
 
         DB::transaction(function () use ($patientInfoId, $message, $responseText, $sessionId) {
-            ChatMessage::create([
+            $chatMessage = ChatMessage::create([
                 'user_id' => Auth::id(),
                 'chattable_type' => PatientInfo::class,
                 'chattable_id' => $patientInfoId,
                 'message' => $message,
                 'response' => $responseText,
                 'session_id' => $sessionId,
+            ]);
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($chatMessage)
+                ->withProperties(['session_id' => $sessionId, 'patient_info_id' => $patientInfoId])
+                ->event('created')
+                ->log('chat message created');
+
+            Log::channel('structured')->info('chat message created', [
+                'chat_message_id' => $chatMessage->id, 'session_id' => $sessionId, 'patient_info_id' => $patientInfoId,
             ]);
         });
 

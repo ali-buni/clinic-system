@@ -31,12 +31,23 @@ class MedicineApiService
                         'form' => $this->mapRouteToForm($drug['route'] ?? null),
                     ];
                 }
+
+                Log::channel('structured')->info('OpenFDA drug search succeeded', [
+                    'query' => $query,
+                    'results_count' => count($results),
+                ]);
+
                 return $results;
             }
 
+            Log::channel('structured')->warning('OpenFDA drug search returned non-success', [
+                'query' => $query,
+                'status' => $response->status(),
+            ]);
+
             return [];
         } catch (\Exception $e) {
-            Log::error('OpenFDA API Connection Failed', ['error' => $e->getMessage()]);
+            Log::channel('structured')->error('OpenFDA API Connection Failed', ['query' => $query, 'error' => $e->getMessage()]);
             return [];
         }
     }

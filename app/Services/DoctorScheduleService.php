@@ -8,9 +8,14 @@ use Exception;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DoctorScheduleService
 {
+    public function __construct(
+        private readonly ActivityLogService $activityLog,
+    ) {}
+
     public function createWorkHour(Doctor $doctor, array $data): Work_hour
     {
         if ($this->dayAlreadyExists($doctor, $data['day_of_week'])) {
@@ -23,6 +28,14 @@ class DoctorScheduleService
 
         $workHour = $doctor->workHours()->create($data);
         Cache::increment("cache_v:doctor:{$doctor->id}:interval");
+
+        $this->activityLog->log('schedule', 'work hour created', $workHour, null, [
+            'doctor_id' => $doctor->id, 'day_of_week' => $data['day_of_week'],
+        ], 'created');
+        Log::channel('structured')->info('work hour created', [
+            'doctor_id' => $doctor->id, 'work_hour_id' => $workHour->id, 'day_of_week' => $data['day_of_week'],
+        ]);
+
         return $workHour;
     }
 
@@ -54,6 +67,14 @@ class DoctorScheduleService
 
         $workHour->update($data);
         Cache::increment("cache_v:doctor:{$doctor->id}:interval");
+
+        $this->activityLog->log('schedule', 'work hour updated', $workHour, null, [
+            'doctor_id' => $doctor->id, 'day_of_week' => $workHour->day_of_week,
+        ], 'updated');
+        Log::channel('structured')->info('work hour updated', [
+            'doctor_id' => $doctor->id, 'work_hour_id' => $workHour->id, 'day_of_week' => $workHour->day_of_week,
+        ]);
+
         return $workHour;
     }
 
@@ -70,6 +91,14 @@ class DoctorScheduleService
 
         $result = $workHour->forceDelete();
         Cache::increment("cache_v:doctor:{$doctor->id}:interval");
+
+        $this->activityLog->log('schedule', 'work hour deleted', null, null, [
+            'doctor_id' => $doctor->id, 'work_hour_id' => $workHourId,
+        ], 'deleted');
+        Log::channel('structured')->info('work hour deleted', [
+            'doctor_id' => $doctor->id, 'work_hour_id' => $workHourId,
+        ]);
+
         return $result;
     }
 

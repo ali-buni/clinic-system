@@ -7,14 +7,28 @@ use App\Models\Schedule_override;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class ScheduleOverrideService
 {
+    public function __construct(
+        private readonly ActivityLogService $activityLog,
+    ) {}
+
     public function create(Doctor $doctor, array $data): Schedule_override
     {
         $this->validateNoOverlap($doctor, $data);
 
-        return $doctor->scheduleOverrides()->create($data);
+        $override = $doctor->scheduleOverrides()->create($data);
+
+        $this->activityLog->log('schedule', 'schedule override created', $override, null, [
+            'doctor_id' => $doctor->id, 'date' => $data['override_date'] ?? null,
+        ], 'created');
+        Log::channel('structured')->info('schedule override created', [
+            'doctor_id' => $doctor->id, 'override_id' => $override->id, 'date' => $data['override_date'] ?? null,
+        ]);
+
+        return $override;
     }
 
     public function update(Doctor $doctor, int $overrideId, array $data): Schedule_override
@@ -29,6 +43,14 @@ class ScheduleOverrideService
         $this->validateNoOverlap($doctor, $merged, $overrideId);
 
         $override->update($data);
+
+        $this->activityLog->log('schedule', 'schedule override updated', $override, null, [
+            'doctor_id' => $doctor->id,
+        ], 'updated');
+        Log::channel('structured')->info('schedule override updated', [
+            'doctor_id' => $doctor->id, 'override_id' => $overrideId,
+        ]);
+
         return $override->fresh();
     }
 
@@ -40,7 +62,16 @@ class ScheduleOverrideService
             throw new Exception('record_not_found');
         }
 
-        return $override->delete();
+        $result = $override->delete();
+
+        $this->activityLog->log('schedule', 'schedule override deleted', null, null, [
+            'doctor_id' => $doctor->id, 'override_id' => $overrideId,
+        ], 'deleted');
+        Log::channel('structured')->info('schedule override deleted', [
+            'doctor_id' => $doctor->id, 'override_id' => $overrideId,
+        ]);
+
+        return $result;
     }
 
     public function get(Doctor $doctor, int $overrideId): ?Schedule_override

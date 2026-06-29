@@ -3,9 +3,14 @@
 namespace App\Services;
 
 use App\Models\Appointment_type;
+use Illuminate\Support\Facades\Log;
 
 class AppointmentTypeService
 {
+    public function __construct(
+        private readonly ActivityLogService $activityLog,
+    ) {}
+
     /**
      * Return list of appointment.
      */
@@ -24,7 +29,16 @@ class AppointmentTypeService
      */
     public function add(array $data): Appointment_type
     {
-        return Appointment_type::create($data);
+        $type = Appointment_type::create($data);
+
+        $this->activityLog->log('appointment_type', 'appointment type created', $type, null, [
+            'name' => $data['en_name'] ?? null,
+        ], 'created');
+        Log::channel('structured')->info('appointment type created', [
+            'appointment_type_id' => $type->id, 'name' => $data['en_name'] ?? null,
+        ]);
+
+        return $type;
     }
 
     /**
@@ -36,6 +50,14 @@ class AppointmentTypeService
     public function delete(int $id): bool
     {
         $type = Appointment_type::findOrFail($id);
+
+        $this->activityLog->log('appointment_type', 'appointment type deleted', $type, null, [
+            'name' => $type->en_name ?? null,
+        ], 'deleted');
+        Log::channel('structured')->info('appointment type deleted', [
+            'appointment_type_id' => $id, 'name' => $type->en_name ?? null,
+        ]);
+
         return $type->delete();
     }
 }

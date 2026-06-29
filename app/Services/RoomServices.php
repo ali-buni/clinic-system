@@ -8,9 +8,13 @@ use App\Models\Room;
 use App\Models\Secretary;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RoomServices
 {
+    public function __construct(
+        private readonly ActivityLogService $activityLog,
+    ) {}
     /**
      * Create a new room.
      *
@@ -19,7 +23,18 @@ class RoomServices
      */
     public function createRoom(array $data): Room
     {
-        return Room::create($data);
+        $room = Room::create($data);
+
+        $this->activityLog->log(
+            'room', 'created room', $room, null, [
+                'clinic_id' => $data['clinic_id'] ?? null,
+            ], 'created'
+        );
+        Log::channel('structured')->info('room created', [
+            'room_id' => $room->id, 'clinic_id' => $data['clinic_id'] ?? null,
+        ]);
+
+        return $room;
     }
 
     /**
@@ -30,7 +45,14 @@ class RoomServices
      */
     public function deleteRoom(int $id): bool
     {
-        return (bool) Room::where('id', $id)->delete();
+        $result = (bool) Room::where('id', $id)->delete();
+
+        $this->activityLog->log(
+            'room', 'deleted room', null, null, ['room_id' => $id], 'deleted'
+        );
+        Log::channel('structured')->info('room deleted', ['room_id' => $id]);
+
+        return $result;
     }
 
     /**
@@ -42,7 +64,21 @@ class RoomServices
      */
     public function updateRoom(int $id, array $data): bool
     {
-        return (bool) Room::where('id', $id)->update($data);
+        $room = Room::find($id);
+        $result = $room ? (bool) $room->update($data) : false;
+
+        if ($room) {
+            $this->activityLog->log(
+                'room', 'updated room', $room, null, [
+                    'updated_fields' => array_keys($data),
+                ], 'updated'
+            );
+            Log::channel('structured')->info('room updated', [
+                'room_id' => $id, 'updated_fields' => array_keys($data),
+            ]);
+        }
+
+        return $result;
     }
 
     /**
@@ -88,6 +124,9 @@ class RoomServices
             $doctor = Doctor::find($doctorId);
 
             if (!$room || !$doctor || $room->clinic_id !== $doctor->clinic_id) {
+                Log::channel('structured')->warning('addDoctorToRoom failed - clinic mismatch', [
+                    'room_id' => $roomId, 'doctor_id' => $doctorId,
+                ]);
                 return null;
             }
 
@@ -95,6 +134,13 @@ class RoomServices
             $doctor->save();
 
             PermissionHelper::grantRoomPermission($doctor->user, $roomId);
+
+            $this->activityLog->log(
+                'room', 'assigned doctor to room', $doctor, null, ['room_id' => $roomId], 'updated'
+            );
+            Log::channel('structured')->info('doctor assigned to room', [
+                'doctor_id' => $doctorId, 'room_id' => $roomId,
+            ]);
 
             return true;
         }, attempts: 3);
@@ -116,6 +162,9 @@ class RoomServices
                 ->first();
 
             if (!$doctor) {
+                Log::channel('structured')->warning('delDoctorFromRoom - doctor not in room', [
+                    'doctor_id' => $doctorId, 'room_id' => $roomId,
+                ]);
                 return false;
             }
 
@@ -123,6 +172,13 @@ class RoomServices
             $doctor->save();
 
             PermissionHelper::revokeRoomPermission($doctor->user, $roomId);
+
+            $this->activityLog->log(
+                'room', 'removed doctor from room', $doctor, null, ['room_id' => $roomId], 'updated'
+            );
+            Log::channel('structured')->info('doctor removed from room', [
+                'doctor_id' => $doctorId, 'room_id' => $roomId,
+            ]);
 
             return true;
         }, attempts: 3);
@@ -142,16 +198,21 @@ class RoomServices
             $secretary = Secretary::find($secretaryId);
 
             if (!$secretary) {
+                Log::channel('structured')->warning('addSecretaryToRoom - secretary not found', [
+                    'secretary_id' => $secretaryId,
+                ]);
                 return false;
             }
 
-            // Get all valid rooms that belong to the same clinic
             $validRooms = Room::whereIn('id', $roomIds)
                 ->where('clinic_id', $secretary->clinic_id)
                 ->pluck('id')
                 ->toArray();
 
             if (empty($validRooms)) {
+                Log::channel('structured')->warning('addSecretaryToRoom - no valid rooms', [
+                    'secretary_id' => $secretaryId, 'requested_rooms' => $roomIds,
+                ]);
                 return false;
             }
 
@@ -160,6 +221,13 @@ class RoomServices
             foreach ($validRooms as $roomId) {
                 PermissionHelper::grantRoomPermission($secretary->user, $roomId);
             }
+
+            $this->activityLog->log(
+                'room', 'assigned secretary to rooms', $secretary, null, ['room_ids' => $validRooms], 'updated'
+            );
+            Log::channel('structured')->info('secretary assigned to rooms', [
+                'secretary_id' => $secretaryId, 'room_ids' => $validRooms,
+            ]);
 
             return true;
         }, attempts: 3);
@@ -179,26 +247,36 @@ class RoomServices
             $secretary = Secretary::find($secretaryId);
 
             if (!$secretary) {
+                Log::channel('structured')->warning('delSecretaryFromRoom - secretary not found', [
+                    'secretary_id' => $secretaryId,
+                ]);
                 return false;
             }
 
-            // Get rooms that belong to the same clinic
             $validRooms = Room::whereIn('id', $roomIds)
                 ->where('clinic_id', $secretary->clinic_id)
                 ->pluck('id')
                 ->toArray();
 
             if (empty($validRooms)) {
+                Log::channel('structured')->warning('delSecretaryFromRoom - no valid rooms', [
+                    'secretary_id' => $secretaryId, 'requested_rooms' => $roomIds,
+                ]);
                 return false;
             }
 
-            // Detach from pivot for all valid rooms
             $secretary->rooms()->detach($validRooms);
 
-            // Remove permissions
             foreach ($validRooms as $roomId) {
                 PermissionHelper::revokeRoomPermission($secretary->user, $roomId);
             }
+
+            $this->activityLog->log(
+                'room', 'removed secretary from rooms', $secretary, null, ['room_ids' => $validRooms], 'updated'
+            );
+            Log::channel('structured')->info('secretary removed from rooms', [
+                'secretary_id' => $secretaryId, 'room_ids' => $validRooms,
+            ]);
 
             return true;
         }, attempts: 3);

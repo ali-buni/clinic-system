@@ -8,6 +8,7 @@ use App\Models\Disease;
 use App\Models\Medicine;
 use App\Models\Prescription_item;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 class UpdatePatientRecordAction
@@ -46,6 +47,15 @@ class UpdatePatientRecordAction
                                 ]
                             );
                             $diseaseId = $disease->id;
+
+                            activity()
+                                ->performedOn($disease)
+                                ->withProperties(['code' => $diseaseData['code'] ?? null, 'source' => 'record_update'])
+                                ->event('created')
+                                ->log('disease auto-created via record update');
+                            Log::channel('structured')->info('disease auto-created via record update', [
+                                'disease_id' => $disease->id, 'code' => $diseaseData['code'] ?? null,
+                            ]);
                         }
 
                         $record->diseases()->sync([
@@ -63,11 +73,13 @@ class UpdatePatientRecordAction
                         ->where('id', $data['preid'])
                         ->first();
 
+                    $prescriptionCreated = false;
                     if (! $prescription) {
                         $prescription = Prescription::create([
                             'patient_record_id' => $record->id,
                             'doctor_id'         => $record->doctor_id,
                         ]);
+                        $prescriptionCreated = true;
                     }
                     $syncData = [];
 
@@ -88,6 +100,17 @@ class UpdatePatientRecordAction
                                 ]
                             );
                             $medicineId = $medicine->id;
+
+                            if ($medicine->wasRecentlyCreated) {
+                                activity()
+                                    ->performedOn($medicine)
+                                    ->withProperties(['en_name' => $item['en_name'] ?? null, 'source' => 'record_update'])
+                                    ->event('created')
+                                    ->log('medicine auto-created via record update');
+                                Log::channel('structured')->info('medicine auto-created via record update', [
+                                    'medicine_id' => $medicine->id, 'en_name' => $item['en_name'] ?? null,
+                                ]);
+                            }
                         }
                         $syncData[] = $medicineId;
                         $prescription->items()->updateOrCreate(
@@ -101,7 +124,24 @@ class UpdatePatientRecordAction
                             ]
                         );
                     }
-                    $prescription->items()->whereNotIn('medicine_id', $syncData)->delete();
+                    $deletedCount = $prescription->items()->whereNotIn('medicine_id', $syncData)->delete();
+
+                    $eventType = $prescriptionCreated ? 'created' : 'updated';
+                    activity()
+                        ->performedOn($prescription)
+                        ->withProperties(['patient_record_id' => $record->id, 'items_count' => count($syncData)])
+                        ->event($eventType)
+                        ->log($prescriptionCreated ? 'prescription created via record update' : 'prescription items updated via record update');
+
+                    if ($prescriptionCreated) {
+                        Log::channel('structured')->info('prescription created via record update', [
+                            'prescription_id' => $prescription->id, 'patient_record_id' => $record->id,
+                        ]);
+                    } else {
+                        Log::channel('structured')->info('prescription items updated via record update', [
+                            'prescription_id' => $prescription->id, 'items_count' => count($syncData), 'deleted_count' => $deletedCount,
+                        ]);
+                    }
                 }
 
                 return $record->load(['diseases', 'prescriptions.items', 'doctor', 'patient']);

@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'checkaccess' => \App\Http\Middleware\CheckAccess::class,
         ]);
+
+        $middleware->appendToGroup('api', \App\Http\Middleware\AddCorrelationId::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e) {

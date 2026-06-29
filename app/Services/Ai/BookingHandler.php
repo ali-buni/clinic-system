@@ -135,6 +135,10 @@ class BookingHandler
                 ]),
             );
 
+            Log::channel('structured')->info('AI appointment booked successfully', [
+                'appointment_id' => $appointment->id, 'doctor_id' => $doctorId, 'patient_id' => $patientId,
+            ]);
+
             return [
                 'appointment' => [
                     'id' => $appointment->id,
@@ -147,7 +151,9 @@ class BookingHandler
                 'next_step' => 'complete',
             ];
         } catch (\Throwable $e) {
-            Log::error('AppointmentAssistant booking failed', ['error' => $e->getMessage()]);
+            Log::channel('structured')->error('AppointmentAssistant booking failed', [
+                'doctor_id' => $doctorId, 'patient_id' => $patientId, 'error' => $e->getMessage(),
+            ]);
             return ['error' => $e->getMessage(), 'next_step' => 'retry'];
         }
     }
