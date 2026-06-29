@@ -17,8 +17,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('day_of_week'); // 0..6
             $table->time('start_time');
             $table->time('end_time');
-            $table->time('break_start');
-            $table->time('break_end');
+            $table->time('break_start')->nullable();
+            $table->time('break_end')->nullable();
             $table->unsignedTinyInteger('max_patients_per_day');
             $table->boolean('is_active')->default(true);
 

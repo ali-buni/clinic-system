@@ -2,39 +2,45 @@
 
 namespace App\Services\Analytics;
 
-use App\Models\Patient_record;
-use App\Models\Disease;
 use Illuminate\Support\Facades\DB;
 
 class MedicalAnalyticsService
 {
-    public function getTopDiseases(int $clinicId, int $limit = 5)
+    public function getTopDiseases(int $clinicId, int $limit = 5): \Illuminate\Support\Collection
     {
-        return DB::table('patient_record_disease')
-            ->join('patient_records', 'patient_record_disease.patient_record_id', '=', 'patient_records.id')
-            ->join('diseases', 'patient_record_disease.disease_id', '=', 'diseases.id')
-            ->where('patient_records.clinic_id', $clinicId)
-            ->select('diseases.ar_name', DB::raw('count(*) as cases_count'))
-            ->groupBy('diseases.id', 'diseases.ar_name')
-            ->orderBy('cases_count', 'desc')
+        return DB::table('patient_record_disease as prd')
+            ->join('patient_records as pr', 'prd.patient_record_id', '=', 'pr.id')
+            ->join('diseases as d', 'prd.disease_id', '=', 'd.id')
+            ->where('pr.clinic_id', $clinicId)
+            ->select(['d.ar_name', 'd.en_name'])
+            ->selectRaw('COUNT(*) as cases_count')
+            ->groupBy('d.id', 'd.ar_name')
+            ->orderByDesc('cases_count')
             ->limit($limit)
             ->get();
     }
 
-    public function getDiseasesByAgeGroup(int $clinicId)
+    public function getDiseasesByAgeGroup(int $clinicId): \Illuminate\Support\Collection
     {
-        return DB::table('patient_record_disease')
-            ->join('patient_records', 'patient_record_disease.patient_record_id', '=', 'patient_records.id')
-            ->join('patient_infos', 'patient_records.patient_id', '=', 'patient_infos.id')
-            ->join('users', 'patient_infos.user_id', '=', 'users.id')
-            ->join('diseases', 'patient_record_disease.disease_id', '=', 'diseases.id')
-            ->where('patient_records.clinic_id', $clinicId)
-            ->select('diseases.ar_name', DB::raw('TIMESTAMPDIFF(YEAR, users.dob, CURDATE()) as age'))
+        return DB::table('patient_record_disease as prd')
+            ->join('patient_records as pr', 'prd.patient_record_id', '=', 'pr.id')
+            ->join('patient_infos as pi', 'pr.patient_id', '=', 'pi.id')
+            ->join('users as u', 'pi.user_id', '=', 'u.id')
+            ->join('diseases as d', 'prd.disease_id', '=', 'd.id')
+            ->where('pr.clinic_id', $clinicId)
+            ->select(['d.ar_name', 'd.en_name'])
+            ->selectRaw("
+            CASE
+                WHEN TIMESTAMPDIFF(YEAR, u.dob, CURDATE()) < 30 THEN 'شباب'
+                WHEN TIMESTAMPDIFF(YEAR, u.dob, CURDATE()) < 50 THEN 'بالغين'
+                ELSE 'كبار سن'
+            END as age_group
+        ")
+            ->selectRaw('COUNT(*) as cases_count')
+            ->groupBy('d.id', 'd.ar_name', 'd.en_name', 'age_group')
+            ->orderBy('age_group')
+            ->orderByDesc('cases_count')
             ->get()
-            ->groupBy(function($item) {
-                if ($item->age < 30) return 'شباب';
-                if ($item->age < 50) return 'بالغين';
-                return 'كبار سن';
-            });
+            ->groupBy('age_group');
     }
 }

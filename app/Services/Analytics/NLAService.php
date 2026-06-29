@@ -3,14 +3,18 @@
 namespace App\Services\Analytics;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class NLAService
 {
-    public function askAnalytics(string $question, string $context)
-    {
-        $model = 'llama3.2';
-        $url   = 'http://127.0.0.1:11434/api/generate';
+    public function __construct(
+        private readonly string $url = 'http://127.0.0.1:11434/api/generate',
+        private readonly string $model = 'llama3.2',
+        private readonly int $timeout = 120,
+    ) {}
 
+    public function askAnalytics(string $question, string $context): string
+    {
         $systemPrompt = "You are a data analyst AI assistant for a Medical Clinic Management System.
 You will be given structured JSON data about the clinic and must answer questions based ONLY on this data.
 
@@ -29,17 +33,33 @@ CLINIC DATA:
 " . $context;
 
         try {
-            $response = Http::timeout(120)->post($url, [
-                'model'  => $model,
+            $response = Http::timeout($this->timeout)->post($this->url, [
+                'model'  => $this->model,
                 'prompt' => $systemPrompt . "\n\nUSER QUESTION: " . $question,
                 'stream' => false,
             ]);
 
-            return $response->successful()
-                ? $response->json()['response']
-                : "Error connecting to AI";
+            if (!$response->successful()) {
+                Log::warning('Ollama API returned non-success', [
+                    'status' => $response->status(),
+                    'body'   => $response->body(),
+                ]);
+                return 'عذراً، تعذر الاتصال بخدمة التحليل الذكية. الرجاء المحاولة لاحقاً.';
+            }
+
+            $body = $response->json();
+            if (!isset($body['response'])) {
+                Log::warning('Ollama response missing "response" key', ['body' => $body]);
+                return 'عذراً، لم نحصل على رد صالح من خدمة التحليل الذكية.';
+            }
+
+            return $body['response'];
         } catch (\Exception $e) {
-            return "Technical error: " . $e->getMessage();
+            Log::error('Ollama API request failed', [
+                'error' => $e->getMessage(),
+                'url'   => $this->url,
+            ]);
+            return 'عذراً، حدث خطأ تقني أثناء الاتصال بخدمة التحليل الذكية.';
         }
     }
 }

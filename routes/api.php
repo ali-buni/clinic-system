@@ -202,24 +202,30 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('clinic-system/analytics')->group(function () {
         // التحليل التشغيلي
-        Route::get('/operational', [AnalyticsController::class, 'getOperationalReport']);
+        Route::post('/operational', [AnalyticsController::class, 'getOperationalReport']);
 
         // التحليل المالي
-        Route::get('/financial', [AnalyticsController::class, 'getFinancialReport']);
+        Route::post('/financial', [AnalyticsController::class, 'getFinancialReport']);
 
         // تحليل المرضى
-        Route::get('/patients', [AnalyticsController::class, 'getPatientReport']);
+        Route::post('/patients', [AnalyticsController::class, 'getPatientReport']);
 
         // التحليل الطبي
         Route::get('/medical', [AnalyticsController::class, 'getMedicalReport']);
 
         // التنبؤات
-        Route::get('/predictive', [AnalyticsController::class, 'getPredictiveReport']);
+        Route::post('/predictive', [AnalyticsController::class, 'getPredictiveReport']);
 
         // الذكاء الاصطناعي التوليدي (الاستعلام باللغة الطبيعية)
         Route::post('/nla', [AnalyticsController::class, 'askAnalytics']);
 
         // مؤشر الصحة العام
-        Route::get('/health-score', [AnalyticsController::class, 'getHealthScore']);
+        Route::post('/health-score', [AnalyticsController::class, 'getHealthScore']);
+
+        // لوحة المعلومات السريعة
+        Route::post('/dashboard', [AnalyticsController::class, 'getDashboard']);
+
+        // حفظ لقطة بيانات
+        Route::post('/snapshot', [AnalyticsController::class, 'storeSnapshot']);
     });
 });
