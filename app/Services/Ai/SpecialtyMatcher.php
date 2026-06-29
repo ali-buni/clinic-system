@@ -6,6 +6,7 @@ use App\constant\KeyWordHelper;
 use App\constant\Prompt;
 use App\Models\Specialty;
 use App\Services\Ai\Contracts\AiProviderInterface;
+use Illuminate\Support\Facades\Cache;
 
 class SpecialtyMatcher
 {
@@ -14,7 +15,9 @@ class SpecialtyMatcher
 
     public function suggest(string $query): array
     {
-        $allSpecialties = Specialty::select('id', 'en_name', 'ar_name')->get();
+        $allSpecialties = Cache::remember('specialties:all', 3600, function () {
+            return Specialty::select('id', 'en_name', 'ar_name')->get();
+        });
 
         $direct = $this->matchDirectly($query, $allSpecialties);
         if (!empty($direct)) {

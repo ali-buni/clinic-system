@@ -6,6 +6,7 @@ use App\Models\Doctor;
 use App\Models\Work_hour;
 use Exception;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class DoctorScheduleService
@@ -20,7 +21,9 @@ class DoctorScheduleService
             throw new Exception('room_conflict');
         }
 
-        return $doctor->workHours()->create($data);
+        $workHour = $doctor->workHours()->create($data);
+        Cache::increment("cache_v:doctor:{$doctor->id}:interval");
+        return $workHour;
     }
 
     public function updateWorkHour(Doctor $doctor, int $dayOfWeek, array $data): Work_hour
@@ -50,6 +53,7 @@ class DoctorScheduleService
         }
 
         $workHour->update($data);
+        Cache::increment("cache_v:doctor:{$doctor->id}:interval");
         return $workHour;
     }
 
@@ -64,7 +68,9 @@ class DoctorScheduleService
             throw new Exception('appointment_conflict');
         }
 
-        return $workHour->forceDelete();
+        $result = $workHour->forceDelete();
+        Cache::increment("cache_v:doctor:{$doctor->id}:interval");
+        return $result;
     }
 
     public function getDoctorWeeklySchedule(Doctor $doctor): \Illuminate\Support\Collection

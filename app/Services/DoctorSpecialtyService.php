@@ -6,6 +6,7 @@ use App\Models\Doctor;
 use Illuminate\Database\Eloquent\Collection;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -14,6 +15,7 @@ class DoctorSpecialtyService
     public function attachSpecialties(Doctor $doctor, array $specialtyIds): Collection
     {
         $doctor->specialties()->syncWithoutDetaching($specialtyIds);
+        Cache::forget('specialties:all');
         return $this->getCurrentSpecialties($doctor);
     }
 
@@ -25,6 +27,7 @@ class DoctorSpecialtyService
             throw new \RuntimeException("Doctor does not have specialty ID {$specialtyId}");
         }
         $doctor->specialties()->detach($specialtyId);
+        Cache::forget('specialties:all');
         return $this->getCurrentSpecialties($doctor);
     }
 
