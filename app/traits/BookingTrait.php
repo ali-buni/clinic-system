@@ -104,6 +104,8 @@ trait BookingTrait
     public function bookAppointment(int $doctorId, string $date, string $startTime, string $endTime, array $attributes = []): Appointment
     {
         return DB::transaction(function () use ($doctorId, $date, $startTime, $endTime, $attributes) {
+            Work_hour::where('doctor_id', $doctorId)->lockForUpdate()->first();
+
             $start = Carbon::parse($date . ' ' . $startTime);
             $end = Carbon::parse($date . ' ' . $endTime);
 
