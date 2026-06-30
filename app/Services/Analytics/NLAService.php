@@ -2,15 +2,14 @@
 
 namespace App\Services\Analytics;
 
-use Illuminate\Support\Facades\Http;
+use App\Services\Ai\Contracts\AiProviderInterface;
 use Illuminate\Support\Facades\Log;
 
 class NLAService
 {
     public function __construct(
-        private readonly string $url = 'http://127.0.0.1:11434/api/generate',
+        private readonly AiProviderInterface $ai,
         private readonly string $model = 'llama3.2',
-        private readonly int $timeout = 120,
     ) {}
 
     public function askAnalytics(string $question, string $context): string
@@ -33,32 +32,24 @@ CLINIC DATA:
 " . $context;
 
         try {
-            $response = Http::timeout($this->timeout)->post($this->url, [
-                'model'  => $this->model,
-                'prompt' => $systemPrompt . "\n\nUSER QUESTION: " . $question,
-                'stream' => false,
-            ]);
+            $response = $this->ai->chat(
+                messages: [
+                    ['role' => 'system', 'content' => $systemPrompt],
+                    ['role' => 'user', 'content' => $question],
+                ],
+                options: [
+                    'model' => $this->model,
+                ]
+            );
 
-            if (!$response->successful()) {
-                Log::warning('Ollama API returned non-success', [
-                    'status' => $response->status(),
-                    'body'   => $response->body(),
-                ]);
+            if ($response === null) {
+                Log::warning('NLAService: AI returned null');
                 return 'عذراً، تعذر الاتصال بخدمة التحليل الذكية. الرجاء المحاولة لاحقاً.';
             }
 
-            $body = $response->json();
-            if (!isset($body['response'])) {
-                Log::warning('Ollama response missing "response" key', ['body' => $body]);
-                return 'عذراً، لم نحصل على رد صالح من خدمة التحليل الذكية.';
-            }
-
-            return $body['response'];
-        } catch (\Exception $e) {
-            Log::error('Ollama API request failed', [
-                'error' => $e->getMessage(),
-                'url'   => $this->url,
-            ]);
+            return $response;
+        } catch (\Throwable $e) {
+            Log::error('NLAService request failed', ['error' => $e->getMessage()]);
             return 'عذراً، حدث خطأ تقني أثناء الاتصال بخدمة التحليل الذكية.';
         }
     }
