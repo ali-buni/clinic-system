@@ -3,6 +3,7 @@
 namespace App\Services\Analytics;
 
 use App\Models\Appointment;
+use App\Support\DatabaseHelper;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -103,17 +104,19 @@ class PredictiveService
         $period = in_array($period, ['year', 'month', 'day', 'total']) ? $period : 'month';
 
         $periodExpr = match ($period) {
-            'year'  => "DATE_FORMAT(start_time, '%Y')",
-            'month' => "DATE_FORMAT(start_time, '%Y-%m')",
-            'day'   => "DATE_FORMAT(start_time, '%Y-%m-%d')",
+            'year'  => DatabaseHelper::dateFormat('start_time', '%Y'),
+            'month' => DatabaseHelper::dateFormat('start_time', '%Y-%m'),
+            'day'   => DatabaseHelper::dateFormat('start_time', '%Y-%m-%d'),
             'total' => "'total'",
         };
+
+        $hourExpr = DatabaseHelper::hour('start_time');
 
         $rows = Appointment::where('clinic_id', $clinicId)
             ->whereBetween('start_time', [$fromDate, $toDate])
             ->where('status', 'completed')
-            ->selectRaw("{$periodExpr} as period_key, HOUR(start_time) as hour, COUNT(*) as count")
-            ->groupBy(DB::raw("{$periodExpr}, HOUR(start_time)"))
+            ->selectRaw("{$periodExpr} as period_key, {$hourExpr} as hour, COUNT(*) as count")
+            ->groupBy(DB::raw("{$periodExpr}, {$hourExpr}"))
             ->orderBy('period_key')
             ->orderBy('count', 'desc')
             ->get();
@@ -150,11 +153,12 @@ class PredictiveService
         $now = Carbon::now();
         [$fromDate, $toDate] = $this->resolveDateRange($from, $to, $now->copy()->subWeeks(6), $now);
 
+        $weekExpr = DatabaseHelper::yearWeek('start_time');
         $weekStats = Appointment::where('clinic_id', $clinicId)
             ->whereBetween('start_time', [$fromDate, $toDate])
             ->whereNotIn('status', ['cancelled'])
-            ->selectRaw("YEARWEEK(start_time, 1) as week, COUNT(*) as count")
-            ->groupBy(DB::raw('YEARWEEK(start_time, 1)'))
+            ->selectRaw("{$weekExpr} as week, COUNT(*) as count")
+            ->groupBy(DB::raw($weekExpr))
             ->orderBy('week')
             ->get()
             ->pluck('count');
@@ -237,11 +241,12 @@ class PredictiveService
 
     private function getWeeklyTrend(int $clinicId): Collection
     {
+        $weekExpr = DatabaseHelper::yearWeek('start_time');
         $weeks = Appointment::where('clinic_id', $clinicId)
             ->where('start_time', '>=', Carbon::now()->subWeeks(4)->startOfWeek())
             ->whereNotIn('status', ['cancelled'])
-            ->selectRaw("YEARWEEK(start_time, 1) as week, COUNT(*) as count")
-            ->groupBy(DB::raw('YEARWEEK(start_time, 1)'))
+            ->selectRaw("{$weekExpr} as week, COUNT(*) as count")
+            ->groupBy(DB::raw($weekExpr))
             ->orderBy('week')
             ->get()
             ->keyBy('week');

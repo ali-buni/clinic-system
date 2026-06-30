@@ -17,7 +17,6 @@ class PatientRecordResource extends JsonResource
             'id' => $this->id,
             'patient_id' => $this->patient_id,
             'doctor_id' => $this->doctor_id,
-            'clinic_id' => $this->clinic_id,
             'appointment_id' => $this->appointment_id,
 
             'diagnosis_summary' => ResourceSecurityHelper::gateField('diagnosis_summary', $this->diagnosis_summary, $requester, $ownerId),

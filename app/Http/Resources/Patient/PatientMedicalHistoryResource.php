@@ -22,7 +22,6 @@ class PatientMedicalHistoryResource extends JsonResource
             'gender'        => $user?->gender,
             'dob'           => $user?->dob ? Carbon::parse($user->dob)->format('Y-m-d') : null,
             'profile_image' => $user?->profile_image,
-            'clinic_id'     => $this->clinic_id,
 
             'appointments' => $this->appointments->map(fn($a) => [
                 'id'          => $a->id,

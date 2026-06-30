@@ -72,11 +72,6 @@ class PatientInfo extends Model implements CipherSweetEncrypted
         return $this->belongsTo(User::class);
     }
 
-    public function clinic(): BelongsTo
-    {
-        return $this->belongsTo(Clinic::class);
-    }
-
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class, 'patient_id');

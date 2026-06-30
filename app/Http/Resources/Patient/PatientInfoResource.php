@@ -40,7 +40,6 @@ class PatientInfoResource extends JsonResource
             'name'          => $user ? trim(($user->fname ?? '') . ' ' . ($user->lname ?? '')) : null,
             'gender'        => $user?->gender,
             'profile_image' => $user?->profile_image,
-            'clinic_id'     => $this->clinic_id,
             ...$data,
         ];
     }

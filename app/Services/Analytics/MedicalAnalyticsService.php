@@ -2,6 +2,7 @@
 
 namespace App\Services\Analytics;
 
+use App\Support\DatabaseHelper;
 use Illuminate\Support\Facades\DB;
 
 class MedicalAnalyticsService
@@ -31,8 +32,8 @@ class MedicalAnalyticsService
             ->select(['d.ar_name', 'd.en_name'])
             ->selectRaw("
             CASE
-                WHEN TIMESTAMPDIFF(YEAR, u.dob, CURDATE()) < 30 THEN 'شباب'
-                WHEN TIMESTAMPDIFF(YEAR, u.dob, CURDATE()) < 50 THEN 'بالغين'
+                WHEN " . DatabaseHelper::age('u.dob') . " < 30 THEN 'شباب'
+                WHEN " . DatabaseHelper::age('u.dob') . " < 50 THEN 'بالغين'
                 ELSE 'كبار سن'
             END as age_group
         ")

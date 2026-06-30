@@ -8,6 +8,7 @@ use App\Models\Work_hour;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use App\Support\DatabaseHelper;
 use Illuminate\Support\Facades\DB;
 
 class OperationalService
@@ -126,8 +127,8 @@ class OperationalService
         $periodRanges = $this->generatePeriodRanges($period, $fromDate, $toDate);
 
         $periodExpr = match ($period) {
-            'year'  => "DATE_FORMAT(start_time, '%Y')",
-            'month' => "DATE_FORMAT(start_time, '%Y-%m')",
+            'year'  => DatabaseHelper::dateFormat('start_time', '%Y'),
+            'month' => DatabaseHelper::dateFormat('start_time', '%Y-%m'),
             'day'   => "DATE(start_time)",
             'total' => "'total'",
         };
@@ -242,16 +243,16 @@ class OperationalService
     {
         return match ($period) {
             'year' => [
-                "DATE_FORMAT(start_time, '%Y') as period",
-                "DATE_FORMAT(start_time, '%Y')",
+                DatabaseHelper::dateFormat('start_time', '%Y') . " as period",
+                DatabaseHelper::dateFormat('start_time', '%Y'),
             ],
             'day' => [
                 "DATE(start_time) as period",
                 "DATE(start_time)",
             ],
             'month' => [
-                "DATE_FORMAT(start_time, '%Y-%m') as period",
-                "DATE_FORMAT(start_time, '%Y-%m')",
+                DatabaseHelper::dateFormat('start_time', '%Y-%m') . " as period",
+                DatabaseHelper::dateFormat('start_time', '%Y-%m'),
             ],
             default => null,
         };

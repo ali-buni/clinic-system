@@ -2,6 +2,7 @@
 
 namespace App\Services\Analytics;
 
+use App\Support\DatabaseHelper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -18,16 +19,16 @@ class FinancialService
     {
         return match ($period) {
             'year' => [
-                DB::raw("YEAR(invoices.created_at) as period"),
-                DB::raw("YEAR(invoices.created_at)"),
+                DB::raw(DatabaseHelper::year('invoices.created_at') . " as period"),
+                DB::raw(DatabaseHelper::year('invoices.created_at')),
             ],
             'day' => [
                 DB::raw("DATE(invoices.created_at) as period"),
                 DB::raw("DATE(invoices.created_at)"),
             ],
             'month' => [
-                DB::raw("DATE_FORMAT(invoices.created_at, '%Y-%m') as period"),
-                DB::raw("DATE_FORMAT(invoices.created_at, '%Y-%m')"),
+                DB::raw(DatabaseHelper::dateFormat('invoices.created_at', '%Y-%m') . " as period"),
+                DB::raw(DatabaseHelper::dateFormat('invoices.created_at', '%Y-%m')),
             ],
             default => null,
         };

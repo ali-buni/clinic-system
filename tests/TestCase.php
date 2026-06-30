@@ -117,4 +117,32 @@ abstract class TestCase extends BaseTestCase
             // Silently skip if fixture cannot be written (e.g. concurrent access)
         }
     }
+
+    protected function saveResult(string $entity, string $case, string $method, string $endpoint, array $request, $response, ?string $notes = null): void
+    {
+        $dir = base_path("tests/Results/{$entity}");
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        $data = [
+            'entity' => $entity,
+            'case' => $case,
+            'method' => $method,
+            'endpoint' => $endpoint,
+            'request' => $request,
+            'response' => [
+                'status' => $response->status(),
+                'headers' => ['content-type' => $response->headers->get('content-type')],
+                'body' => $response->json(),
+            ],
+            'timestamp' => now()->toIso8601String(),
+        ];
+        if ($notes) {
+            $data['notes'] = $notes;
+        }
+        file_put_contents(
+            "{$dir}/{$case}.json",
+            json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        );
+    }
 }

@@ -19,11 +19,6 @@ class PatientRequest extends FormRequest
                 'exists:patient_infos,id',
             ],
 
-            'clinic_id' => [
-                'sometimes',
-                'exists:clinics,id'
-            ],
-
             'fname' => [
                 'sometimes',
                 'string',
@@ -62,9 +57,6 @@ class PatientRequest extends FormRequest
             // Patient ID
             'patient_id.required' => 'Patient ID is required for update.',
             'patient_id.exists' => 'The selected patient does not exist.',
-
-            // Clinic
-            'clinic_id.exists' => 'The selected clinic does not exist.',
 
             // Name
             'fname.string' => 'First name must be a string.',

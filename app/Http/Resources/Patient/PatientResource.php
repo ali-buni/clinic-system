@@ -37,7 +37,6 @@ class PatientResource extends JsonResource
             'email'         => ResourceSecurityHelper::maskEmail($user?->email, $requester, $ownerId),
             'gender'        => $user?->gender,
             'profile_image' => $user?->profile_image,
-            'clinic_id'     => $this->clinic_id,
             'created_at'    => Carbon::parse($this->created_at)->format('Y-m-d'),
             ...$data,
         ];

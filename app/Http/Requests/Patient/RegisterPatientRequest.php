@@ -20,7 +20,6 @@ class RegisterPatientRequest extends FormRequest
             'password' => 'required|string|min:8|confirmed',
             'dob' => 'nullable|date|before:today|after:1900-01-01',
             'gender' => 'nullable|in:male,female,other,unknown',
-            'clinic_id' => 'required|exists:clinics,id',
             'nationality' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
             'marital_status' => 'nullable|in:married,single,divorced,widowed,other',
