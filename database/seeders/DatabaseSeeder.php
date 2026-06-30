@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             MedicineSeeder::class,
             DiseaseSeeder::class,
             ClinicSystemSeeder::class,
+            AuthTokenSeeder::class,
         ]);
     }
 }
