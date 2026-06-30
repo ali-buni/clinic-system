@@ -16,7 +16,7 @@ class DoctorSeeder extends Seeder
         $clinic = Clinic::first();
         if (!$clinic) return;
 
-        $rooms = Room::where('clinic_id', $clinic->id)->get();
+        $rooms = Room::where('clinic_id', $clinic->id)->get()->values();
 
         foreach ($doctorData as $index => $data) {
             $phone = '09512323' . str_pad($index + 1, 2, '0', STR_PAD_LEFT);

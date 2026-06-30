@@ -8,22 +8,31 @@ use App\Models\Invoice;
 use App\Models\PatientInfo;
 use App\Models\Patient_record;
 use App\Models\User;
+use App\Services\ActivityLogService;
 use Illuminate\Database\Seeder;
 
 class ClinicSystemSeeder extends Seeder
 {
     public function run(): void
     {
-        $observedModels = [
-            User::class, Doctor::class, Appointment::class,
-            Invoice::class, PatientInfo::class, Patient_record::class,
-        ];
+        // // Mock ActivityLogService so UserObserver::created() doesn't crash
+        // // (no authenticated user during seeding)
+        // $this->container->instance(
+        //     ActivityLogService::class,
+        //     \Mockery::mock(ActivityLogService::class)->shouldReceive('log')->andReturnNull()->getMock()
+        // );
 
-        $dispatchers = [];
-        foreach ($observedModels as $model) {
-            $dispatchers[$model] = $model::getEventDispatcher();
-            $model::unsetEventDispatcher();
-        }
+        // // Keep User events ON so CipherSweet encrypts emails; disable others
+        // $observedModels = [
+        //     Doctor::class, Appointment::class,
+        //     Invoice::class, PatientInfo::class, Patient_record::class,
+        // ];
+
+        // $dispatchers = [];
+        // foreach ($observedModels as $model) {
+        //     $dispatchers[$model] = $model::getEventDispatcher();
+        //     $model::unsetEventDispatcher();
+        // }
 
         $this->call([
             PaymentMethodSeeder::class,
@@ -40,10 +49,10 @@ class ClinicSystemSeeder extends Seeder
             InvoiceSeeder::class,
         ]);
 
-        foreach ($dispatchers as $model => $dispatcher) {
-            if ($dispatcher !== null) {
-                $model::setEventDispatcher($dispatcher);
-            }
-        }
+        // foreach ($dispatchers as $model => $dispatcher) {
+        //     if ($dispatcher !== null) {
+        //         $model::setEventDispatcher($dispatcher);
+        //     }
+        // }
     }
 }

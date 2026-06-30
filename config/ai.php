@@ -10,7 +10,7 @@ return [
     'providers' => [
         'ollama' => [
             'driver' => 'ollama',
-            'model' => env('OLLAMA_MODEL', 'qwen2.5:1.5b'),
+            'model' => env('OLLAMA_MODEL', 'qwen2.5:3b'),
             'url' => env('OLLAMA_URL', 'http://localhost:11434'),
             'timeout' => env('OLLAMA_TIMEOUT', 180),
         ],

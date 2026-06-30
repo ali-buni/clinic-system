@@ -17,7 +17,7 @@ class UserPhoneController extends Controller
     public function updatePhone(Request $request)
     {
         $request->validate([
-            'phone' => 'required|string|digits:10|starts_with:09',
+            'phone' => 'required|string|digits:10|starts_with:09|unique:users,phone,' . Auth::id(),
         ]);
 
         $user = Auth::user();
