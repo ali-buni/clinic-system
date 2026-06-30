@@ -2,8 +2,8 @@
 
 namespace App\Services\Ai;
 
-use App\constant\KeyWordHelper;
-use App\constant\Prompt;
+use App\Constants\KeyWordHelper;
+use App\Constants\Prompt;
 use App\Models\Specialty;
 use App\Services\Ai\Contracts\AiProviderInterface;
 use Illuminate\Support\Facades\Cache;

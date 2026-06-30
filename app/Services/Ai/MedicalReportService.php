@@ -2,7 +2,7 @@
 
 namespace App\Services\Ai;
 
-use App\constant\Prompt;
+use App\Constants\Prompt;
 use App\Models\Patient_record;
 use App\Services\Ai\Contracts\AiProviderInterface;
 use Carbon\Carbon;

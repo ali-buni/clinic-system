@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Http\Requests\Doctor;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdateDoctorRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'appointment_duration' => 'nullable|integer|min:5|max:120',
+            'bio'                  => 'nullable|string',
+            'consultation_fee'     => 'nullable|numeric|min:0',
+            'specialties'          => ['sometimes', 'nullable', 'array'],
+            'specialties.*'        => ['integer', 'exists:specialties,id'],
+            'fname' => 'sometimes|string|max:255',
+            'lname' => 'sometimes|string|max:255',
+            'dob' => 'sometimes|date|before:today',
+            'gender' => 'sometimes|in:male,female,unknown'
+        ];
+    }
+}

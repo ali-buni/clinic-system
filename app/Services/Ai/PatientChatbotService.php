@@ -2,7 +2,7 @@
 
 namespace App\Services\Ai;
 
-use App\constant\Prompt;
+use App\Constants\Prompt;
 use App\Models\ChatMessage;
 use App\Models\PatientInfo;
 use App\Services\Ai\Contracts\AiProviderInterface;
