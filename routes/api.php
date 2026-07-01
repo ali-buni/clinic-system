@@ -37,30 +37,12 @@ Route::prefix('/v1/clinic-system')->group(function () {
     require __DIR__ . '/v1/appointments.php';
     require __DIR__ . '/v1/patient_records.php';
     require __DIR__ . '/v1/ai.php';
+    require __DIR__ . '/v1/invoices.php';
 });
 
 Route::get('/filter', function (Request $request) {
     return ApiResponse::pagination(ModelFilter::filter(new User(), $request->all()));
 });
-
-Route::prefix('/clinic-system')->group(function () {
-    Route::prefix('invoices')->controller(InvoiceController::class)->group(function () {
-        Route::post('/create', 'createInvoice');
-        Route::put('/update', 'updateInvoice');
-        Route::delete('/delete', 'deleteInvoice');
-        Route::get('/patient/{Patient_id}', 'getPatientInvoices');
-        Route::post('/rooms', 'getRoomsInvoices');
-        Route::get('/doctor/{doctorId}', 'getDoctorInvoices');
-        Route::get('/details/{invoice_id}', 'getInvoiceWithPayments');
-        Route::get('/filtered', 'getAllInvoicesFiltered');
-    });
-    Route::get('/payment_method',[PaymentMethodController::class,'getPaymentMethods']);
-    Route::post('/payments/process', [PaymentController::class, 'processPayment']);        // دفع الفاتورة وتسجيل مبلغ (جزئي/كلي)[cite: 1]
-    Route::delete('/payments/{payment_id}/cancel', [PaymentController::class, 'cancelPayment']);
-    Route::post('/stripe/webhook', [WebhookController::class, 'handleStripeWebhook']);
-});
-
-
 
 // Route::post('/send-notification', function (Request $request) {
 
