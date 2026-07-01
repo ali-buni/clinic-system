@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Traits\BookingTrait;
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -32,6 +33,7 @@ class AppointmentService
                 'cancel_reason' => $reason ?? "no reason",
             ]);
 
+            Cache::increment("cache_v:doctor:{$appointment->doctor_id}:slot");
             // TODO: send msg to doctor and patient
             return true;
         });
@@ -47,6 +49,7 @@ class AppointmentService
             }
             $appointment->update(['status' => 'completed']);
 
+            Cache::increment("cache_v:doctor:{$appointment->doctor_id}:slot");
             // TODO: send msg to secretary
             return true;
         });
@@ -62,6 +65,7 @@ class AppointmentService
             }
             $appointment->update(['status' => 'confirmed']);
 
+            Cache::increment("cache_v:doctor:{$appointment->doctor_id}:slot");
             // TODO: send msg
             return true;
         });

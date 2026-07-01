@@ -19,18 +19,23 @@ class DiseaseApiService
                 ]);
 
             if (!$response->successful()) {
+                Log::channel('structured')->warning('ICD-10 search returned non-success', [
+                    'query' => $query,
+                    'status' => $response->status(),
+                ]);
                 return [];
             }
 
             $data = $response->json();
             if (empty($data[3])) {
+                Log::channel('structured')->warning('ICD-10 search returned empty results', ['query' => $query]);
                 return [];
             }
 
             $results = [];
             foreach ($data[3] as $index => $item) {
                 $code = $data[1][$index] ?? $item[0] ?? null;
-                $englishName = $item[1] ?? $item[0] ?? 'Unknown';  // No extra brace here
+                $englishName = $item[1] ?? $item[0] ?? 'Unknown';
 
                 $results[] = [
                     'code'            => $code,
@@ -41,9 +46,14 @@ class DiseaseApiService
                 ];
             }
 
+            Log::channel('structured')->info('ICD-10 disease search succeeded', [
+                'query' => $query,
+                'results_count' => count($results),
+            ]);
+
             return $results;
         } catch (\Exception $e) {
-            Log::error('ICD-10 Search Error', ['query' => $query, 'error' => $e->getMessage()]);
+            Log::channel('structured')->error('ICD-10 Search Error', ['query' => $query, 'error' => $e->getMessage()]);
             return [];
         }
     }

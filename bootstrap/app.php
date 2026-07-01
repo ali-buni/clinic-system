@@ -12,16 +12,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->alias([
-            'role' => \App\Http\Middleware\CheckRole::class,
-
-        ]);
-    })
-    ->withMiddleware(function (Middleware $middleware) {
         $middleware->validateCsrfTokens(except: [
             'api/stripe/webhook',
+            'checkaccess' => \App\Http\Middleware\CheckAccess::class,
         ]);
+
+        $middleware->appendToGroup('api', \App\Http\Middleware\AddCorrelationId::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e) {
+            return \App\Services\ApiResponse::permissionDenied();
+        });
     })->create();

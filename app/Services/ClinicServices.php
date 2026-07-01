@@ -9,10 +9,14 @@ use App\Models\Doctor;
 use App\Models\Secretary;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 class ClinicServices
 {
+    public function __construct(
+        private readonly ActivityLogService $activityLog,
+    ) {}
     /**
      * Create a new doctor account with associated permissions.
      *
@@ -37,7 +41,6 @@ class ClinicServices
             $user->assignRole('doctor');
             PermissionHelper::grantRoomPermission($user, $roomId);
 
-            // Create doctor profile
             $doctor = Doctor::create([
                 'user_id' => $user->id,
                 'clinic_id' => $data['clinic_id'],
@@ -59,6 +62,16 @@ class ClinicServices
                     throw new RuntimeException('Failed to send SMS: ' . $e->getMessage());
                 }
             }
+
+            $this->activityLog->log(
+                'clinic', 'created doctor account', $doctor, null, [
+                    'clinic_id' => $data['clinic_id'],
+                ], 'created'
+            );
+            Log::channel('structured')->info('doctor account created', [
+                'user_id' => $user->id, 'doctor_id' => $doctor->id, 'clinic_id' => $data['clinic_id'],
+            ]);
+
             return true;
         }, attempts: 3);
     }
@@ -86,13 +99,11 @@ class ClinicServices
 
             $user->assignRole('secretary');
 
-            // Create secretary profile
             $secretary = Secretary::create([
                 'user_id' => $user->id,
                 'clinic_id' => $data['clinic_id'],
             ]);
 
-            // Attach rooms and grant permissions
             $roomIds = array_values(array_filter(array_map('intval', $roomIds)));
             if (!empty($roomIds)) {
                 $secretary->rooms()->sync($roomIds);
@@ -111,6 +122,15 @@ class ClinicServices
                 }
             }
 
+            $this->activityLog->log(
+                'clinic', 'created secretary account', $secretary, null, [
+                    'clinic_id' => $data['clinic_id'],
+                ], 'created'
+            );
+            Log::channel('structured')->info('secretary account created', [
+                'user_id' => $user->id, 'secretary_id' => $secretary->id, 'clinic_id' => $data['clinic_id'],
+            ]);
+
             return true;
         }, attempts: 3);
     }
@@ -128,10 +148,22 @@ class ClinicServices
             $clinic = Clinic::find($clinicId);
 
             if (!$clinic) {
+                Log::channel('structured')->warning('updateClinicInfo - clinic not found', ['clinic_id' => $clinicId]);
                 return false;
             }
 
-            return $clinic->update($data);
+            $result = $clinic->update($data);
+
+            $this->activityLog->log(
+                'clinic', 'updated clinic info', $clinic, null, [
+                    'updated_fields' => array_keys($data),
+                ], 'updated'
+            );
+            Log::channel('structured')->info('clinic info updated', [
+                'clinic_id' => $clinicId, 'updated_fields' => array_keys($data),
+            ]);
+
+            return $result;
         }, attempts: 3);
     }
 

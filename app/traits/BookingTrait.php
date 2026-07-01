@@ -7,6 +7,7 @@ use App\Models\Doctor;
 use App\Models\Work_hour;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
@@ -21,31 +22,46 @@ trait BookingTrait
      */
     public function getAllowedIntervalsForDoctorDate(int $doctorId, string $date): array
     {
-        $doctor = Doctor::findOrFail($doctorId);
+        $v = Cache::get("cache_v:doctor:{$doctorId}:interval", 0);
+        return Cache::remember("intervals:doctor:{$doctorId}:{$date}:v{$v}", 300, function () use ($doctorId, $date) {
+            $doctor = Doctor::findOrFail($doctorId);
 
-        $workHours = Work_hour::where('doctor_id', $doctorId)
-            ->where('day_of_week', Carbon::parse($date)->dayOfWeek)
-            ->where('is_active', true)
-            ->get();
+            $workHours = Work_hour::where('doctor_id', $doctorId)
+                ->where('day_of_week', Carbon::parse($date)->dayOfWeek)
+                ->where('is_active', true)
+                ->get();
 
-        if ($workHours->isEmpty()) {
-            return [];
-        }
+            if ($workHours->isEmpty()) {
+                return [];
+            }
 
-        $intervals = $this->buildBaseIntervals($workHours, $date);
+            $intervals = $this->buildBaseIntervals($workHours, $date);
 
-        $override = $doctor->scheduleOverrides()->whereDate('override_date', $date)->first();
-        if ($override) {
-            $intervals = $this->applyScheduleOverride($intervals, $override, $date);
-        }
+            $override = $doctor->scheduleOverrides()->whereDate('override_date', $date)->first();
+            if ($override) {
+                $intervals = $this->applyScheduleOverride($intervals, $override, $date);
+            }
 
-        return $this->mergeOverlappingIntervals($intervals);
+            return $this->mergeOverlappingIntervals($intervals);
+        });
     }
 
     /**
      * Generate available single slots for a doctor on a specific date.
      */
     public function getAvailableSlots(int $doctorId, string $date, ?int $excludeAppointmentId = null): array
+    {
+        if ($excludeAppointmentId !== null) {
+            return $this->computeSlots($doctorId, $date, $excludeAppointmentId);
+        }
+
+        $v = Cache::get("cache_v:doctor:{$doctorId}:slot", 0);
+        return Cache::remember("slots:doctor:{$doctorId}:{$date}:v{$v}", 60, function () use ($doctorId, $date) {
+            return $this->computeSlots($doctorId, $date);
+        });
+    }
+
+    private function computeSlots(int $doctorId, string $date, ?int $excludeAppointmentId = null): array
     {
         $doctor = Doctor::findOrFail($doctorId);
         $workHours = Work_hour::where('doctor_id', $doctorId)
@@ -56,7 +72,6 @@ trait BookingTrait
         if ($workHours->isEmpty() || $this->isDailyPatientLimitReached($doctorId, $date, $workHours)) {
             return [];
         }
-
 
         $slotMinutes = ($doctor->appointment_duration ?? 30);
         $intervals = $this->getAllowedIntervalsForDoctorDate($doctorId, $date);
@@ -104,6 +119,8 @@ trait BookingTrait
     public function bookAppointment(int $doctorId, string $date, string $startTime, string $endTime, array $attributes = []): Appointment
     {
         return DB::transaction(function () use ($doctorId, $date, $startTime, $endTime, $attributes) {
+            Work_hour::where('doctor_id', $doctorId)->lockForUpdate()->first();
+
             $start = Carbon::parse($date . ' ' . $startTime);
             $end = Carbon::parse($date . ' ' . $endTime);
 
@@ -132,6 +149,7 @@ trait BookingTrait
                     'status'     => 'scheduled'
                 ], $attributes)
             )->load(['type', 'room', 'patient', 'doctor']);
+            Cache::increment("cache_v:doctor:{$doctorId}:slot");
             return $appointment;
         }, attempts: 3);
     }
@@ -168,6 +186,7 @@ trait BookingTrait
                 'end_time'   => $end,
             ], $attributes));
 
+            Cache::increment("cache_v:doctor:{$doctorId}:slot");
             return $appointment->load(['type', 'room', 'patient', 'doctor']);
         }, attempts: 3);
     }

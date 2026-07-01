@@ -6,9 +6,14 @@ use App\Helpers\PermissionHelper;
 use App\Models\Room;
 use App\Models\Secretary;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class SecretaryService
 {
+    public function __construct(
+        private readonly ActivityLogService $activityLog,
+    ) {}
+
     /**
      * Get secretary information with eager-loaded relationships.
      */
@@ -34,15 +39,23 @@ class SecretaryService
             $secretary = Secretary::with('user')->find($id);
 
             if (!$secretary) {
+                Log::channel('structured')->warning('secretary update - not found', ['secretary_id' => $id]);
                 return null;
             }
 
-            // Update user profile information if provided
             if ($secretary->user) {
                 $this->updateUserProfile($secretary->user, $data);
             }
 
             $secretary->save();
+
+            $this->activityLog->log('secretary', 'secretary updated', $secretary, null, [
+                'updated_fields' => array_keys($data),
+            ], 'updated');
+            Log::channel('structured')->info('secretary updated', [
+                'secretary_id' => $id, 'updated_fields' => array_keys($data),
+            ]);
+
             return $secretary;
         }, attempts: 3);
     }

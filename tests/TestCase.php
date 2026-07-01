@@ -15,23 +15,26 @@ use App\Models\Patient_record;
 use App\Models\Work_hour;
 use App\Models\Medicine;
 use App\Models\Disease;
-use Database\Seeders\RolesAndPermissionsSeeder;
-use Database\Seeders\SpecialtySeeder;
-use Database\Seeders\AppointmentTypesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Support\Facades\Hash;
 
 abstract class TestCase extends BaseTestCase
 {
-    protected string $apiUrl = '/api';
-
     use RefreshDatabase;
+    protected $seed = true;
+
+    protected string $apiUrl = '/api';
 
     protected function uri(string $path): string
     {
         return $this->apiUrl . $path;
     }
+
+    protected function v1uri(string $path): string
+    {
+        return '/api/v1' . $path;
+    }
+
     protected string $ownerToken;
     protected string $doctorToken;
     protected string $secretaryToken;
@@ -56,123 +59,31 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->seed(RolesAndPermissionsSeeder::class);
-        $this->seed(SpecialtySeeder::class);
-        $this->seed(AppointmentTypesSeeder::class);
+        $this->ownerUser = User::role('owner')->first();
+        $this->clinic = Clinic::where('user_id', $this->ownerUser->id)->first();
+        $this->room = Room::where('clinic_id', $this->clinic->id)->first();
 
-        $this->clinic = Clinic::factory()->create();
-
-        // Owner
-        $this->ownerUser = User::factory()->create([
-            'email' => 'owner@test.com',
-            'phone' => '0900000001',
-        ]);
-        $this->ownerUser->assignRole('owner');
-        $this->clinic->update(['user_id' => $this->ownerUser->id]);
-        $this->ownerToken = $this->ownerUser->createToken('test')->plainTextToken;
-
-        // Room
-        $this->room = Room::factory()->create([
-            'clinic_id' => $this->clinic->id,
-            'name' => 'Test Room',
-        ]);
-
-        // Doctor
-        $this->doctorUser = User::factory()->create([
-            'email' => 'doctor@test.com',
-            'phone' => '0900000002',
-        ]);
-        $this->doctorUser->assignRole('doctor');
-        $this->doctor = Doctor::factory()->create([
-            'user_id' => $this->doctorUser->id,
-            'clinic_id' => $this->clinic->id,
-            'room_id' => $this->room->id,
-            'appointment_duration' => 30,
-            'consultation_fee' => 150,
-        ]);
+        $this->doctorUser = User::role('doctor')->first();
+        $this->doctor = Doctor::where('user_id', $this->doctorUser->id)->first();
         $this->doctor->specialties()->sync([Specialty::first()->id => ['is_primary' => true]]);
-        $this->doctorToken = $this->doctorUser->createToken('test')->plainTextToken;
 
-        // Secretary
-        $this->secretaryUser = User::factory()->create([
-            'email' => 'secretary@test.com',
-            'phone' => '0900000003',
-        ]);
-        $this->secretaryUser->assignRole('secretary');
-        $this->secretary = Secretary::factory()->create([
-            'user_id' => $this->secretaryUser->id,
-            'clinic_id' => $this->clinic->id,
-        ]);
-        $this->secretary->rooms()->sync([$this->room->id]);
-        $this->secretaryToken = $this->secretaryUser->createToken('test')->plainTextToken;
+        $this->secretaryUser = User::role('secretary')->first();
+        $this->secretary = Secretary::where('user_id', $this->secretaryUser->id)->first();
 
-        // Patient
-        $this->patientUser = User::factory()->create([
-            'email' => 'patient@test.com',
-            'phone' => '0900000004',
-            'password' => Hash::make('password'),
-        ]);
-        $this->patientUser->assignRole('patient');
-        $this->patient = PatientInfo::factory()->create([
-            'user_id' => $this->patientUser->id,
-            'clinic_id' => $this->clinic->id,
-        ]);
-        $this->patientToken = $this->patientUser->createToken('test')->plainTextToken;
+        $this->patientUser = User::role('patient')->first();
+        $this->patient = PatientInfo::where('user_id', $this->patientUser->id)->first();
 
-        // Appointment Type
         $this->appointmentType = Appointment_type::first();
+        $this->appointment = Appointment::where('patient_id', $this->patient->id)->first();
+        $this->patientRecord = Patient_record::where('patient_id', $this->patient->id)->first();
+        $this->workHour = Work_hour::where('doctor_id', $this->doctor->id)->first();
+        $this->medicine = Medicine::first();
+        $this->disease = Disease::first();
 
-        // Work Hour for Doctor
-        $this->workHour = Work_hour::factory()->create([
-            'doctor_id' => $this->doctor->id,
-            'day_of_week' => now()->dayOfWeek,
-            'start_time' => '09:00',
-            'end_time' => '17:00',
-            'is_active' => true,
-            'max_patients_per_day' => 20,
-            'break_start' => '13:00',
-            'break_end' => '14:00',
-        ]);
-
-        // Appointment
-        $this->appointment = Appointment::factory()->create([
-            'clinic_id' => $this->clinic->id,
-            'doctor_id' => $this->doctor->id,
-            'room_id' => $this->room->id,
-            'patient_id' => $this->patient->id,
-            'appointment_type_id' => $this->appointmentType->id,
-            'start_time' => now()->addDays(1)->setTime(10, 0, 0),
-            'end_time' => now()->addDays(1)->setTime(10, 30, 0),
-            'status' => 'scheduled',
-            'visit_reason' => 'Checkup',
-        ]);
-
-        // Patient Record
-        $this->patientRecord = Patient_record::factory()->create([
-            'clinic_id' => $this->clinic->id,
-            'patient_id' => $this->patient->id,
-            'doctor_id' => $this->doctor->id,
-            'appointment_id' => $this->appointment->id,
-            'diagnosis_summary' => 'Test diagnosis',
-            'status' => 'open',
-        ]);
-
-        // Medicine
-        $this->medicine = Medicine::factory()->create([
-            'ar_name' => 'باراسيتامول',
-            'en_name' => 'Paracetamol',
-            'form' => 'tablet',
-            'strength' => '500mg',
-            'is_custom' => true,
-        ]);
-
-        // Disease
-        $this->disease = Disease::factory()->create([
-            'ar_name' => 'السكري',
-            'en_name' => 'Diabetes',
-            'disease_nature' => 'chronic',
-            'is_custom' => true,
-        ]);
+        $this->ownerToken = $this->ownerUser->createToken('test')->plainTextToken;
+        $this->doctorToken = $this->doctorUser->createToken('test')->plainTextToken;
+        $this->secretaryToken = $this->secretaryUser->createToken('test')->plainTextToken;
+        $this->patientToken = $this->patientUser->createToken('test')->plainTextToken;
     }
 
     protected function authHeaders(string $token): array
@@ -205,5 +116,33 @@ abstract class TestCase extends BaseTestCase
         } catch (\ErrorException $e) {
             // Silently skip if fixture cannot be written (e.g. concurrent access)
         }
+    }
+
+    protected function saveResult(string $entity, string $case, string $method, string $endpoint, array $request, $response, ?string $notes = null): void
+    {
+        $dir = base_path("tests/Results/{$entity}");
+        if (!is_dir($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        $data = [
+            'entity' => $entity,
+            'case' => $case,
+            'method' => $method,
+            'endpoint' => $endpoint,
+            'request' => $request,
+            'response' => [
+                'status' => $response->status(),
+                'headers' => ['content-type' => $response->headers->get('content-type')],
+                'body' => $response->json(),
+            ],
+            'timestamp' => now()->toIso8601String(),
+        ];
+        if ($notes) {
+            $data['notes'] = $notes;
+        }
+        file_put_contents(
+            "{$dir}/{$case}.json",
+            json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        );
     }
 }

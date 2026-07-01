@@ -4,6 +4,7 @@ namespace App\Actions\Doctor;
 
 use App\Models\Doctor;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class UpdateDoctorAction
 {
@@ -14,6 +15,14 @@ class UpdateDoctorAction
 
             if (isset($data['specialties'])) {
                 $doctor->specialties()->syncWithoutDetaching($data['specialties']);
+                activity()
+                    ->performedOn($doctor)
+                    ->withProperties(['specialty_ids' => $data['specialties']])
+                    ->event('updated')
+                    ->log('doctor specialties synced');
+                Log::channel('structured')->info('doctor specialties synced', [
+                    'doctor_id' => $doctor->id, 'specialty_ids' => $data['specialties'],
+                ]);
                 unset($data['specialties']);
             }
             if (isset($data['bio'])) {
@@ -29,6 +38,16 @@ class UpdateDoctorAction
             if ($doctor->user) {
                 $this->updateUserProfile($doctor->user, $data);
             }
+
+            activity()
+                ->performedOn($doctor)
+                ->withProperties(['updated_fields' => array_keys($data)])
+                ->event('updated')
+                ->log('doctor updated via UpdateDoctorAction');
+            Log::channel('structured')->info('doctor updated via UpdateDoctorAction', [
+                'doctor_id' => $doctor->id, 'updated_fields' => array_keys($data),
+            ]);
+
             return true;
         });
     }

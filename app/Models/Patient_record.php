@@ -7,10 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use ParagonIE\CipherSweet\Constants;
+use ParagonIE\CipherSweet\EncryptedRow;
+use Spatie\LaravelCipherSweet\Concerns\UsesCipherSweet;
+use Spatie\LaravelCipherSweet\Contracts\CipherSweetEncrypted;
 
-class Patient_record extends Model
+class Patient_record extends Model implements CipherSweetEncrypted
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, UsesCipherSweet;
 
     protected $fillable = [
         'clinic_id',
@@ -22,6 +26,19 @@ class Patient_record extends Model
         'status',
         'notes',
     ];
+
+    public static function getEncryptedColumns(): array
+    {
+        return ['diagnosis_summary', 'description', 'notes'];
+    }
+
+    public static function configureCipherSweet(EncryptedRow $encryptedRow): void
+    {
+        $encryptedRow
+            ->addField('diagnosis_summary', Constants::TYPE_OPTIONAL_TEXT)
+            ->addField('description', Constants::TYPE_OPTIONAL_TEXT)
+            ->addField('notes', Constants::TYPE_OPTIONAL_TEXT);
+    }
 
     public function clinic(): BelongsTo
     {

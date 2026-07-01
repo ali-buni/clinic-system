@@ -8,6 +8,7 @@ use App\Models\Disease;
 use App\Models\Prescription;
 use App\Models\Prescription_item;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CreatePatientRecordAction
 {
@@ -43,6 +44,15 @@ class CreatePatientRecordAction
                             ]
                         );
                         $diseaseId = $disease->id;
+
+                        activity()
+                            ->performedOn($disease)
+                            ->withProperties(['code' => $diseaseData['code'] ?? null, 'source' => 'patient_record_create'])
+                            ->event('created')
+                            ->log('disease auto-created via patient record');
+                        Log::channel('structured')->info('disease auto-created via patient record', [
+                            'disease_id' => $disease->id, 'code' => $diseaseData['code'] ?? null,
+                        ]);
                     }
 
                     $record->diseases()->sync([
@@ -60,6 +70,15 @@ class CreatePatientRecordAction
                     'doctor_id'         => $data['doctor_id'],
                 ]);
 
+                activity()
+                    ->performedOn($prescription)
+                    ->withProperties(['patient_record_id' => $record->id])
+                    ->event('created')
+                    ->log('prescription created via patient record');
+                Log::channel('structured')->info('prescription created via patient record', [
+                    'prescription_id' => $prescription->id, 'patient_record_id' => $record->id,
+                ]);
+
                 foreach ($data['prescription_items'] as $item) {
                     if (!empty($item['id'])) {
                         $medicineId = $item['id'];
@@ -75,6 +94,17 @@ class CreatePatientRecordAction
                             'is_custom' => false,
                         ]);
                         $medicineId = $medicine->id;
+
+                        if ($medicine->wasRecentlyCreated) {
+                            activity()
+                                ->performedOn($medicine)
+                                ->withProperties(['en_name' => $item['en_name'] ?? null, 'source' => 'prescription_create'])
+                                ->event('created')
+                                ->log('medicine auto-created via prescription');
+                            Log::channel('structured')->info('medicine auto-created via prescription', [
+                                'medicine_id' => $medicine->id, 'en_name' => $item['en_name'] ?? null,
+                            ]);
+                        }
                     }
                     Prescription_item::create([
                         'prescription_id'     => $prescription->id,
