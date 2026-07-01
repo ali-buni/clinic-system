@@ -24,13 +24,13 @@ class DoctorScheduleController extends Controller
 
     public function store(StoreWorkHourRequest $request): JsonResponse
     {
-        $doctor = Auth::user()?->doctorProfile;
-        if (!$doctor) {
-            return ApiResponse::error('Doctor profile not found.', 404);
-        }
-
         try {
-            $workHour = $this->scheduleService->createWorkHour($doctor, $request->validated());
+            $validated =  $request->validated();
+            $doctor = Doctor::with('user')->find($validated['doctor_id']);
+            if (!$doctor) {
+                return ApiResponse::error('Doctor profile not found.', 404);
+            }
+            $workHour = $this->scheduleService->createWorkHour($doctor, $validated);
 
             return ApiResponse::success(new WorkHoursResource($workHour), 'Work hour added successfully.', 201);
         } catch (Exception $e) {
@@ -85,7 +85,7 @@ class DoctorScheduleController extends Controller
             return match ($e->getMessage()) {
                 'record_not_found'      => ApiResponse::error('Record not found or unauthorized.', 404),
                 'appointment_conflict'  => ApiResponse::error('لا يمكن حذف هذا اليوم. يوجد مواعيد مستقبلية مجدولة للمرضى في هذا الوقت!', 422),
-                    default                 => ApiResponse::error('حدث خطأ غير متوقع بالسيستم.', 500),
+                default                 => ApiResponse::error('حدث خطأ غير متوقع بالسيستم.', 500),
             };
         }
     }

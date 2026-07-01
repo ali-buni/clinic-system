@@ -2,7 +2,6 @@
 
 namespace App\Services\Analytics;
 
-use App\Models\PatientInfo;
 use App\Models\Appointment;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +13,10 @@ class PatientAnalyticsService
         $period = in_array($period, ['year', 'month', 'day', 'total']) ? $period : 'total';
 
         if ($period === 'total') {
-            $totalPatients = PatientInfo::where('clinic_id', $clinicId)->count();
+            $totalPatients = Appointment::where('clinic_id', $clinicId)
+                ->whereNotNull('patient_id')
+                ->distinct('patient_id')
+                ->count('patient_id');
 
             $returningPatients = Appointment::where('clinic_id', $clinicId)
                 ->where('status', 'completed')
@@ -40,12 +42,12 @@ class PatientAnalyticsService
             ->get(['patient_id', 'created_at']);
 
         $periodKey = match ($period) {
-            'year' => fn($d) => $d->format('Y'),
-            'day'  => fn($d) => $d->format('Y-m-d'),
-            default => fn($d) => $d->format('Y-m'),
+            'year' => fn($d) => Carbon::parse($d)->format('Y'),
+            'day'  => fn($d) => Carbon::parse($d)->format('Y-m-d'),
+            default => fn($d) => Carbon::parse($d)->format('Y-m'),
         };
 
-        $grouped = $appts->groupBy(fn($a) => $periodKey($a->created_at));
+        $grouped = $appts->groupBy(fn($a) => $periodKey($a->start_time));
 
         $result = [];
         foreach ($grouped as $key => $items) {
@@ -71,7 +73,7 @@ class PatientAnalyticsService
         $groupBy = in_array($groupBy, ['year', 'month', 'day', 'total']) ? $groupBy : 'total';
 
         $firstLast = Appointment::where('clinic_id', $clinicId)
-            ->selectRaw('patient_id, MIN(created_at) as first_visit, MAX(created_at) as last_visit')
+            ->selectRaw('patient_id, MIN(start_time) as first_visit, MAX(start_time) as last_visit')
             ->groupBy('patient_id')
             ->get();
 

@@ -12,7 +12,7 @@ class PredictiveService
 {
     public function __construct(
         private readonly SettingService $settings,
-        private readonly ?NLAService $nla = null,
+        private readonly NLAService $nla,
     ) {}
 
     public function getCrowdingRisk(int $clinicId, ?string $from = null, ?string $to = null): array

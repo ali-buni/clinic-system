@@ -24,5 +24,4 @@ yarn-error.log
 *.p12
 storage/keys/
 bootstrap/cache/
-tests/Fixtures/*
-tests/Results/*
+scripts/tests/endpoint/*

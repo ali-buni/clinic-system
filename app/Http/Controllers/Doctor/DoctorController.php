@@ -86,8 +86,8 @@ class DoctorController extends Controller
         $user = Auth::user();
         $validated = $request->validated();
 
-        if ($user->clinicOwner?->id) {
-            $clinicId = $user->clinicOwner->id;
+        if ($user->clinicOwner?->id || $user->secretaryProfile?->clinic_id) {
+            $clinicId = $user->clinicOwner?->id ?? $user->secretaryProfile?->clinic_id;
 
             $query = Doctor::where('clinic_id', $clinicId)
                 ->with(['user', 'specialties'])

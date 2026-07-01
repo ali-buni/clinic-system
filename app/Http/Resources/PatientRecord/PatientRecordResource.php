@@ -58,8 +58,8 @@ class PatientRecordResource extends JsonResource
                     return [
                         'id' => $prescription->id,
                         'cost' => $prescription->cost,
-                        'issued_at' => $prescription->issued_at?->toDateTimeString(),
-                        'valid_until' => $prescription->valid_until?->toDateTimeString(),
+                        'issued_at' => $prescription->issued_at ? (string) $prescription->issued_at : null,
+                        'valid_until' => $prescription->valid_until ? (string) $prescription->valid_until : null,
                         'notes' => $prescription->notes,
 
                         'items' => $prescription->items->map(function ($item) {

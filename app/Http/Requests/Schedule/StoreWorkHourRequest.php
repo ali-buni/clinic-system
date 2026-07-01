@@ -19,7 +19,7 @@ class StoreWorkHourRequest extends FormRequest
             'start_time'           => 'required|date_format:H:i',
             'end_time'             => 'required|date_format:H:i|after:start_time',
             'is_active'            => 'sometimes|boolean',
-            'max_patients_per_day' => 'sometimes|integer|min:1',
+            'max_patients_per_day' => 'required|integer|min:1',
             'break_start'          => 'nullable|date_format:H:i|after:start_time|before:end_time',
             'break_end'            => 'nullable|date_format:H:i|after:break_start|before:end_time',
         ];

@@ -19,7 +19,7 @@ Route::middleware(['auth:sanctum', 'throttle:100,1'])->prefix('patient-records')
     Route::get('/patient/{patientId}/doctor/{doctorId}', 'getByDoctor')
         ->middleware(['checkaccess:role:doctor', 'checkaccess:permission:access records']);
     Route::post('/rooms/search', 'getByRoom')
-        ->middleware(['checkaccess:role:doctor,secretary']);
+        ->middleware(['checkaccess:role:secretary']);
     Route::get('/doctor/{doctorId}/all', 'getAllByDoctor')
         ->middleware(['checkaccess:role:doctor', 'checkaccess:permission:access records']);
 });

@@ -5,7 +5,6 @@ namespace App\Services\Analytics;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Invoice;
-use App\Models\PatientInfo;
 use Carbon\Carbon;
 
 class ClinicHealthScoreService
@@ -136,10 +135,12 @@ class ClinicHealthScoreService
 
     private function getPatientHealth(int $clinicId, ?Carbon $from, ?Carbon $to): array
     {
-        $totalPatients = PatientInfo::where('clinic_id', $clinicId)
+        $totalPatients = Appointment::where('clinic_id', $clinicId)
+            ->whereNotNull('patient_id')
             ->when($from, fn($q) => $q->where('created_at', '>=', $from))
             ->when($to, fn($q) => $q->where('created_at', '<=', $to))
-            ->count();
+            ->distinct('patient_id')
+            ->count('patient_id');
 
         $retentionMetrics = $this->patientService->getRetentionMetrics($clinicId, $from ? 'total' : 'total');
         $retentionRate = $this->parsePercent($retentionMetrics['retention_rate'] ?? '0%');

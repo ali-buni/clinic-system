@@ -2,8 +2,7 @@
 
 namespace App\Services;
 
-use App\Http\Resources\userResource;
-use App\Models\User;
+use App\Http\Resources\User\UserResource;
 use App\Traits\HandleUserImage;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,7 +16,7 @@ class UserService
         if (!$user) {
             return ApiResponse::error('user not found', 404);
         }
-        return ApiResponse::success(new userResource($user));
+        return ApiResponse::success(new UserResource($user));
     }
 
     public function updateImage($image)

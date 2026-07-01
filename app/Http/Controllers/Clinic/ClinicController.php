@@ -22,7 +22,7 @@ class ClinicController extends Controller
 
     public function clinicInfo()
     {
-        $clinic = $this->clinicServices->getClinicInfoByOwner(Auth::id());
+        $clinic = $this->clinicServices->getClinicInfoByOwner((int) Auth::id());
 
         if (!$clinic) {
             return ApiResponse::error('Clinic not found for the authenticated owner', 404);

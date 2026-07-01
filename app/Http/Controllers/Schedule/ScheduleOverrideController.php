@@ -52,7 +52,7 @@ class ScheduleOverrideController extends Controller
 
     public function destroy(int $id, Request $request): JsonResponse
     {
-        $doctorId = $request->input('doctor_id');
+        $doctorId = $id;
         $doctor = Doctor::find($doctorId);
 
         if (!$doctor) {

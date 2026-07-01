@@ -9,39 +9,27 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckAccess
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
-    public function handle(Request $request, Closure $next, string $type, string $values)
+    public function handle(Request $request, Closure $next, ...$params)
     {
         if (!auth()->check()) {
             return ApiResponse::error('Unauthenticated.', 401);
         }
 
-        // $user = auth()->user();
-        // $hasAccess = false;
+        // role authorization
+        $user = auth()->user();
+        $first = $params[0] ?? '';
+        $parts = explode(':', $first, 2);
+        $type = $parts[0] ?? null;
+        $firstValues = $parts[1] ?? '';
 
-        // switch ($type) {
-        //     case 'role':
-        //         $hasAccess = $user->hasAnyRole(explode(',', $values));
-        //         break;
-        //     case 'permission':
-        //         $hasAccess = $user->hasAnyPermission(explode(',', $values));
-        //         break;
-        //     case 'role_or_permission':
-        //         // Format: "role1,role2|perm1,perm2"
-        //         $parts = explode('|', $values, 2);
-        //         $roles = explode(',', $parts[0]);
-        //         $perms = isset($parts[1]) ? explode(',', $parts[1]) : [];
-        //         $hasAccess = $user->hasAnyRole($roles) || $user->hasAnyPermission($perms);
-        //         break;
-        // }
+        $allValues = array_merge(
+            $firstValues !== '' ? explode(',', $firstValues) : [],
+            array_slice($params, 1)
+        );
 
-        // if (!$hasAccess) {
-        //     return ApiResponse::permissionDenied();
-        // }
+        if ($type === 'role' && !$user->hasAnyRole($allValues)) {
+            return ApiResponse::permissionDenied();
+        }
 
         return $next($request);
     }

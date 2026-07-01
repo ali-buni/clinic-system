@@ -28,8 +28,6 @@ class RoomRequest extends FormRequest
 
         if ($this->isMethod('post')) {
             $rules['clinic_id'] = 'required|integer|exists:clinics,id';
-        } else {
-            $rules['clinic_id'] = 'sometimes|integer|exists:clinics,id';
         }
 
         return $rules;

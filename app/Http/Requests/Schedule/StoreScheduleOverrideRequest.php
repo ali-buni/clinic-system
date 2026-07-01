@@ -24,7 +24,11 @@ class StoreScheduleOverrideRequest extends FormRequest
         ];
 
         if ($this->isMethod('PUT') || $this->isMethod('PATCH')) {
-            $rules = array_map(fn($rule) => str_replace('required', 'sometimes', $rule), $rules);
+            $rules = array_map(function ($rule) {
+                return str_replace('required', 'sometimes', $rule);
+            }, $rules);
+
+            $rules['doctor_id'] = str_replace('sometimes', 'required', $rules['doctor_id']);
         }
 
         return $rules;

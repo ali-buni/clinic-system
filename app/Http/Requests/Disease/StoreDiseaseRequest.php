@@ -8,7 +8,7 @@ class StoreDiseaseRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() && $this->user()->hasRole('doctor');
+        return true;
     }
 
     public function rules(): array

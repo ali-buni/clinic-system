@@ -29,10 +29,6 @@ class PatientController extends Controller
 
         $query = PatientInfo::query()->with('user');
 
-        if (empty($filters['clinic_id'])) {
-            return ApiResponse::error('Please enter the required valid clinic.');
-        }
-        $query->where('clinic_id', $filters['clinic_id']);
         $patients = ModelFilter::filter($query, $filters);
 
         return ApiResponse::pagination($patients, 'Patients retrieved successfully', PatientInfoResource::collection($patients));
@@ -44,10 +40,6 @@ class PatientController extends Controller
 
         $query = PatientInfo::query()->onlyTrashed()->with('user');
 
-        if (empty($filters['clinic_id'])) {
-            return ApiResponse::error('Please enter the required valid clinic.');
-        }
-        $query->where('clinic_id', $filters['clinic_id']);
         $patients = ModelFilter::filter($query, $filters);
 
         return ApiResponse::pagination($patients, 'success', PatientInfoResource::collection($patients));
@@ -56,7 +48,7 @@ class PatientController extends Controller
     public function show($patientId)
     {
         try {
-            $patient = $this->service->getById($patientId);
+            $patient = $this->service->getById((int) $patientId);
             return ApiResponse::success(new PatientInfoResource($patient), 'the patient data.');
         } catch (Exception $e) {
             return ApiResponse::error('The patient is not found.');
@@ -75,7 +67,7 @@ class PatientController extends Controller
     public function destroy(Request $request)
     {
         $validated = $request->validate([
-            'patient_id' => 'required|string|exists:patient_infos,id'
+            'patient_id' => 'required|integer|exists:patient_infos,id'
         ]);
 
         try {
@@ -92,10 +84,10 @@ class PatientController extends Controller
     public function restore(Request $request)
     {
         $validated = $request->validate([
-            'patient_id' => 'required|string|exists:patient_infos,id'
+            'patient_id' => 'required|integer|exists:patient_infos,id'
         ]);
         try {
-            $restored = $this->service->restore($validated['patient_id']);
+            $restored = $this->service->restore((int) $validated['patient_id']);
             if ($restored) {
                 return ApiResponse::success();
             }

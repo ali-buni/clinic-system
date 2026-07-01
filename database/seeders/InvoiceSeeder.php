@@ -36,6 +36,7 @@ class InvoiceSeeder extends Seeder
                 'status' => $invoiceStatus,
                 'total_cost' => $totalCost,
                 'description' => 'Appointment invoice - ' . $appointment->status,
+                'created_at' => $appointment->start_time,
             ]);
 
             $itemIds = Item::inRandomOrder()->take(fake()->numberBetween(1, 3))->pluck('id');

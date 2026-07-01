@@ -12,12 +12,7 @@ class NewSecretaryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        $user = Auth::user();
-        if (!$user) {
-            return false;
-        }
-        // TODO: permission to create secretary
-        return $user->hasRole('owner');
+        return true;
     }
 
     /**
