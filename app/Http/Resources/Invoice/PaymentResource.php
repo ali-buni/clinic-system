@@ -12,11 +12,14 @@ class PaymentResource extends JsonResource
         return [
             'id'                => $this->id,
             'invoice_id'        => $this->invoice_id,
-            'payment_method_id' => $this->payment_method_id,
+            'payment_method'    => $this->whenLoaded('paymentMethod', fn() => [
+                'id'      => $this->paymentMethod->id,
+                'ar_name' => $this->paymentMethod->ar_name,
+                'en_name' => $this->paymentMethod->en_name,
+            ]),
             'amount'            => (float) $this->amount,
             'paid_at'           => $this->paid_at?->toDateTimeString(),
             'created_at'        => $this->created_at?->toDateTimeString(),
-            'updated_at'        => $this->updated_at?->toDateTimeString(),
         ];
     }
 }

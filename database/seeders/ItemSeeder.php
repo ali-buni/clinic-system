@@ -9,9 +9,9 @@ class ItemSeeder extends Seeder
 {
     public function run(): void
     {
-        $itemNames = require __DIR__ . '/../data/items.php';
-        foreach ($itemNames as $name) {
-            Item::firstOrCreate(['item_name' => $name]);
+        $items = require __DIR__ . '/../data/items.php';
+        foreach ($items as $item) {
+            Item::firstOrCreate(['item_name' => $item['item_name']]);
         }
     }
 }

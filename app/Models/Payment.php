@@ -15,18 +15,21 @@ class Payment extends Model
         'invoice_id',
         'amount',
         'paid_at',
+        'stripe_session_id',
+        'stripe_payment_intent_id',
     ];
+
     protected $casts = [
         'paid_at' => 'datetime',
     ];
 
     public function invoice(): BelongsTo
     {
-        return $this->belongsTo(Invoice::class, 'invoice_id', 'id');
+        return $this->belongsTo(Invoice::class);
     }
 
     public function paymentMethod(): BelongsTo
     {
-        return $this->belongsTo(Payment_method::class, 'payment_method_id', 'id');
+        return $this->belongsTo(Payment_method::class);
     }
 }

@@ -2,206 +2,171 @@
 
 namespace App\Services;
 
+use App\Enums\InvoiceStatus;
+use App\Enums\PaymentMethodType;
+use App\Exceptions\PaymentExceedsBalanceException;
 use App\Models\Invoice;
 use App\Models\Payment;
-use Stripe\Stripe;
-use Stripe\Checkout\Session;
-use App\Exceptions\PaymentExceedsBalanceException;
-use Exception;
+use App\Models\Payment_method;
+use App\Services\Payment\Contracts\PaymentGatewayInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
-
 
 class PaymentService
 {
-    /**
-     * تجهيز الدفعة المالية وتوليد جلسة Stripe Checkout
-     */
-
-
-
-    public function createStripeSession(int $invoiceId, int $paymentMethodId, float $amount): array
+    public function processPayment(int $invoiceId, int $paymentMethodId, float $amount): array
     {
-        $invoice = Invoice::findOrFail($invoiceId);
-        $remainingAmount = $invoice->getRemainingBalance();
-
-        if ($invoice->status === 'paid') {
-            throw new \Exception('Invoice_already_paid');
-        }
-
-        if ($remainingAmount < $amount) {
-            throw new PaymentExceedsBalanceException($remainingAmount);
-        }
-        // 1. تسجيل حركة الدفع بجدول الـ payments كـ pending
-        $payment = Payment::create([
-            'invoice_id'        => $invoice->id,
-            'payment_method_id' => $paymentMethodId,
-            'amount'            => $amount,
-            'paid_at'           => null,
-        ]);
-
-        // 2. إعداد جلسة Stripe
-        Stripe::setApiKey(env('STRIPE_SECRET'));
-
-        $session = Session::create([
-            'payment_method_types' => ['card'],
-            'line_items' => [[
-                'price_data' => [
-                    'currency' => 'usd',
-                    'product_data' => [
-                        'name' => 'دفعة مالية للفاتورة رقم: ' . $invoice->invoice_number,
-                    ],
-                    'unit_amount' => $amount * 100, // تحويل لسنتات
-                ],
-                'quantity' => 1,
-            ]],
-            'mode' => 'payment',
-            'success_url' => 'http://localhost:3000/payment-success?invoice_id=' . $invoice->id,
-            'cancel_url' => 'http://localhost:3000/payment-failed',
-            'metadata' => [
-                'invoice_id' => $invoice->id,
-                'payment_id' => $payment->id
-            ]
-        ]);
-
-        return [
-            'payment_url' => $session->url,
-            'payment_id'  => $payment->id
-        ];
-    }
-
-    /**
-     * تأكيد الدفعة وتحديث حالة الفاتورة وحساب المتبقي (عند نجاح الـ Webhook)
-     */
-    public function confirmPayment(int $invoiceId, int $paymentId): void
-    {
-        // 1. تثبيت تاريخ الدفع الفعلي للعملية
-        $payment = Payment::find($paymentId);
-        if ($payment && is_null($payment->paid_at)) {
-            $payment->update([
-                'paid_at' => now()
-            ]);
-        }
-
-        // 2. تحديث الفاتورة وإعادة حساب المبالغ المتبقية
-        $invoice = Invoice::find($invoiceId);
-        if ($invoice) {
-            $totalCost = $invoice->total_cost; // إجمالي الفاتورة المطلوب[cite: 1]
-
-            // جمع كل المدفوعات المكتملة المتصلة بالفاتورة
-            $totalPaidSoFar = Payment::where('invoice_id', $invoiceId)
-                ->whereNotNull('paid_at')
-                ->sum('amount');
-
-            $remainingAmount = $totalCost - $totalPaidSoFar;
-
-            // 3. تحديث الحالة آلياً بناءً على النتيجة المالية[cite: 1]
-            if ($remainingAmount <= 0) {
-                $invoice->update(['status' => 'paid']);
-            } else {
-                $invoice->update(['status' => 'partially_paid']);
-            }
-        }
-    }
-
-    public function cancelPayment(int $payment_id)
-    {
-        // البدء في المعاملة لضمان سلامة البيانات
-        DB::beginTransaction();
-
-        try {
-            $payment = Payment::findOrFail($payment_id);
-            $invoice = Invoice::findOrFail($payment->invoice_id);
-
-            if ($payment->paid_at === null) {
-                throw new Exception('Payment_is_not_completed_yet');
-            }
-
-            // ملاحظة: إذا كنت تستخدم SoftDeletes، الـ findOrFail لن يجد المحذوف أصلاً إلا إذا استخدمت withTrashed
-            if ($payment->deleted_at !== null) {
-                throw new Exception('Payment_already_canceled');
-            }
-
-            // --- التعامل مع بوابة الدفع Stripe ---
-            // افترضت هنا أن اسم الحقل عندك payment_method، عدله بحسب تسميتك بالداتابيز (مثلاً: stripe, cash)
-            if ($payment->payment_method === 'stripe') {
-
-                // تأكد من أنك مخزن الـ Charge ID أو PaymentIntent ID الخاص بسترايب عند الدفع
-                if (!$payment->stripe_charge_id) {
-                    throw new Exception('Stripe_charge_id_missing');
-                }
-
-                // استدعاء مكتبة سترايب وعمل الـ Refund
-                $stripe = new StripeClient(config('services.stripe.secret'));
-
-                $stripe->refunds->create([
-                    'payment_intent' => $payment->stripe_charge_id, // أو 'charge' بحسب شو مخزن عندك
-                ]);
-            }
-
-            // حذف الدفعة (سواء كاش أو سترايب بعد نجاح الـ Refund)
-            $payment->delete();
-
-            // تحديث حالة الفاتورة بناءً على المبلغ المتبقي
-            $remainingAmount = $invoice->getRemainingBalance();
-
-            if ($remainingAmount == $invoice->total_cost) {
-                $invoice->update(['status' => 'draft']);
-            } elseif ($remainingAmount > 0) {
-                $invoice->update(['status' => 'partially_paid']);
-            } else {
-                $invoice->update(['status' => 'paid']);
-            }
-
-            // تثبيت العمليات في حال نجاح كل شيء
-            DB::commit();
-        } catch (Exception $e) {
-            // التراجع عن أي تغيير في الداتابيز لو فشل الـ Refund أو أي خطأ آخر
-            DB::rollBack();
-
-            // إعادة رمي الخطأ ليظهر بالـ API أو الـ Controller
-            throw $e;
-        }
-    }
-    public function processCashPayment(int $invoiceId, float $amount): Invoice
-    {
-        // استخدام Transactions لضمان حفظ كل شيء أو تراجعه في حال حدوث خطأ
-        return DB::transaction(function () use ($invoiceId, $amount) {
-
-            // 1. جلب الفاتورة وقفل السطر في قاعدة البيانات لمنع التضارب (Race Conditions)
+        return DB::transaction(function () use ($invoiceId, $paymentMethodId, $amount) {
             $invoice = Invoice::lockForUpdate()->findOrFail($invoiceId);
 
-            // 2. حساب الرصيد المتبقي الحالي بالفاتورة
+            if ($invoice->status === InvoiceStatus::Paid->value) {
+                throw new \RuntimeException('the invoice is paid');
+            }
+
             $remainingBalance = $invoice->getRemainingBalance();
 
-            // 3. التحقق من أن مبلغ الكاش لا يتجاوز المتبقي
             if ($amount > $remainingBalance) {
-                throw new PaymentExceedsBalanceException(
-                    $remainingBalance,
-                    "المبلغ المدفوع يتجاوز الرصيد المتبقي للفاتورة."
-                );
+                throw new PaymentExceedsBalanceException($remainingBalance);
             }
 
-            // 4. تسجيل عملية الدفع فوراً كـ "مدفوعة كاش" وتاريخها الآن
-            $invoice->payments()->create([
-                'payment_method_id' => 1, // 1 يعبر عن الكاش
+            $method = Payment_method::findOrFail($paymentMethodId);
+            if ($method->is_active !== true) {
+                throw new ModelNotFoundException('the payment method not found');
+            }
+            $payment = $invoice->payments()->create([
+                'payment_method_id' => $paymentMethodId,
                 'amount' => $amount,
-                'paid_at' => now(), // مدفوعة فوراً
-                'status' => 'completed', // أو الحالة المعتمدة عندك للدفع الناجح
-                'transaction_id' => 'CASH-' . strtoupper(uniqid()), // توليد رقم حركة داخلي للكاش
+                'paid_at' => $method->type === PaymentMethodType::Cash ? now() : null,
             ]);
+            $this->syncInvoiceStatus($invoice);
 
-            // 5. تحديث الرصيد المتبقي وحالة الفاتورة بناءً على الحسبة الجديدة
-            $newRemaining = $remainingBalance - $amount;
+            $gateway = $this->resolveGateway($method);
+            $result = $gateway->createPayment($invoice, $payment, $amount);
 
-            if ($newRemaining == 0) {
-                $invoice->status = 'paid';
-            } else {
-                $invoice->status = 'partially_paid';
+            return $result;
+        });
+    }
+
+    public function confirmPayment(int $invoiceId, int $paymentId): void
+    {
+        DB::transaction(function () use ($invoiceId, $paymentId) {
+            $payment = Payment::lockForUpdate()->find($paymentId);
+
+            if (!$payment || $payment->paid_at !== null) {
+                return;
             }
 
-            $invoice->save();
+            $method = Payment_method::findOrFail($payment->payment_method_id);
+            $gateway = $this->resolveGateway($method);
+            $gateway->confirmPayment($payment);
 
-            return $invoice;
+            $payment->update(['paid_at' => now()]);
+
+            $invoice = Invoice::lockForUpdate()->find($invoiceId);
+
+            if ($invoice) {
+                $this->syncInvoiceStatus($invoice);
+            }
         });
+    }
+
+    public function refundPayment(Payment $payment, float $amount): void
+    {
+        if ($amount <= 0) {
+            return;
+        }
+
+        $method = Payment_method::findOrFail($payment->payment_method_id);
+        $gateway = $this->resolveGateway($method);
+        $gateway->refundPayment($payment, $amount);
+    }
+
+    public function refundOverpaidStripePayments(Invoice $invoice, float $newTotalCost): float
+    {
+        $invoice->loadMissing(['completedPayments.paymentMethod']);
+
+        $cashPaid = $invoice->completedPayments
+            ->filter(fn($p) => $p->paymentMethod->type === PaymentMethodType::Cash)
+            ->sum('amount');
+
+        $stripePayments = $invoice->completedPayments
+            ->filter(fn($p) => in_array($p->paymentMethod->type, [PaymentMethodType::Stripe, PaymentMethodType::Card]) && $p->stripe_payment_intent_id)
+            ->sortByDesc('paid_at');
+
+        $stripePaid = $stripePayments->sum('amount');
+        $stripeCoverAmount = max(0, $newTotalCost - $cashPaid);
+        $refundAmount = max(0, $stripePaid - $stripeCoverAmount);
+
+        if ($refundAmount <= 0) {
+            return 0;
+        }
+
+        $remainingRefund = $refundAmount;
+
+        foreach ($stripePayments as $payment) {
+            if ($remainingRefund <= 0) {
+                break;
+            }
+
+            $refundable = min($payment->amount, $remainingRefund);
+            if ($refundable <= 0) {
+                continue;
+            }
+
+            $this->refundPayment($payment, $refundable);
+            $payment->update(['amount' => $payment->amount - $refundable]);
+            $remainingRefund -= $refundable;
+        }
+
+        $invoice->refresh();
+        $this->syncInvoiceStatus($invoice);
+
+        return $refundAmount - $remainingRefund;
+    }
+
+    public function cancelPayment(int $paymentId): void
+    {
+        DB::transaction(function () use ($paymentId) {
+            $payment = Payment::lockForUpdate()->findOrFail($paymentId);
+            $invoice = Invoice::lockForUpdate()->findOrFail($payment->invoice_id);
+
+            throw_if(
+                $payment->paid_at === null,
+                new \RuntimeException('no payment paid')
+            );
+
+            $method = Payment_method::findOrFail($payment->payment_method_id);
+            $gateway = $this->resolveGateway($method);
+            $gateway->cancelPayment($payment);
+
+            $payment->delete();
+            $this->syncInvoiceStatus($invoice);
+        });
+    }
+
+    public function syncInvoiceStatus(Invoice $invoice): void
+    {
+        $remaining = $invoice->getRemainingBalance();
+
+        $newStatus = match (true) {
+            $remaining <= 0 => InvoiceStatus::Paid,
+            $remaining < (float) $invoice->total_cost => InvoiceStatus::PartiallyPaid,
+            default => InvoiceStatus::Draft,
+        };
+
+        if ($invoice->status !== $newStatus->value) {
+            $invoice->update(['status' => $newStatus->value]);
+        }
+    }
+
+    private function resolveGateway(Payment_method $method): PaymentGatewayInterface
+    {
+        return match ($method->type) {
+            PaymentMethodType::Cash         => new \App\Services\Payment\Gateways\CashGateway(),
+            PaymentMethodType::Card         => new \App\Services\Payment\Gateways\StripeGateway(),
+            PaymentMethodType::Stripe       => new \App\Services\Payment\Gateways\StripeGateway(),
+            PaymentMethodType::BankTransfer => new \App\Services\Payment\Gateways\CashGateway(),
+            default => throw new \InvalidArgumentException("No gateway for type: {$method->type->value}"),
+        };
     }
 }

@@ -11,6 +11,8 @@ use App\Exceptions\PaymentExceedsBalanceException;
 use App\Services\PaymentService;
 use App\Services\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -18,51 +20,108 @@ class PaymentController extends Controller
         protected PaymentService $paymentService
     ) {}
 
-    public function store(Invoice $invoice, ProcessPaymentRequest $request): JsonResponse
+    public function index(Request $request): JsonResponse
+    {
+        $request->validate([
+            'invoice_id' => 'required|integer|exists:invoices,id',
+        ]);
+
+        $payments = Payment::where('invoice_id', $request->invoice_id)
+            ->with('paymentMethod')
+            ->latest()
+            ->get();
+
+        return ApiResponse::success(
+            PaymentResource::collection($payments),
+            'payments fetched successfully'
+        );
+    }
+
+    public function show(int $id): JsonResponse
+    {
+        $payment = Payment::with('paymentMethod')->find($id);
+
+        if (!$payment) {
+            return ApiResponse::error('payment not found', 404);
+        }
+
+        return ApiResponse::success(
+            new PaymentResource($payment),
+            'payment fetched successfully'
+        );
+    }
+
+    public function store(ProcessPaymentRequest $request): JsonResponse
     {
         try {
-            if ($request->payment_method_id == 1) {
-                $updatedInvoice = $this->paymentService->processCashPayment(
-                    $invoice->id,
-                    $request->amount
-                );
-
-                return ApiResponse::success([
-                    'invoice_id'        => $updatedInvoice->id,
-                    'status'            => $updatedInvoice->status,
-                    'remaining_balance' => number_format($updatedInvoice->getRemainingBalance(), 2, '.', ''),
-                ], 'تم تسجيل الدفع النقدي وتحديث الفاتورة بنجاح.');
-            }
-
-            $result = $this->paymentService->createStripeSession(
-                $invoice->id,
-                $request->payment_method_id,
-                $request->amount
+            $validated = $request->validated();
+            $result = $this->paymentService->processPayment(
+                $validated['invoice_id'],
+                $validated['payment_method_id'],
+                $validated['amount'],
             );
 
-            return ApiResponse::success([
-                'payment_url' => $result['payment_url'],
-                'payment_id'  => $result['payment_id'],
-            ], 'تم توليد رابط الدفع بنجاح.');
+            if (isset($result['payment_url']) && !$this->isValidStripeUrl($result['payment_url'])) {
+                Log::error('Invalid Stripe payment URL received', [
+                    'invoice_id' => $validated['invoice_id'],
+                    'url' => $result['payment_url'],
+                ]);
+                return ApiResponse::error('failed to create payment session', 500);
+            }
+
+            return ApiResponse::success($result);
         } catch (PaymentExceedsBalanceException $e) {
             return ApiResponse::error(
-                $e->getMessage(),
+                'the paid amount is larger than the remaining balance',
                 400,
                 ['remaining_balance' => $e->getRemainingBalance()]
             );
+        } catch (\RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return ApiResponse::error($e->getMessage(), 404);
         } catch (\Exception $e) {
-            return ApiResponse::error($e->getMessage(), 500);
+            Log::error('Payment processing failed', [
+                'invoice_id' => $validated['invoice_id'],
+                'error' => $e->getMessage(),
+            ]);
+            return ApiResponse::error('server error', 500);
         }
     }
 
-    public function destroy(Payment $payment): JsonResponse
+    public function destroy(int $paymentId): JsonResponse
     {
         try {
-            $result = $this->paymentService->cancelPayment($payment->id);
+            $this->paymentService->cancelPayment($paymentId);
 
-            return ApiResponse::success($result, 'تم إلغاء الدفع بنجاح.');
+            return ApiResponse::success(null, 'the payment is canceled');
+        } catch (\RuntimeException $e) {
+            return ApiResponse::error($e->getMessage(), 422);
         } catch (\Exception $e) {
-            return ApiResponse::error($e->getMessage(), 500);
+            Log::error('Payment cancellation failed', [
+                'payment_id' => $paymentId,
+                'error' => $e->getMessage(),
+            ]);
+            return ApiResponse::error('server error', 500);
         }
+    }
+
+    private function isValidStripeUrl(string $url): bool
+    {
+        if (empty($url)) {
+            return false;
+        }
+
+        $parsed = parse_url($url);
+
+        if (!$parsed || !isset($parsed['scheme'], $parsed['host'])) {
+            return false;
+        }
+
+        $validHosts = ['checkout.stripe.com', 'payments.stripe.com'];
+        $isValidHost = in_array($parsed['host'], $validHosts)
+            || str_ends_with($parsed['host'], '.stripe.com');
+
+        return $parsed['scheme'] === 'https' && $isValidHost;
     }
 }

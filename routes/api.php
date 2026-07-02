@@ -7,10 +7,6 @@ use App\Services\ModelFilter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware(['auth:sanctum', 'throttle:100,1', 'checkaccess:role:patient,doctor,secretary,owner']);
-
 Route::prefix('/auth')->controller(GoogleAuthController::class)->group(function () {
     Route::get('google', 'redirectToGoogle');
     Route::get('google/callback', 'handleGoogleCallback');
@@ -29,6 +25,7 @@ Route::prefix('/v1/clinic-system')->group(function () {
     require __DIR__ . '/v1/schedule_overrides.php';
     require __DIR__ . '/v1/medicines.php';
     require __DIR__ . '/v1/diseases.php';
+    require __DIR__ . '/v1/items.php';
     require __DIR__ . '/v1/rooms.php';
     require __DIR__ . '/v1/secretaries.php';
     require __DIR__ . '/v1/patients.php';
@@ -38,10 +35,6 @@ Route::prefix('/v1/clinic-system')->group(function () {
     require __DIR__ . '/v1/patient_records.php';
     require __DIR__ . '/v1/ai.php';
     require __DIR__ . '/v1/invoices.php';
-});
-
-Route::get('/filter', function (Request $request) {
-    return ApiResponse::pagination(ModelFilter::filter(new User(), $request->all()));
 });
 
 // Route::post('/send-notification', function (Request $request) {

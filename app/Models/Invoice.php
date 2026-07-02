@@ -21,7 +21,6 @@ class Invoice extends Model
         'status',
         'total_cost',
         'description',
-        'created_at',
     ];
 
     protected $casts = [
@@ -30,35 +29,41 @@ class Invoice extends Model
 
     public function clinic(): BelongsTo
     {
-        return $this->belongsTo(Clinic::class, 'clinic_id', 'id');
+        return $this->belongsTo(Clinic::class);
     }
+
     public function patient(): BelongsTo
     {
-        return $this->belongsTo(PatientInfo::class, 'patient_id', 'id');
+        return $this->belongsTo(PatientInfo::class);
     }
+
     public function appointment(): BelongsTo
     {
-        return $this->belongsTo(Appointment::class, 'appointment_id', 'id');
+        return $this->belongsTo(Appointment::class);
     }
 
     public function items(): BelongsToMany
     {
-        return $this->belongsToMany(Item::class, 'invoice_items', 'invoice_id', 'item_id')
-            ->withPivot('item_name', 'price', 'quantity')
+        return $this->belongsToMany(Item::class)
+            ->withPivot('price', 'quantity')
             ->withTimestamps();
     }
+
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function completedPayments(): HasMany
+    {
+        return $this->payments()->whereNotNull('paid_at');
+    }
+
     public function getRemainingBalance(): float
     {
-        // بنجيب مجموع المدفوعات عبر علاقة الـ payments الموجودة بالموديل نفسه
-        $totalPaidSoFar = $this->payments()
-            ->whereNotNull('paid_at')
-            ->whereNull('deleted_at')
-            ->sum('amount');
+        $totalPaid = $this->total_paid
+            ?? $this->completedPayments()->sum('amount');
 
-        return (float) $this->total_cost - $totalPaidSoFar;
+        return (float) $this->total_cost - (float) $totalPaid;
     }
 }

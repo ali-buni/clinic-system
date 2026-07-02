@@ -37,10 +37,39 @@ class PaymentMethodController extends Controller
         );
     }
 
-    public function destroy(Payment_method $payment_method): JsonResponse
+    public function stop(int $id): JsonResponse
     {
-        $this->paymentMethodService->deleteMethod($payment_method->id);
+        try {
+            $payment = Payment_method::find($id);
+            if (!$payment) {
+                return ApiResponse::error('no payment method found', 404);
+            }
+            $this->paymentMethodService->stopMethod($payment);
 
-        return ApiResponse::success(null, 'تم حذف وإلغاء خيار الدفع من النظام بنجاح.');
+            return ApiResponse::success(
+                null,
+                'تم إيقاف طريقة الدفع بنجاح.'
+            );
+        } catch (\Exception $e) {
+            return ApiResponse::error('Server Error');
+        }
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $payment = Payment_method::find($id);
+            if (!$payment) {
+                return ApiResponse::error('no payment method found', 404);
+            }
+            $this->paymentMethodService->deleteMethod($payment);
+
+            return ApiResponse::success(
+                null,
+                'تم حذف طريقة الدفع بنجاح.'
+            );
+        } catch (\Exception $e) {
+            return ApiResponse::error('Server Error');
+        }
     }
 }

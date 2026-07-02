@@ -14,6 +14,7 @@ class SpecialtySeeder extends Seeder
     public function run(): void
     {
         $specialties = collect([
+            // Core
             ['ar_name' => 'الطب العام', 'en_name' => 'General Medicine'],
             ['ar_name' => 'الطب الباطني', 'en_name' => 'Internal Medicine'],
             ['ar_name' => 'أمراض القلب', 'en_name' => 'Cardiology'],
@@ -23,7 +24,7 @@ class SpecialtySeeder extends Seeder
             ['ar_name' => 'الغدد الصم والسكري', 'en_name' => 'Endocrinology & Diabetes'],
             ['ar_name' => 'أمراض الأعصاب', 'en_name' => 'Neurology'],
             ['ar_name' => 'أمراض الأورام', 'en_name' => 'Oncology'],
-            ['ar_name' => 'أمراض الروماتيزم والمفاصل', 'en_name' => 'Rheumatology'],
+            ['ar_name' => 'أمراض الرواتيزم والمفاصل', 'en_name' => 'Rheumatology'],
 
             // Age & Gender Specific
             ['ar_name' => 'طب الأطفال', 'en_name' => 'Pediatrics'],
@@ -47,6 +48,28 @@ class SpecialtySeeder extends Seeder
             ['ar_name' => 'العلاج الفيزيائي وإعادة التأهيل', 'en_name' => 'Physical Therapy & Rehabilitation'],
             ['ar_name' => 'الأشعة والتصوير الطبي', 'en_name' => 'Radiology'],
             ['ar_name' => 'التخدير وتدبير الألم', 'en_name' => 'Anesthesiology'],
+
+            // Additional Specialties
+            ['ar_name' => 'أمراض الدم', 'en_name' => 'Hematology'],
+            ['ar_name' => 'الأمراض المعدية', 'en_name' => 'Infectious Diseases'],
+            ['ar_name' => 'الحساسية والمناعة', 'en_name' => 'Allergy & Immunology'],
+            ['ar_name' => 'طب الطوارئ', 'en_name' => 'Emergency Medicine'],
+            ['ar_name' => 'الطب الأسري', 'en_name' => 'Family Medicine'],
+            ['ar_name' => 'طب الرياضة', 'en_name' => 'Sports Medicine'],
+            ['ar_name' => 'الرعاية التلطيفية', 'en_name' => 'Palliative Care'],
+            ['ar_name' => 'التغذية العلاجية', 'en_name' => 'Nutrition & Dietetics'],
+            ['ar_name' => 'التحليل المرضي', 'en_name' => 'Clinical Pathology'],
+            ['ar_name' => 'طب العمل والصحة المهنية', 'en_name' => 'Occupational Medicine'],
+            ['ar_name' => 'الطب النووي', 'en_name' => 'Nuclear Medicine'],
+            ['ar_name' => 'الطب الشرعي', 'en_name' => 'Forensic Medicine'],
+            ['ar_name' => 'الطب البديل والትكمال', 'en_name' => 'Alternative Medicine'],
+            ['ar_name' => 'أمراض الغدد الصماء والتناسل', 'en_name' => 'Reproductive Endocrinology'],
+            ['ar_name' => 'جراحة الأعصاب', 'en_name' => 'Neurosurgery'],
+            ['ar_name' => 'جراحة القلب والصدر', 'en_name' => 'Cardiothoracic Surgery'],
+            ['ar_name' => 'جراحة الأوعية الدموية', 'en_name' => 'Vascular Surgery'],
+            ['ar_name' => 'طب العيون التجميلي', 'en_name' => 'Cosmetic Ophthalmology'],
+            ['ar_name' => 'طب الأسنان التجميلي', 'en_name' => 'Cosmetic Dentistry'],
+            ['ar_name' => 'العلاج الطبيعي للقدم والكاحل', 'en_name' => 'Podiatry'],
         ])->map(fn(array $data) => Specialty::firstOrCreate($data));
     }
 }

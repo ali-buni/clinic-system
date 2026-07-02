@@ -16,7 +16,6 @@ class PaymentExceedsBalanceException extends Exception
         $this->remainingBalance = $remainingBalance;
     }
 
-    // ميثود كرمال نسحب منها الداتا بالكونترولر
     public function getRemainingBalance(): float
     {
         return $this->remainingBalance;

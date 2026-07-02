@@ -12,9 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->alias([
+            'checkaccess' => \App\Http\Middleware\CheckAccess::class,
+        ]);
         $middleware->validateCsrfTokens(except: [
             'api/stripe/webhook',
-            'checkaccess' => \App\Http\Middleware\CheckAccess::class,
         ]);
 
         $middleware->appendToGroup('api', \App\Http\Middleware\AddCorrelationId::class);

@@ -41,4 +41,12 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
+
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'currency' => env('STRIPE_CURRENCY', 'usd'),
+        'success_url' => env('STRIPE_SUCCESS_URL', 'https://yourdomain.com/payment-success'),
+        'cancel_url' => env('STRIPE_CANCEL_URL', 'https://yourdomain.com/payment-failed'),
+    ],
 ];
