@@ -6,28 +6,40 @@ use App\Http\Controllers\Invoice\PaymentMethodController;
 use App\Http\Controllers\Invoice\WebhookController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('invoices')->controller(InvoiceController::class)->group(function () {
-    Route::get('patient/{patient}', 'patientInvoices');
-    Route::get('doctor/{doctor}', 'doctorInvoices');
-    Route::post('rooms', 'roomsInvoices');
+Route::middleware(['auth:sanctum', 'throttle:100,1'])->group(function () {
+    Route::prefix('invoices')->controller(InvoiceController::class)->group(function () {
+        Route::get('patient/{patientId}', 'patientInvoices')
+            ->middleware(['checkaccess:role:owner,doctor,secretary,patient']);
+        Route::get('doctor/{doctorId}', 'doctorInvoices')
+            ->middleware(['checkaccess:role:owner,doctor,secretary']);
+        Route::post('rooms', 'roomsInvoices')
+            ->middleware(['checkaccess:role:owner,secretary']);
 
-    Route::get('/', 'index');
-    Route::post('/', 'store');
-    Route::get('{invoice}', 'show');
-    Route::put('{invoice}', 'update');
-    Route::delete('{invoice}', 'destroy');
+        Route::get('/', 'index')
+            ->middleware(['checkaccess:role:owner']);
+        Route::post('/', 'store')
+            ->middleware(['checkaccess:role:secretary,doctor']);
+        Route::get('{invoiceId}', 'show')
+            ->middleware(['checkaccess:role:owner,doctor,secretary,patient']);
+        Route::put('{invoiceId}', 'update')
+            ->middleware(['checkaccess:role:secretary,doctor']);
+        Route::delete('{invoiceId}', 'destroy')
+            ->middleware(['checkaccess:role:owner']);
+    });
+    Route::prefix('payments')->controller(InvoicePaymentController::class)->group(function () {
+        Route::get('/', 'index')
+            ->middleware(['checkaccess:role:owner']);
+        Route::get('/{paymentId}', 'show')
+            ->middleware(['checkaccess:role:owner']);
+        Route::post('/', 'store')
+            ->middleware(['checkaccess:role:secretary,patient']);
+        Route::delete('/{paymentId}', 'destroy')
+            ->middleware(['checkaccess:role:owner']);
+    });
 });
-Route::prefix('payments')->controller(InvoicePaymentController::class)->group(function () {
-    Route::get('/', 'index');
-    Route::get('/{paymentId}', 'show');
-    Route::post('/', 'store');
-    Route::delete('/{paymentId}', 'destroy');
-});
-Route::middleware('auth:sanctum')->controller(PaymentMethodController::class)->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:100,1'])->controller(PaymentMethodController::class)->group(function () {
     Route::get('payment-methods', 'index');
-    Route::post('payment-methods', 'store');
-    Route::delete('payment-methods/{paymentMethodId}', 'destroy');
-    Route::patch('payment-methods/{paymentMethodId}/stop', 'stop');
+    Route::post('payment-methods', 'store')->middleware('checkaccess:role:admin');
+    Route::delete('payment-methods/{paymentMethodId}', 'destroy')->middleware('checkaccess:role:admin');
+    Route::patch('payment-methods/{paymentMethodId}/stop', 'stop')->middleware('checkaccess:role:admin');
 });
-
-Route::post('stripe/webhook', [WebhookController::class, 'handle']);

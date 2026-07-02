@@ -1,11 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\GoogleAuthController;
-use App\Models\User;
-use App\Services\ApiResponse;
-use App\Services\ModelFilter;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Invoice\WebhookController;
 use Illuminate\Support\Facades\Route;
+
+Route::post('stripe/webhook', [WebhookController::class, 'handle']);
 
 Route::prefix('/auth')->controller(GoogleAuthController::class)->group(function () {
     Route::get('google', 'redirectToGoogle');

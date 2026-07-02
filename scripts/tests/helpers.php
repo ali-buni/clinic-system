@@ -25,6 +25,7 @@ $app = require_once __DIR__ . '/../../bootstrap/app.php';
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 $kernel->bootstrap();
 
+use App\Models\Invoice;
 use App\Models\User;
 
 /** @var User|null $ownerUser */
@@ -37,6 +38,8 @@ $secretaryUser = User::role('secretary')->first();
 $patientUser   = User::role('patient')->first();
 /** @var User|null $patientUser2 */
 $patientUser2  = User::role('patient')->skip(1)->first() ?? $patientUser;
+/** @var Invoice|null $invoice */
+$invoice = Invoice::where('status', 'draft')->first();
 
 // Ensure emails are verified so login returns tokens
 foreach ([$ownerUser, $doctorUser, $secretaryUser, $patientUser, $patientUser2] as $u) {

@@ -2,7 +2,7 @@
 
 return [
     'appointment_pool' => [
-        'completed' => 430,
+        'completed' => 130,
         'scheduled' => 25,
         'cancelled' => 20,
         'no_show' => 15,

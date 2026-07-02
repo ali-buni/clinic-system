@@ -43,7 +43,7 @@ class ItemController extends Controller
             $validated = $request->validated();
 
             if (! $user->hasRole('admin') && isset($validated['clinic_id'])) {
-                $ownerClinicId = $user->clinicOwner?->id;
+                $ownerClinicId = $user->clinicOwner?->id ?? $user->doctorProfile?->clinic_id;
                 if ($ownerClinicId !== $validated['clinic_id']) {
                     return ApiResponse::permissionDenied('Cannot create item for this clinic.');
                 }
