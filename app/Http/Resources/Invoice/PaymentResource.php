@@ -18,6 +18,8 @@ class PaymentResource extends JsonResource
                 'en_name' => $this->paymentMethod->en_name,
             ]),
             'amount'            => (float) $this->amount,
+            'refunded_amount'   => (float) ($this->refunded_amount ?? 0),
+            'refundable_amount' => (float) $this->getRefundableAmount(),
             'paid_at'           => $this->paid_at?->toDateTimeString(),
             'created_at'        => $this->created_at?->toDateTimeString(),
         ];

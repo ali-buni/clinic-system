@@ -8,6 +8,7 @@ use App\Exceptions\PaymentExceedsBalanceException;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Payment_method;
+use App\Models\Refund;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
@@ -70,15 +71,42 @@ class PaymentService
         });
     }
 
-    public function refundPayment(Payment $payment, float $amount): void
+    public function refundPayment(int $paymentId, float $amount, ?string $reason = null, ?int $refundedBy = null): Refund
     {
-        if ($amount <= 0) {
-            return;
-        }
+        return DB::transaction(function () use ($paymentId, $amount, $reason, $refundedBy) {
+            $payment = Payment::lockForUpdate()->findOrFail($paymentId);
 
-        $method = Payment_method::findOrFail($payment->payment_method_id);
-        $gateway = $this->resolveGateway($method);
-        $gateway->refundPayment($payment, $amount);
+            if ($amount <= 0) {
+                throw new \RuntimeException('refund amount must be greater than zero');
+            }
+
+            $refundable = $payment->getRefundableAmount();
+            if ($amount > $refundable) {
+                throw new \RuntimeException("refund amount exceeds refundable balance of {$refundable}");
+            }
+
+            $method = Payment_method::findOrFail($payment->payment_method_id);
+            $gateway = $this->resolveGateway($method);
+            $result = $gateway->refundPayment($payment, $amount);
+
+            $refund = Refund::create([
+                'payment_id' => $payment->id,
+                'invoice_id' => $payment->invoice_id,
+                'amount' => $amount,
+                'reason' => $reason,
+                'refunded_by' => $refundedBy,
+                'stripe_refund_id' => $result['stripe_refund_id'] ?? null,
+            ]);
+
+            $payment->increment('refunded_amount', $amount);
+
+            $invoice = Invoice::lockForUpdate()->find($payment->invoice_id);
+            if ($invoice) {
+                $this->syncInvoiceStatus($invoice);
+            }
+
+            return $refund;
+        });
     }
 
     public function refundOverpaidStripePayments(Invoice $invoice, float $newTotalCost): float
@@ -108,13 +136,24 @@ class PaymentService
                 break;
             }
 
-            $refundable = min($payment->amount, $remainingRefund);
+            $refundable = min($payment->getRefundableAmount(), $remainingRefund);
             if ($refundable <= 0) {
                 continue;
             }
 
-            $this->refundPayment($payment, $refundable);
-            $payment->update(['amount' => $payment->amount - $refundable]);
+            $method = Payment_method::findOrFail($payment->payment_method_id);
+            $gateway = $this->resolveGateway($method);
+            $result = $gateway->refundPayment($payment, $refundable);
+
+            Refund::create([
+                'payment_id' => $payment->id,
+                'invoice_id' => $payment->invoice_id,
+                'amount' => $refundable,
+                'reason' => 'Auto-refund: invoice total decreased',
+                'stripe_refund_id' => $result['stripe_refund_id'] ?? null,
+            ]);
+
+            $payment->increment('refunded_amount', $refundable);
             $remainingRefund -= $refundable;
         }
 
@@ -146,11 +185,14 @@ class PaymentService
 
     public function syncInvoiceStatus(Invoice $invoice): void
     {
-        $remaining = $invoice->getRemainingBalance();
+        $totalPaid = $invoice->completedPayments()->sum('amount');
+        $totalRefunded = $invoice->refunds()->sum('amount');
+        $netPaid = (float) $totalPaid - (float) $totalRefunded;
 
         $newStatus = match (true) {
-            $remaining <= 0 => InvoiceStatus::Paid,
-            $remaining < (float) $invoice->total_cost => InvoiceStatus::PartiallyPaid,
+            $netPaid <= 0 && $totalPaid > 0 => InvoiceStatus::Refunded,
+            $netPaid >= (float) $invoice->total_cost => InvoiceStatus::Paid,
+            $netPaid > 0 => InvoiceStatus::PartiallyPaid,
             default => InvoiceStatus::Draft,
         };
 

@@ -113,17 +113,19 @@ class StripeGateway implements PaymentGatewayInterface
         }
     }
 
-    public function refundPayment(Payment $payment, float $amount): void
+    public function refundPayment(Payment $payment, float $amount): array
     {
         if (!$payment->stripe_payment_intent_id || $amount <= 0) {
-            return;
+            return ['stripe_refund_id' => null];
         }
 
         try {
-            $this->client->refunds->create([
+            $refund = $this->client->refunds->create([
                 'payment_intent' => $payment->stripe_payment_intent_id,
                 'amount' => (int) round($amount * 100),
             ]);
+
+            return ['stripe_refund_id' => $refund->id];
         } catch (ApiErrorException $e) {
             Log::error('Stripe refund failed', [
                 'payment_id' => $payment->id,

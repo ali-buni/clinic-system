@@ -14,7 +14,7 @@ interface PaymentGatewayInterface
 
     public function cancelPayment(Payment $payment): void;
 
-    public function refundPayment(Payment $payment, float $amount): void;
+    public function refundPayment(Payment $payment, float $amount): array;
 
     public function supports(PaymentMethodType $type): bool;
 }

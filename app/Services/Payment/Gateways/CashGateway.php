@@ -29,5 +29,8 @@ class CashGateway implements PaymentGatewayInterface
 
     public function cancelPayment(Payment $payment): void {}
 
-    public function refundPayment(Payment $payment, float $amount): void {}
+    public function refundPayment(Payment $payment, float $amount): array
+    {
+        return ['stripe_refund_id' => null];
+    }
 }

@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Invoice;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Payment\ProcessPaymentRequest;
+use App\Http\Requests\Payment\RefundPaymentRequest;
 use App\Http\Resources\Invoice\PaymentResource;
+use App\Models\Doctor;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Exceptions\PaymentExceedsBalanceException;
@@ -85,6 +87,74 @@ class PaymentController extends Controller
                 'invoice_id' => $validated['invoice_id'],
                 'error' => $e->getMessage(),
             ]);
+            return ApiResponse::error('server error', 500);
+        }
+    }
+
+    public function refund(RefundPaymentRequest $request): JsonResponse
+    {
+        try {
+            $doctor = Doctor::where('user_id', auth()->id())->first();
+            if (!$doctor) {
+                return ApiResponse::error('unauthorized: doctor profile not found', 403);
+            }
+
+            $validated = $request->validated();
+            $results = [];
+            $errors = [];
+
+            foreach ($validated['refunds'] as $index => $refundData) {
+                $payment = Payment::with(['invoice.appointment'])->find($refundData['payment_id']);
+
+                if (!$payment) {
+                    $errors[$index] = ['payment_id' => $refundData['payment_id'], 'error' => 'payment not found'];
+                    continue;
+                }
+
+                $appointment = $payment->invoice?->appointment;
+                if (!$appointment || $appointment->doctor_id !== $doctor->id) {
+                    $errors[$index] = ['payment_id' => $refundData['payment_id'], 'error' => 'unauthorized: not your appointment'];
+                    continue;
+                }
+
+                $refundable = $payment->getRefundableAmount();
+                if ($refundable <= 0) {
+                    $errors[$index] = ['payment_id' => $refundData['payment_id'], 'error' => 'no refundable amount remaining'];
+                    continue;
+                }
+
+                if ($refundData['amount'] > $refundable) {
+                    $errors[$index] = ['payment_id' => $refundData['payment_id'], 'error' => "refund amount {$refundData['amount']} exceeds refundable {$refundable}"];
+                    continue;
+                }
+
+                $refund = $this->paymentService->refundPayment(
+                    $refundData['payment_id'],
+                    $refundData['amount'],
+                    $refundData['reason'] ?? null,
+                    auth()->id()
+                );
+
+                $results[] = [
+                    'refund_id' => $refund->id,
+                    'payment_id' => $refund->payment_id,
+                    'amount' => (float) $refund->amount,
+                    'reason' => $refund->reason,
+                    'refundable_remaining' => (float) $payment->fresh()->getRefundableAmount(),
+                    'invoice_status' => $payment->invoice->fresh()->status,
+                ];
+            }
+
+            if (empty($results) && !empty($errors)) {
+                return ApiResponse::error('all refunds failed', 422, ['errors' => $errors]);
+            }
+
+            return ApiResponse::success(
+                ['refunds' => $results, 'errors' => $errors],
+                count($results) . ' refund(s) processed' . (empty($errors) ? '' : ' with ' . count($errors) . ' error(s)')
+            );
+        } catch (\Exception $e) {
+            Log::error('Batch refund failed', ['error' => $e->getMessage()]);
             return ApiResponse::error('server error', 500);
         }
     }

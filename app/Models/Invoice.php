@@ -59,6 +59,11 @@ class Invoice extends Model
         return $this->payments()->whereNotNull('paid_at');
     }
 
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
+
     public function getRemainingBalance(): float
     {
         $totalPaid = $this->total_paid

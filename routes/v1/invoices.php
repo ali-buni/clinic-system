@@ -35,6 +35,8 @@ Route::middleware(['auth:sanctum', 'throttle:100,1'])->group(function () {
             ->middleware(['checkaccess:role:secretary,patient']);
         Route::delete('/{paymentId}', 'destroy')
             ->middleware(['checkaccess:role:owner']);
+        Route::post('/refund', 'refund')
+            ->middleware(['checkaccess:role:doctor']);
     });
 });
 Route::middleware(['auth:sanctum', 'throttle:100,1'])->controller(PaymentMethodController::class)->group(function () {
