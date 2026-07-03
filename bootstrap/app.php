@@ -1,8 +1,13 @@
 <?php
 
+use App\Http\Middleware\AddCorrelationId;
+use App\Http\Middleware\CheckAccess;
+use App\Services\ApiResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Spatie\Permission\Exceptions\UnauthorizedException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,16 +18,25 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'checkaccess' => \App\Http\Middleware\CheckAccess::class,
+            'checkaccess' => CheckAccess::class,
+            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
         $middleware->validateCsrfTokens(except: [
             'api/stripe/webhook',
         ]);
 
-        $middleware->appendToGroup('api', \App\Http\Middleware\AddCorrelationId::class);
+        $middleware->appendToGroup('api', AddCorrelationId::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->render(function (\Spatie\Permission\Exceptions\UnauthorizedException $e) {
-            return \App\Services\ApiResponse::permissionDenied();
+        $exceptions->render(function (UnauthorizedException $e) {
+            return ApiResponse::permissionDenied();
+        });
+
+        $exceptions->render(function (NotFoundHttpException $e) {
+            if (request()->is('admin/*') || request()->is('admin')) {
+                return response()->view('admin.errors.404', [], 404);
+            }
         });
     })->create();

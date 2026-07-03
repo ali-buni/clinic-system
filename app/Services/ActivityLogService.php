@@ -23,36 +23,36 @@ class ActivityLogService
         array $details = [],
         ?string $event = null
     ) {
-        // $user = auth()->user();
-        // $userId = auth()->id() ?? ($user->getAuthIdentifier() ?? null);
-        // $userName = $user->fname ?? 'System';
-        // $ip = request()->ip() ?? 'System';
+        $user = auth()->user();
+        $userId = auth()->id() ?? ($user?->getAuthIdentifier() ?? null);
+        $userName = $user->fname ?? 'System';
+        $ip = request()->ip() ?? 'System';
 
-        // $old = null;
-        // $new = null;
-        // if ($subject instanceof Model) {
-        //     $old = $subject->getOriginal();
-        //     $new = $subject->getAttributes();
-        // }
+        $old = null;
+        $new = null;
+        if ($subject instanceof Model) {
+            $old = $subject->getOriginal();
+            $new = $subject->getAttributes();
+        }
 
-        // $log = activity($logName)
-        //     ->performedOn($subject)
-        //     ->causedBy($causer)
-        //     ->withProperties(array_merge(
-        //         $details,
-        //         [
-        //             'user_id' => $userId,
-        //             'user_name' => $userName,
-        //             'ip' => $ip,
-        //             'old_value' => $old,
-        //             'new_value' => $new,
-        //         ]
-        //     ));
+        $log = activity($logName)
+            ->performedOn($subject)
+            ->causedBy($causer)
+            ->withProperties(array_merge(
+                $details,
+                [
+                    'user_id' => $userId,
+                    'user_name' => $userName,
+                    'ip' => $ip,
+                    'old_value' => $old,
+                    'new_value' => $new,
+                ]
+            ));
 
-        // if ($event !== null) {
-        //     $log->event($event);
-        // }
+        if ($event !== null) {
+            $log->event($event);
+        }
 
-        // $log->log($description);
+        $log->log($description);
     }
 }

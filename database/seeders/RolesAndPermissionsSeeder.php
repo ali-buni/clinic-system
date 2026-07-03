@@ -11,6 +11,14 @@ class RolesAndPermissionsSeeder extends Seeder
 {
     private const PERMISSIONS = [
         'admin',
+        'manage clinics',
+        'manage users',
+        'manage roles',
+        'view system data',
+        'manage settings',
+        'send payment urls',
+        'view activity logs',
+        'view structured logs',
         'manage patients',
         'view patients',
         'manage appointments',
@@ -26,6 +34,17 @@ class RolesAndPermissionsSeeder extends Seeder
     ];
 
     private const ROLES = [
+        'admin' => [
+            'admin',
+            'manage clinics',
+            'manage users',
+            'manage roles',
+            'view system data',
+            'manage settings',
+            'send payment urls',
+            'view activity logs',
+            'view structured logs',
+        ],
         'owner' => [
             'admin',
             'manage patients',
