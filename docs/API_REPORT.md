@@ -403,7 +403,6 @@ Register a new user. Public.
     "email": "newpatient@test.com", // required, unique
     "password": "password123",      // required, min:8, confirmed
     "password_confirmation": "password123", // required
-    "clinic_id": 1,                 // required, exists:clinics
     "dob": "1990-01-01",            // optional
     "gender": "male",               // optional
     "nationality": null,            // optional
@@ -2697,7 +2696,6 @@ Get patient details. Auth required.
                  "name":  "Salvador Daugherty",
                  "gender":  "female",
                  "profile_image":  null,
-                 "clinic_id":  1,
                  "nationality":  "Saint Martin",
                  "address":  "357 Jody Manors\nPort Camylle, MS 02399-4171",
                  "marital_status":  "single",
@@ -2749,7 +2747,6 @@ clinic_id=1
                      "name":  "Brycen Flatley",
                      "gender":  "male",
                      "profile_image":  null,
-                     "clinic_id":  1
                  }
              ],
     "pagination":  {
@@ -2813,12 +2810,6 @@ clinic_id=1
 
 List soft-deleted patients. Auth required.
 
-**Query Parameters:**
-
-```
-clinic_id=1
-```
-
 **Response (200) - Success:**
 
 ```json
@@ -2853,7 +2844,6 @@ Update patient info. Auth required.
 ```json
 {
     "patient_id": 1,                // required, exists:patient_infos
-    "clinic_id": 1,                 // optional, exists:clinics
     "fname": "Updated",             // optional
     "lname": "Name",                // optional
     "dob": "1990-01-01",            // optional, date, before:today
