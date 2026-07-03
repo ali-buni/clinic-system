@@ -34,6 +34,7 @@ Route::prefix('/v1/clinic-system')->group(function () {
     require __DIR__.'/v1/patient_records.php';
     require __DIR__.'/v1/ai.php';
     require __DIR__.'/v1/invoices.php';
+    require __DIR__.'/v1/doctor-withdrawals.php';
 });
 
 Route::fallback(function () {

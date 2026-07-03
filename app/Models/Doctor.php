@@ -19,7 +19,8 @@ class Doctor extends Model
         'room_id',
         'appointment_duration',
         'bio',
-        'consultation_fee'
+        'consultation_fee',
+        'stripe_connected_account_id',
     ];
 
     public function user(): BelongsTo
@@ -59,6 +60,16 @@ class Doctor extends Model
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class, 'room_id', 'id');
+    }
+
+    public function wallet()
+    {
+        return $this->hasOne(DoctorWallet::class);
+    }
+
+    public function withdrawals()
+    {
+        return $this->hasMany(DoctorWithdrawal::class);
     }
 
     public function getConsultationFeeAttribute(): ?float

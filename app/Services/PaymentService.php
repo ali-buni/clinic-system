@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentMethodType;
 use App\Exceptions\PaymentExceedsBalanceException;
+use App\Models\Doctor;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Payment_method;
@@ -15,6 +16,9 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentService
 {
+    public function __construct(
+        private readonly DoctorEarningsService $earningsService
+    ) {}
     public function processPayment(int $invoiceId, int $paymentMethodId, float $amount): array
     {
         return DB::transaction(function () use ($invoiceId, $paymentMethodId, $amount) {
@@ -67,6 +71,7 @@ class PaymentService
 
             if ($invoice) {
                 $this->syncInvoiceStatus($invoice);
+                $this->syncDoctorWallet($invoice);
             }
         });
     }
@@ -103,6 +108,7 @@ class PaymentService
             $invoice = Invoice::lockForUpdate()->find($payment->invoice_id);
             if ($invoice) {
                 $this->syncInvoiceStatus($invoice);
+                $this->syncDoctorWallet($invoice);
             }
 
             return $refund;
@@ -180,6 +186,7 @@ class PaymentService
 
             $payment->delete();
             $this->syncInvoiceStatus($invoice);
+            $this->syncDoctorWallet($invoice);
         });
     }
 
@@ -210,5 +217,17 @@ class PaymentService
             PaymentMethodType::BankTransfer => new \App\Services\Payment\Gateways\CashGateway(),
             default => throw new \InvalidArgumentException("No gateway for type: {$method->type->value}"),
         };
+    }
+
+    private function syncDoctorWallet(Invoice $invoice): void
+    {
+        if (!$invoice->appointment || !$invoice->appointment->doctor_id) {
+            return;
+        }
+
+        $doctor = Doctor::find($invoice->appointment->doctor_id);
+        if ($doctor) {
+            $this->earningsService->syncWalletBalance($doctor);
+        }
     }
 }

@@ -31,6 +31,9 @@ class RolesAndPermissionsSeeder extends Seeder
         'manage finances',
         'view finances',
         'manage m/d',
+        'manage withdrawals',
+        'view withdrawals',
+        'request withdrawal',
     ];
 
     private const ROLES = [
@@ -44,6 +47,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'send payment urls',
             'view activity logs',
             'view structured logs',
+            'manage withdrawals',
+            'view withdrawals',
         ],
         'owner' => [
             'admin',
@@ -71,6 +76,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'access records',
             'manage finances',
             'manage m/d',
+            'view withdrawals',
+            'request withdrawal',
         ],
         'secretary' => [
             'manage patients',

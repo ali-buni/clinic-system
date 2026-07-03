@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityLogController;
+use App\Http\Controllers\Admin\AdminWithdrawalController;
 use App\Http\Controllers\Admin\ClinicController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PaymentUrlController;
@@ -35,5 +36,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('structured-logs', [StructuredLogController::class, 'index'])->name('structured-logs.index');
         Route::get('structured-logs/{date}', [StructuredLogController::class, 'show'])->name('structured-logs.show');
         Route::get('structured-logs/{date}/download', [StructuredLogController::class, 'download'])->name('structured-logs.download');
+
+        Route::get('withdrawals', [AdminWithdrawalController::class, 'index'])->name('withdrawals.index');
+        Route::get('withdrawals/{withdrawal}', [AdminWithdrawalController::class, 'show'])->name('withdrawals.show');
+        Route::post('withdrawals/{withdrawal}/approve', [AdminWithdrawalController::class, 'approve'])->name('withdrawals.approve');
+        Route::post('withdrawals/{withdrawal}/reject', [AdminWithdrawalController::class, 'reject'])->name('withdrawals.reject');
     });
 });

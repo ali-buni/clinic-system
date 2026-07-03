@@ -20,6 +20,7 @@
                 <a href="{{ route('admin.clinics.index') }}" class="sidebar-link block px-3 py-2 rounded hover:bg-gray-800 {{ request()->routeIs('admin.clinics.*') ? 'active' : '' }}">Clinics</a>
                 <a href="{{ route('admin.users.index') }}" class="sidebar-link block px-3 py-2 rounded hover:bg-gray-800 {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">Users</a>
                 <a href="{{ route('admin.payment-urls.index') }}" class="sidebar-link block px-3 py-2 rounded hover:bg-gray-800 {{ request()->routeIs('admin.payment-urls.*') ? 'active' : '' }}">Payment URLs</a>
+                <a href="{{ route('admin.withdrawals.index') }}" class="sidebar-link block px-3 py-2 rounded hover:bg-gray-800 {{ request()->routeIs('admin.withdrawals.*') ? 'active' : '' }}">Withdrawals</a>
                 <a href="{{ route('admin.logs.index') }}" class="sidebar-link block px-3 py-2 rounded hover:bg-gray-800 {{ request()->routeIs('admin.logs.*') ? 'active' : '' }}">Activity Logs</a>
                 <a href="{{ route('admin.structured-logs.index') }}" class="sidebar-link block px-3 py-2 rounded hover:bg-gray-800 {{ request()->routeIs('admin.structured-logs.*') ? 'active' : '' }}">Structured Logs</a>
             </nav>

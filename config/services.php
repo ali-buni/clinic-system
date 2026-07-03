@@ -48,5 +48,6 @@ return [
         'currency' => env('STRIPE_CURRENCY', 'usd'),
         'success_url' => env('STRIPE_SUCCESS_URL', 'https://yourdomain.com/payment-success'),
         'cancel_url' => env('STRIPE_CANCEL_URL', 'https://yourdomain.com/payment-failed'),
+        'connected_account_type' => env('STRIPE_CONNECTED_ACCOUNT_TYPE', 'express'),
     ],
 ];
