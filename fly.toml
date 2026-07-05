@@ -1,0 +1,33 @@
+# fly.toml - Fly.io configuration for MediSync
+# https://fly.io/docs/reference/configuration/
+
+app = "medisync"
+primary_region = "ams"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  APP_ENV = "production"
+  APP_DEBUG = "false"
+  DB_CONNECTION = "mysql"
+  QUEUE_CONNECTION = "sync"
+  CACHE_STORE = "database"
+  SESSION_DRIVER = "database"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
