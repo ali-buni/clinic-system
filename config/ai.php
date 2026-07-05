@@ -5,7 +5,7 @@ return [
     | Comma-separated list of providers to try in order.
     | Example: AI_PROVIDER=groq,deepseek,ollama
     */
-    'default' => env('AI_PROVIDER', 'ollama'),
+    'default' => env('AI_PROVIDER', 'openrouter,groq,deepseek'),
 
     'providers' => [
         'ollama' => [
