@@ -1,80 +1,128 @@
 #!/bin/bash
 
 # ============================================================
-# Clinic System - Deploy Script for Fly.io
+# MediSync - Deploy Script for InfinityFree (Free)
 # ============================================================
 # Usage: bash deploy.sh
-# Run this script LOCALLY after installing flyctl
+# Run this script LOCALLY to prepare files for upload
 # ============================================================
 
 set -e
 
 echo "========================================="
-echo "  MediSync - Fly.io Deployment"
+echo "  MediSync - InfinityFree Deployment"
 echo "========================================="
 
-# 1. Check if flyctl is installed
-echo "[1/6] Checking flyctl..."
-if ! command -v flyctl &> /dev/null; then
-    echo "flyctl not found. Installing..."
-    curl -L https://fly.io/install.sh | sh
-    export PATH="$HOME/.fly/bin:$PATH"
+# 1. Check if composer is installed
+echo "[1/5] Checking Composer..."
+if ! command -v composer &> /dev/null; then
+    echo "Composer not found. Please install it first."
+    echo "Visit: https://getcomposer.org/download/"
+    exit 1
 fi
-echo "flyctl version: $(flyctl version)"
+echo "Composer version: $(composer --version)"
 
-# 2. Login to Fly.io
-echo "[2/6] Logging in to Fly.io..."
-flyctl auth login
+# 2. Install dependencies
+echo "[2/5] Installing Composer dependencies..."
+composer install --optimize-autoloader --no-dev --no-interaction
 
-# 3. Launch app (first time only)
-if [ ! -f fly.toml ]; then
-    echo "[3/6] Launching app..."
-    flyctl launch --copy-config --name medisync --region ams
-else
-    echo "[3/6] App already launched."
+# 3. Setup .env
+echo "[3/5] Setting up environment..."
+if [ ! -f .env ]; then
+    cp .env.example .env
+    echo ""
+    echo ">>> IMPORTANT: Edit .env with your production values!"
+    echo ">>> Run: nano .env"
+    echo ""
 fi
 
-# 4. Create MySQL database (first time only)
-echo "[4/6] Setting up MySQL..."
-echo ">>> IMPORTANT: Create a MySQL database addon from Fly.io Dashboard"
-echo ">>> Or use PlanetScale/ClearDB/External MySQL"
-echo ">>> Then set the DB_* env variables with: flyctl secrets set DB_HOST=xxx DB_DATABASE=xxx DB_USERNAME=xxx DB_PASSWORD=xxx"
+# 4. Generate APP_KEY
+echo "[4/5] Generating APP_KEY..."
+php artisan key:generate --force
 
-# 5. Set secrets
-echo "[5/6] Setting Fly.io secrets..."
-echo ">>> Run these commands to set your secrets:"
-echo ""
-echo "flyctl secrets set APP_KEY=base64:YOUR_KEY_HERE"
-echo "flyctl secrets set STRIPE_SECRET=sk_live_YOUR_KEY"
-echo "flyctl secrets set PUBLISHABLE_Key=pk_live_YOUR_KEY"
-echo "flyctl secrets set STRIPE_WEBHOOK_SECRET=whsec_YOUR_SECRET"
-echo "flyctl secrets set ACCOUNT_ID=acct_YOUR_ID"
-echo "flyctl secrets set OPENROUTER_API_KEY=sk-or-v1-YOUR_KEY"
-echo "flyctl secrets set GROQ_API_KEY=gsk_YOUR_KEY"
-echo "flyctl secrets set DEEPSEEK_API_KEY=YOUR_KEY"
-echo "flyctl secrets set GOOGLE_CLIENT_ID=YOUR_ID"
-echo "flyctl secrets set GOOGLE_CLIENT_SECRET=YOUR_SECRET"
-echo "flyctl secrets set CIPHERSWEET_KEY=YOUR_64_CHAR_HEX_KEY"
-echo "flyctl secrets set MAIL_USERNAME=your@gmail.com"
-echo "flyctl secrets set MAIL_PASSWORD=your_app_password"
-echo ""
+# 5. Create helper scripts
+echo "[5/5] Creating helper scripts..."
+mkdir -p scripts/byethost
 
-# 6. Deploy
-echo "[6/6] Deploying..."
-flyctl deploy
+cat > scripts/byethost/keygen.php << 'EOF'
+<?php
+require __DIR__ . '/vendor/autoload.php';
+$app = require_once __DIR__ . '/bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->call('key:generate');
+echo "APP_KEY generated. Check .env file.";
+EOF
+
+cat > scripts/byethost/migrate.php << 'EOF'
+<?php
+require __DIR__ . '/vendor/autoload.php';
+$app = require_once __DIR__ . '/bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$status = $kernel->handle(
+    $input = new Symfony\Component\Console\Input\ArgvInput,
+    new Symfony\Component\Console\Output\ConsoleOutput
+);
+echo "Migration completed with status: $status";
+EOF
+
+cat > scripts/byethost/storagelink.php << 'EOF'
+<?php
+require __DIR__ . '/vendor/autoload.php';
+$app = require_once __DIR__ . '/bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->call('storage:link');
+echo "Storage link created.";
+EOF
+
+cat > scripts/byethost/cache.php << 'EOF'
+<?php
+require __DIR__ . '/vendor/autoload.php';
+$app = require_once __DIR__ . '/bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->call('config:cache');
+$kernel->call('route:cache');
+$kernel->call('view:cache');
+echo "All caches built.";
+EOF
+
+echo "Helper scripts created in scripts/byethost/"
 
 echo ""
 echo "========================================="
-echo "  Deployment Complete!"
-echo "  URL: https://medisync.fly.dev"
+echo "  Ready for Upload!"
 echo "========================================="
 echo ""
-echo "Don't forget to:"
-echo "  1. Set all secrets: flyctl secrets set KEY=VALUE"
-echo "  2. Create MySQL database addon"
-echo "  3. Upload Firebase JSON: flyctl volumes create firebase_data"
-echo "  4. Configure Stripe Webhook: https://dashboard.stripe.com/webhooks"
-echo "     -> Add endpoint: https://medisync.fly.dev/api/stripe/webhook"
-echo "     -> Events: checkout.session.completed, payment_intent.succeeded, charge.refunded"
-echo "  5. Update Google OAuth redirect URI: https://medisync.fly.dev/api/auth/google/callback"
+echo "Files to upload via FTP to htdocs/:"
+echo "  - app/"
+echo "  - bootstrap/"
+echo "  - config/"
+echo "  - database/"
+echo "  - public/"
+echo "  - resources/"
+echo "  - routes/"
+echo "  - storage/"
+echo "  - vendor/"
+echo "  - .env"
+echo "  - artisan"
+echo ""
+echo "DO NOT upload:"
+echo "  - .git/"
+echo "  - node_modules/"
+echo "  - tests/"
+echo "  - docs/"
+echo "  - scripts/"
+echo ""
+echo "Connect via FileZilla:"
+echo "  Host: ftpupload.net"
+echo "  Username: if0_xxxxxxxx"
+echo "  Password: your_password"
+echo "  Port: 21"
+echo ""
+echo "Then visit these URLs in order:"
+echo "  1. http://clinic-system-cs.infinityfree.me/keygen.php"
+echo "  2. http://clinic-system-cs.infinityfree.me/migrate.php"
+echo "  3. http://clinic-system-cs.infinityfree.me/storagelink.php"
+echo "  4. http://clinic-system-cs.infinityfree.me/cache.php"
+echo ""
+echo "DELETE all PHP scripts after running!"
 echo ""
