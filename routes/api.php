@@ -4,6 +4,15 @@ use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Invoice\WebhookController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now()->toIso8601String(),
+        'app' => config('app.name'),
+        'env' => config('app.env'),
+    ]);
+});
+
 Route::post('stripe/webhook', [WebhookController::class, 'handle']);
 
 Route::prefix('/auth')->controller(GoogleAuthController::class)->group(function () {
