@@ -8,8 +8,10 @@ Route::prefix('/specialties')->controller(DoctorSpecialtyController::class)->gro
         Route::post('/', 'attachSpecialties');
         Route::delete('/{specialId}', 'detachSpecialty');
         Route::post('/{specialtyId}/primary', 'changePrimary');
-        Route::get('/doctor/{doctorId}/primary', 'showPrimary');
-        Route::get('/doctor/{doctorId}', 'showDoctorSpecialties');
+        Route::get('/doctor/{doctorId}/primary', 'showPrimary')
+            ->middleware('resourceAccess:doctor_self:doctorId');
+        Route::get('/doctor/{doctorId}', 'showDoctorSpecialties')
+            ->middleware('resourceAccess:doctor_self:doctorId');
     });
     Route::get('/', 'index');
 });

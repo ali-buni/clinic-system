@@ -7,22 +7,20 @@ Route::prefix('/schedule-overrides')->controller(ScheduleOverrideController::cla
     Route::middleware([
         'auth:sanctum',
         'throttle:100,1',
-        'checkaccess:role:doctor,secretary,owner',
-        'checkaccess:permission:manage overrides',
     ])->group(function () {
-        Route::post('/', 'store');
-        Route::put('/{id}', 'update');
-        Route::delete('/{id}', 'destroy');
-    });
-    Route::middleware([
-        'auth:sanctum',
-        'throttle:100,1',
-        'checkaccess:role:doctor,secretary,owner',
-        'checkaccess:permission:view overrides',
-    ])->group(function () {
-        Route::get('/{id}', 'show');
-        Route::get('/', 'index');
-        Route::get('/date/single', 'getByDate');
-        Route::get('/date/range', 'getByDateRange');
+        Route::post('/', 'store')
+            ->middleware(['checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:manage overrides', 'resourceAccess:doctor_self:doctor_id']);
+        Route::put('/{id}', 'update')
+            ->middleware(['checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:manage overrides', 'resourceAccess:doctor_self:doctor_id']);
+        Route::delete('/{id}', 'destroy')
+            ->middleware(['checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:manage overrides', 'resourceAccess:owns:Schedule_override:id']);
+        Route::get('/{id}', 'show')
+            ->middleware(['checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:view overrides', 'resourceAccess:doctor_self:doctor_id']);
+        Route::get('/', 'index')
+            ->middleware(['checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:view overrides', 'resourceAccess:doctor_self:doctor_id']);
+        Route::get('/date/single', 'getByDate')
+            ->middleware(['checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:view overrides', 'resourceAccess:doctor_self:doctor_id']);
+        Route::get('/date/range', 'getByDateRange')
+            ->middleware(['checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:view overrides', 'resourceAccess:doctor_self:doctor_id']);
     });
 });

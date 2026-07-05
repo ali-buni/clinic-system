@@ -11,7 +11,7 @@ Route::middleware(['auth:sanctum', 'throttle:100,1'])->prefix('/secretaries')->c
     Route::post('/update', 'update')
         ->middleware(['checkaccess:role:secretary']);
     Route::delete('/{id}/leave', 'destroy')
-        ->middleware(['checkaccess:role:owner', 'checkaccess:permission:admin']);
+        ->middleware(['checkaccess:role:owner', 'checkaccess:permission:admin', 'resourceAccess:owns:Secretary:id']);
     Route::post('/{id}/restore', 'restore')->withTrashed()
-        ->middleware(['checkaccess:role:owner', 'checkaccess:permission:admin']);
+        ->middleware(['checkaccess:role:owner', 'checkaccess:permission:admin', 'resourceAccess:owns:Secretary:id']);
 });
