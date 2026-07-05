@@ -25,10 +25,6 @@ class MedicineController extends Controller
 
         $apiResults = $apiService->searchMedicines($request->query('query'));
 
-        if (empty($apiResults) && empty($local->items())) {
-            return ApiResponse::error('no medicines found');
-        }
-
         return ApiResponse::success(array_merge($local->items(), $apiResults), 'Medicines search results retrieved successfully.');
     }
 

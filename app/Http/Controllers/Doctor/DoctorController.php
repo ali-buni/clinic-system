@@ -90,7 +90,7 @@ class DoctorController extends Controller
             $clinicId = $user->clinicOwner?->id ?? $user->secretaryProfile?->clinic_id;
 
             $query = Doctor::where('clinic_id', $clinicId)
-                ->with(['user', 'specialties'])
+                ->with(['user', 'specialties', 'room'])
                 ->withTrashed();
 
             $result = ModelFilter::filter($query, $validated);

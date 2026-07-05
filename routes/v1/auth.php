@@ -3,7 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
-Route::controller(AuthController::class)->group(function () {
+Route::prefix('/auth')->controller(AuthController::class)->group(function () {
     Route::post('/login', 'login')->middleware('throttle:25,1');
     Route::post('/register', 'register')->middleware('throttle:25,1');
     Route::post('/forgot-password', 'forgotPassword')->middleware('throttle:25,1');

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Appointment\AppointmentTypeController;
 use Illuminate\Support\Facades\Route;
 
+// TODO: to Admin
 Route::prefix('appointment-types')->controller(AppointmentTypeController::class)->group(function () {
     Route::get('/', 'index');
     Route::post('/', 'add')

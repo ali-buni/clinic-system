@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AddCorrelationId;
 use App\Http\Middleware\CheckAccess;
+use App\Http\Middleware\CheckResourceAccess;
 use App\Services\ApiResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'checkaccess' => CheckAccess::class,
+            'resourceAccess' => CheckResourceAccess::class,
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
