@@ -6,4 +6,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok'], 200);
+});
+
 require __DIR__ . '/admin.php';
