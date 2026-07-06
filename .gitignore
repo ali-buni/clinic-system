@@ -1,0 +1,7 @@
+/vendor/
+.env
+.phpunit.result.cache
+storage/*.key
+bootstrap/cache/*.php
+.DS_Store
+
