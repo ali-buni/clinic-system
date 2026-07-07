@@ -15,11 +15,11 @@ class RoomServices
     public function __construct(
         private readonly ActivityLogService $activityLog,
     ) {}
+
     /**
      * Create a new room.
      *
-     * @param array $data Room data
-     * @return Room
+     * @param  array  $data  Room data
      */
     public function createRoom(array $data): Room
     {
@@ -30,18 +30,12 @@ class RoomServices
                 'clinic_id' => $data['clinic_id'] ?? null,
             ], 'created'
         );
-        Log::channel('structured')->info('room created', [
-            'room_id' => $room->id, 'clinic_id' => $data['clinic_id'] ?? null,
-        ]);
 
         return $room;
     }
 
     /**
      * Delete a room by ID.
-     *
-     * @param int $id
-     * @return bool
      */
     public function deleteRoom(int $id): bool
     {
@@ -50,17 +44,12 @@ class RoomServices
         $this->activityLog->log(
             'room', 'deleted room', null, null, ['room_id' => $id], 'deleted'
         );
-        Log::channel('structured')->info('room deleted', ['room_id' => $id]);
 
         return $result;
     }
 
     /**
      * Update a room by ID.
-     *
-     * @param int $id
-     * @param array $data
-     * @return bool
      */
     public function updateRoom(int $id, array $data): bool
     {
@@ -73,9 +62,6 @@ class RoomServices
                     'updated_fields' => array_keys($data),
                 ], 'updated'
             );
-            Log::channel('structured')->info('room updated', [
-                'room_id' => $id, 'updated_fields' => array_keys($data),
-            ]);
         }
 
         return $result;
@@ -84,9 +70,6 @@ class RoomServices
     /**
      * Get all rooms for a clinic with eager-loaded relationships.
      * Eager loads doctors and secretaries with their user information to prevent N+1 queries.
-     *
-     * @param int $clinicId
-     * @return Collection
      */
     public function getRooms(int $clinicId): Collection
     {
@@ -98,9 +81,6 @@ class RoomServices
 
     /**
      * Get a single room by ID with eager-loaded relationships.
-     *
-     * @param int $id
-     * @return Room|null
      */
     public function getRoomById(int $id): ?Room
     {
@@ -113,8 +93,6 @@ class RoomServices
      * Assign a doctor to a room.
      * Validates clinic ownership before assignment.
      *
-     * @param int $roomId
-     * @param int $doctorId
      * @return Doctor|null
      */
     public function addDoctorToRoom(int $roomId, int $doctorId): bool
@@ -123,10 +101,11 @@ class RoomServices
             $room = Room::find($roomId);
             $doctor = Doctor::find($doctorId);
 
-            if (!$room || !$doctor || $room->clinic_id !== $doctor->clinic_id) {
+            if (! $room || ! $doctor || $room->clinic_id !== $doctor->clinic_id) {
                 Log::channel('structured')->warning('addDoctorToRoom failed - clinic mismatch', [
                     'room_id' => $roomId, 'doctor_id' => $doctorId,
                 ]);
+
                 return null;
             }
 
@@ -138,9 +117,6 @@ class RoomServices
             $this->activityLog->log(
                 'room', 'assigned doctor to room', $doctor, null, ['room_id' => $roomId], 'updated'
             );
-            Log::channel('structured')->info('doctor assigned to room', [
-                'doctor_id' => $doctorId, 'room_id' => $roomId,
-            ]);
 
             return true;
         }, attempts: 3);
@@ -148,10 +124,6 @@ class RoomServices
 
     /**
      * Remove a doctor from a room.
-     *
-     * @param int $roomId
-     * @param int $doctorId
-     * @return bool
      */
     public function delDoctorFromRoom(int $roomId, int $doctorId): bool
     {
@@ -161,10 +133,11 @@ class RoomServices
                 ->where('room_id', $roomId)
                 ->first();
 
-            if (!$doctor) {
+            if (! $doctor) {
                 Log::channel('structured')->warning('delDoctorFromRoom - doctor not in room', [
                     'doctor_id' => $doctorId, 'room_id' => $roomId,
                 ]);
+
                 return false;
             }
 
@@ -176,9 +149,6 @@ class RoomServices
             $this->activityLog->log(
                 'room', 'removed doctor from room', $doctor, null, ['room_id' => $roomId], 'updated'
             );
-            Log::channel('structured')->info('doctor removed from room', [
-                'doctor_id' => $doctorId, 'room_id' => $roomId,
-            ]);
 
             return true;
         }, attempts: 3);
@@ -187,20 +157,17 @@ class RoomServices
     /**
      * Assign a secretary to multiple rooms.
      * Validates clinic ownership before assignment.
-     *
-     * @param array $roomIds
-     * @param int $secretaryId
-     * @return bool
      */
     public function addSecretaryToRoom(array $roomIds, int $secretaryId): bool
     {
         return DB::transaction(function () use ($roomIds, $secretaryId) {
             $secretary = Secretary::find($secretaryId);
 
-            if (!$secretary) {
+            if (! $secretary) {
                 Log::channel('structured')->warning('addSecretaryToRoom - secretary not found', [
                     'secretary_id' => $secretaryId,
                 ]);
+
                 return false;
             }
 
@@ -213,6 +180,7 @@ class RoomServices
                 Log::channel('structured')->warning('addSecretaryToRoom - no valid rooms', [
                     'secretary_id' => $secretaryId, 'requested_rooms' => $roomIds,
                 ]);
+
                 return false;
             }
 
@@ -225,9 +193,6 @@ class RoomServices
             $this->activityLog->log(
                 'room', 'assigned secretary to rooms', $secretary, null, ['room_ids' => $validRooms], 'updated'
             );
-            Log::channel('structured')->info('secretary assigned to rooms', [
-                'secretary_id' => $secretaryId, 'room_ids' => $validRooms,
-            ]);
 
             return true;
         }, attempts: 3);
@@ -236,20 +201,17 @@ class RoomServices
     /**
      * Remove a secretary from multiple rooms.
      * Validates clinic ownership before removal.
-     *
-     * @param array $roomIds
-     * @param int $secretaryId
-     * @return bool
      */
     public function delSecretaryFromRoom(array $roomIds, int $secretaryId): bool
     {
         return DB::transaction(function () use ($roomIds, $secretaryId) {
             $secretary = Secretary::find($secretaryId);
 
-            if (!$secretary) {
+            if (! $secretary) {
                 Log::channel('structured')->warning('delSecretaryFromRoom - secretary not found', [
                     'secretary_id' => $secretaryId,
                 ]);
+
                 return false;
             }
 
@@ -262,6 +224,7 @@ class RoomServices
                 Log::channel('structured')->warning('delSecretaryFromRoom - no valid rooms', [
                     'secretary_id' => $secretaryId, 'requested_rooms' => $roomIds,
                 ]);
+
                 return false;
             }
 
@@ -274,9 +237,6 @@ class RoomServices
             $this->activityLog->log(
                 'room', 'removed secretary from rooms', $secretary, null, ['room_ids' => $validRooms], 'updated'
             );
-            Log::channel('structured')->info('secretary removed from rooms', [
-                'secretary_id' => $secretaryId, 'room_ids' => $validRooms,
-            ]);
 
             return true;
         }, attempts: 3);

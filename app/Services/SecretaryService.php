@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Helpers\PermissionHelper;
 use App\Models\Room;
 use App\Models\Secretary;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -29,17 +29,17 @@ class SecretaryService
      * Handles room reassignment and updates user permissions accordingly.
      * Ensures atomicity with database transactions.
      *
-     * @param int $id
-     * @param array $data Secretary and user data
-     * @return Secretary|null
+     * @param  int  $id
+     * @param  array  $data  Secretary and user data
      */
     public function update($id, array $data): ?Secretary
     {
         return DB::transaction(function () use ($id, $data) {
             $secretary = Secretary::with('user')->find($id);
 
-            if (!$secretary) {
+            if (! $secretary) {
                 Log::channel('structured')->warning('secretary update - not found', ['secretary_id' => $id]);
+
                 return null;
             }
 
@@ -52,9 +52,6 @@ class SecretaryService
             $this->activityLog->log('secretary', 'secretary updated', $secretary, null, [
                 'updated_fields' => array_keys($data),
             ], 'updated');
-            Log::channel('structured')->info('secretary updated', [
-                'secretary_id' => $id, 'updated_fields' => array_keys($data),
-            ]);
 
             return $secretary;
         }, attempts: 3);
@@ -63,9 +60,7 @@ class SecretaryService
     /**
      * Update user profile fields from secretary data.
      *
-     * @param \App\Models\User $user
-     * @param array $data
-     * @return void
+     * @param  User  $user
      */
     private function updateUserProfile($user, array $data): void
     {

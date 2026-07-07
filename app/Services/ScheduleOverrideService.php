@@ -7,7 +7,6 @@ use App\Models\Schedule_override;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Log;
 
 class ScheduleOverrideService
 {
@@ -24,9 +23,6 @@ class ScheduleOverrideService
         $this->activityLog->log('schedule', 'schedule override created', $override, null, [
             'doctor_id' => $doctor->id, 'date' => $data['override_date'] ?? null,
         ], 'created');
-        Log::channel('structured')->info('schedule override created', [
-            'doctor_id' => $doctor->id, 'override_id' => $override->id, 'date' => $data['override_date'] ?? null,
-        ]);
 
         return $override;
     }
@@ -35,7 +31,7 @@ class ScheduleOverrideService
     {
         $override = $doctor->scheduleOverrides()->find($overrideId);
 
-        if (!$override) {
+        if (! $override) {
             throw new Exception('record_not_found');
         }
 
@@ -47,9 +43,6 @@ class ScheduleOverrideService
         $this->activityLog->log('schedule', 'schedule override updated', $override, null, [
             'doctor_id' => $doctor->id,
         ], 'updated');
-        Log::channel('structured')->info('schedule override updated', [
-            'doctor_id' => $doctor->id, 'override_id' => $overrideId,
-        ]);
 
         return $override->fresh();
     }
@@ -58,7 +51,7 @@ class ScheduleOverrideService
     {
         $override = $doctor->scheduleOverrides()->find($overrideId);
 
-        if (!$override) {
+        if (! $override) {
             throw new Exception('record_not_found');
         }
 
@@ -67,9 +60,6 @@ class ScheduleOverrideService
         $this->activityLog->log('schedule', 'schedule override deleted', null, null, [
             'doctor_id' => $doctor->id, 'override_id' => $overrideId,
         ], 'deleted');
-        Log::channel('structured')->info('schedule override deleted', [
-            'doctor_id' => $doctor->id, 'override_id' => $overrideId,
-        ]);
 
         return $result;
     }
@@ -100,7 +90,7 @@ class ScheduleOverrideService
     private function validateNoOverlap(Doctor $doctor, array $data, int $ignoreId = 0): void
     {
         $date = $data['override_date'] ?? null;
-        if (!$date) {
+        if (! $date) {
             return;
         }
 
@@ -122,9 +112,9 @@ class ScheduleOverrideService
             }
 
             $newStart = isset($data['start_time']) ? Carbon::parse($data['start_time']) : null;
-            $newEnd   = isset($data['end_time']) ? Carbon::parse($data['end_time']) : null;
+            $newEnd = isset($data['end_time']) ? Carbon::parse($data['end_time']) : null;
             $existingStart = $existing->start_time ? Carbon::parse($existing->start_time) : null;
-            $existingEnd   = $existing->end_time ? Carbon::parse($existing->end_time) : null;
+            $existingEnd = $existing->end_time ? Carbon::parse($existing->end_time) : null;
 
             if ($newStart && $newEnd && $existingStart && $existingEnd) {
                 if ($newStart->lt($existingEnd) && $newEnd->gt($existingStart)) {

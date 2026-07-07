@@ -6,11 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\User;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private readonly ActivityLogService $activityLog
+    ) {}
+
     public function index(Request $request)
     {
         $query = User::with('roles');
@@ -84,7 +89,17 @@ class UserController extends Controller
         $user->update($data);
 
         if ($role && $user->roles->first()?->name !== $role) {
+            $oldRole = $user->roles->first()?->name;
             $user->syncRoles([$role]);
+
+            $this->activityLog->log(
+                'user',
+                'changed user role',
+                $user,
+                auth()->user(),
+                ['old_role' => $oldRole, 'new_role' => $role],
+                'role_changed'
+            );
         }
 
         return redirect()->route('admin.users.show', $user)->with('success', 'User updated successfully.');

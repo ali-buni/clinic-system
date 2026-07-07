@@ -43,7 +43,7 @@ class StripeGateway implements PaymentGatewayInterface
                 'quantity' => 1,
             ]],
             'mode' => 'payment',
-            'success_url' => config('services.stripe.success_url') . '?session_id={CHECKOUT_SESSION_ID}',
+            'success_url' => config('services.stripe.success_url').'?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => config('services.stripe.cancel_url'),
             'metadata' => [
                 'invoice_id' => (string) $invoice->id,
@@ -63,7 +63,7 @@ class StripeGateway implements PaymentGatewayInterface
 
     public function confirmPayment(Payment $payment): void
     {
-        if (!$payment->stripe_session_id) {
+        if (! $payment->stripe_session_id) {
             return;
         }
 
@@ -74,7 +74,7 @@ class StripeGateway implements PaymentGatewayInterface
                 'stripe_payment_intent_id' => $session->payment_intent,
             ]);
         } catch (ApiErrorException $e) {
-            Log::warning('Failed to retrieve Stripe session for payment', [
+            Log::channel('structured')->warning('Failed to retrieve Stripe session for payment', [
                 'payment_id' => $payment->id,
                 'session_id' => $payment->stripe_session_id,
                 'error' => $e->getMessage(),
@@ -84,7 +84,7 @@ class StripeGateway implements PaymentGatewayInterface
 
     public function cancelPayment(Payment $payment): void
     {
-        if (!$payment->stripe_payment_intent_id) {
+        if (! $payment->stripe_payment_intent_id) {
             return;
         }
 
@@ -92,11 +92,12 @@ class StripeGateway implements PaymentGatewayInterface
             $paymentIntent = PaymentIntent::retrieve($payment->stripe_payment_intent_id);
 
             if ($paymentIntent->status !== PaymentIntent::STATUS_SUCCEEDED) {
-                Log::warning('Cannot refund unpaid payment intent', [
+                Log::channel('structured')->warning('Cannot refund unpaid payment intent', [
                     'payment_id' => $payment->id,
                     'payment_intent' => $payment->stripe_payment_intent_id,
                     'status' => $paymentIntent->status,
                 ]);
+
                 return;
             }
 
@@ -104,7 +105,7 @@ class StripeGateway implements PaymentGatewayInterface
                 'payment_intent' => $payment->stripe_payment_intent_id,
             ]);
         } catch (ApiErrorException $e) {
-            Log::error('Stripe refund failed', [
+            Log::channel('structured')->error('Stripe refund failed (cancelPayment)', [
                 'payment_id' => $payment->id,
                 'payment_intent' => $payment->stripe_payment_intent_id,
                 'error' => $e->getMessage(),
@@ -115,7 +116,7 @@ class StripeGateway implements PaymentGatewayInterface
 
     public function refundPayment(Payment $payment, float $amount): array
     {
-        if (!$payment->stripe_payment_intent_id || $amount <= 0) {
+        if (! $payment->stripe_payment_intent_id || $amount <= 0) {
             return ['stripe_refund_id' => null];
         }
 
@@ -127,7 +128,7 @@ class StripeGateway implements PaymentGatewayInterface
 
             return ['stripe_refund_id' => $refund->id];
         } catch (ApiErrorException $e) {
-            Log::error('Stripe refund failed', [
+            Log::channel('structured')->error('Stripe refund failed (refundPayment)', [
                 'payment_id' => $payment->id,
                 'payment_intent' => $payment->stripe_payment_intent_id,
                 'amount' => $amount,

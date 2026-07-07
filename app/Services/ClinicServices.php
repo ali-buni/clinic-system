@@ -17,10 +17,11 @@ class ClinicServices
     public function __construct(
         private readonly ActivityLogService $activityLog,
     ) {}
+
     /**
      * Create a new doctor account with associated permissions.
      *
-     * @param array $data Doctor creation data with password generated
+     * @param  array  $data  Doctor creation data with password generated
      * @return bool Success indicator
      */
     public function createDoctor(array $data): bool
@@ -56,10 +57,10 @@ class ClinicServices
                 try {
                     event(new SendMsgEvent(
                         $user->phone,
-                        config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
+                        config('app.name').": Your password is: {$temporaryPassword}. Please change it after login."
                     ));
                 } catch (\Exception $e) {
-                    throw new RuntimeException('Failed to send SMS: ' . $e->getMessage());
+                    throw new RuntimeException('Failed to send SMS: '.$e->getMessage());
                 }
             }
 
@@ -68,9 +69,6 @@ class ClinicServices
                     'clinic_id' => $data['clinic_id'],
                 ], 'created'
             );
-            Log::channel('structured')->info('doctor account created', [
-                'user_id' => $user->id, 'doctor_id' => $doctor->id, 'clinic_id' => $data['clinic_id'],
-            ]);
 
             return true;
         }, attempts: 3);
@@ -79,7 +77,7 @@ class ClinicServices
     /**
      * Create a new secretary account with associated permissions.
      *
-     * @param array $data Secretary creation data with password generated
+     * @param  array  $data  Secretary creation data with password generated
      * @return bool Success indicator
      */
     public function createSecretary(array $data): bool
@@ -105,7 +103,7 @@ class ClinicServices
             ]);
 
             $roomIds = array_values(array_filter(array_map('intval', $roomIds)));
-            if (!empty($roomIds)) {
+            if (! empty($roomIds)) {
                 $secretary->rooms()->sync($roomIds);
                 foreach ($roomIds as $rId) {
                     PermissionHelper::grantRoomPermission($user, $rId);
@@ -115,10 +113,10 @@ class ClinicServices
                 try {
                     event(new SendMsgEvent(
                         $user->phone,
-                        config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
+                        config('app.name').": Your password is: {$temporaryPassword}. Please change it after login."
                     ));
                 } catch (\Exception $e) {
-                    throw new RuntimeException('Failed to send SMS: ' . $e->getMessage());
+                    throw new RuntimeException('Failed to send SMS: '.$e->getMessage());
                 }
             }
 
@@ -127,9 +125,6 @@ class ClinicServices
                     'clinic_id' => $data['clinic_id'],
                 ], 'created'
             );
-            Log::channel('structured')->info('secretary account created', [
-                'user_id' => $user->id, 'secretary_id' => $secretary->id, 'clinic_id' => $data['clinic_id'],
-            ]);
 
             return true;
         }, attempts: 3);
@@ -138,8 +133,6 @@ class ClinicServices
     /**
      * Update clinic information.
      *
-     * @param int $clinicId
-     * @param array $data
      * @return bool Success indicator
      */
     public function updateClinicInfo(int $clinicId, array $data): bool
@@ -147,8 +140,9 @@ class ClinicServices
         return DB::transaction(function () use ($clinicId, $data) {
             $clinic = Clinic::find($clinicId);
 
-            if (!$clinic) {
+            if (! $clinic) {
                 Log::channel('structured')->warning('updateClinicInfo - clinic not found', ['clinic_id' => $clinicId]);
+
                 return false;
             }
 
@@ -159,9 +153,6 @@ class ClinicServices
                     'updated_fields' => array_keys($data),
                 ], 'updated'
             );
-            Log::channel('structured')->info('clinic info updated', [
-                'clinic_id' => $clinicId, 'updated_fields' => array_keys($data),
-            ]);
 
             return $result;
         }, attempts: 3);
@@ -169,9 +160,6 @@ class ClinicServices
 
     /**
      * Get clinic information with eager-loaded relationships.
-     *
-     * @param int $userId
-     * @return Clinic|null
      */
     public function getClinicInfoByOwner(int $userId): ?Clinic
     {

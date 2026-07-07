@@ -4,11 +4,11 @@ namespace App\Services;
 
 use App\Models\Doctor;
 use App\Models\Work_hour;
-use Exception;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class DoctorScheduleService
 {
@@ -22,7 +22,7 @@ class DoctorScheduleService
             throw new Exception('day_already_exists');
         }
 
-        if (!$doctor->room_id || $this->hasRoomConflict($doctor->room_id, $data['day_of_week'], $data['start_time'], $data['end_time'])) {
+        if (! $doctor->room_id || $this->hasRoomConflict($doctor->room_id, $data['day_of_week'], $data['start_time'], $data['end_time'])) {
             throw new Exception('room_conflict');
         }
 
@@ -32,9 +32,6 @@ class DoctorScheduleService
         $this->activityLog->log('schedule', 'work hour created', $workHour, null, [
             'doctor_id' => $doctor->id, 'day_of_week' => $data['day_of_week'],
         ], 'created');
-        Log::channel('structured')->info('work hour created', [
-            'doctor_id' => $doctor->id, 'work_hour_id' => $workHour->id, 'day_of_week' => $data['day_of_week'],
-        ]);
 
         return $workHour;
     }
@@ -45,7 +42,7 @@ class DoctorScheduleService
             ->where('day_of_week', $dayOfWeek)
             ->where('doctor_id', $doctor->id)
             ->first();
-        if (!$workHour) {
+        if (! $workHour) {
             throw new Exception('record_not_found');
         }
         if (isset($data['day_of_week']) && $data['day_of_week'] != $workHour->day_of_week) {
@@ -61,7 +58,7 @@ class DoctorScheduleService
         $start = $data['start_time'] ?? $workHour->start_time;
         $end = $data['end_time'] ?? $workHour->end_time;
 
-        if (!$doctor->room_id || $this->hasRoomConflict($doctor->room_id, $day, $start, $end, $workHour->id)) {
+        if (! $doctor->room_id || $this->hasRoomConflict($doctor->room_id, $day, $start, $end, $workHour->id)) {
             throw new Exception('room_conflict');
         }
 
@@ -71,9 +68,6 @@ class DoctorScheduleService
         $this->activityLog->log('schedule', 'work hour updated', $workHour, null, [
             'doctor_id' => $doctor->id, 'day_of_week' => $workHour->day_of_week,
         ], 'updated');
-        Log::channel('structured')->info('work hour updated', [
-            'doctor_id' => $doctor->id, 'work_hour_id' => $workHour->id, 'day_of_week' => $workHour->day_of_week,
-        ]);
 
         return $workHour;
     }
@@ -81,7 +75,7 @@ class DoctorScheduleService
     public function deleteWorkHour(Doctor $doctor, int $workHourId): bool
     {
         $workHour = $doctor->workHours()->find($workHourId);
-        if (!$workHour) {
+        if (! $workHour) {
             throw new Exception('record_not_found');
         }
 
@@ -95,14 +89,11 @@ class DoctorScheduleService
         $this->activityLog->log('schedule', 'work hour deleted', null, null, [
             'doctor_id' => $doctor->id, 'work_hour_id' => $workHourId,
         ], 'deleted');
-        Log::channel('structured')->info('work hour deleted', [
-            'doctor_id' => $doctor->id, 'work_hour_id' => $workHourId,
-        ]);
 
         return $result;
     }
 
-    public function getDoctorWeeklySchedule(Doctor $doctor): \Illuminate\Support\Collection
+    public function getDoctorWeeklySchedule(Doctor $doctor): Collection
     {
         return $doctor->workHours()
             ->get();

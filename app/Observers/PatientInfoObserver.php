@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Models\PatientInfo;
 use App\Services\ActivityLogService;
-use Illuminate\Support\Facades\Log;
 
 class PatientInfoObserver
 {
@@ -22,7 +21,6 @@ class PatientInfoObserver
             [],
             'created'
         );
-        Log::channel('structured')->info('patient info created', ['patient_info_id' => $patientInfo->id]);
     }
 
     public function updated(PatientInfo $patientInfo): void
@@ -35,7 +33,6 @@ class PatientInfoObserver
             [],
             'updated'
         );
-        Log::channel('structured')->info('patient info updated', ['patient_info_id' => $patientInfo->id]);
     }
 
     public function deleted(PatientInfo $patientInfo): void
@@ -48,7 +45,6 @@ class PatientInfoObserver
             [],
             'deleted'
         );
-        Log::channel('structured')->info('patient info deleted', ['patient_info_id' => $patientInfo->id]);
     }
 
     public function restored(PatientInfo $patientInfo): void
@@ -61,6 +57,5 @@ class PatientInfoObserver
             [],
             'restored'
         );
-        Log::channel('structured')->info('patient info restored', ['patient_info_id' => $patientInfo->id]);
     }
 }

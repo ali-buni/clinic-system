@@ -4,21 +4,35 @@ namespace App\Providers;
 
 use App\Models\Appointment;
 use App\Models\Doctor;
+use App\Models\DoctorWallet;
+use App\Models\DoctorWithdrawal;
 use App\Models\Invoice;
-use App\Models\PatientInfo;
+use App\Models\Item;
 use App\Models\Patient_record;
+use App\Models\PatientInfo;
+use App\Models\Payment;
+use App\Models\Payment_method;
+use App\Models\Refund;
 use App\Models\User;
+use App\Models\Verification_code;
 use App\Observers\AppointmentObserver;
 use App\Observers\DoctorObserver;
+use App\Observers\DoctorWalletObserver;
+use App\Observers\DoctorWithdrawalObserver;
 use App\Observers\InvoiceObserver;
+use App\Observers\ItemObserver;
 use App\Observers\PatientInfoObserver;
 use App\Observers\PatientRecordObserver;
+use App\Observers\PaymentMethodObserver;
+use App\Observers\PaymentObserver;
+use App\Observers\RefundObserver;
 use App\Observers\UserObserver;
-use App\Services\Analytics\SettingService;
+use App\Observers\VerificationCodeObserver;
 use App\Services\Ai\Contracts\AiProviderInterface;
 use App\Services\Ai\MultiProviderRouter;
 use App\Services\Ai\OllamaClient;
 use App\Services\Ai\OpenAiCompatibleProvider;
+use App\Services\Analytics\SettingService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -43,7 +57,7 @@ class AppServiceProvider extends ServiceProvider
     private function buildSingleProvider(string $name): AiProviderInterface
     {
         $config = config("ai.providers.{$name}");
-        if (!$config) {
+        if (! $config) {
             throw new \RuntimeException("AI provider '{$name}' is not configured in config/ai.php");
         }
 
@@ -70,7 +84,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         if (empty($providers)) {
-            throw new \RuntimeException('No AI providers could be initialized from the chain: ' . implode(',', $providerNames));
+            throw new \RuntimeException('No AI providers could be initialized from the chain: '.implode(',', $providerNames));
         }
 
         return new MultiProviderRouter($providers, $names);
@@ -84,5 +98,12 @@ class AppServiceProvider extends ServiceProvider
         Doctor::observe(DoctorObserver::class);
         User::observe(UserObserver::class);
         Invoice::observe(InvoiceObserver::class);
+        Payment::observe(PaymentObserver::class);
+        Payment_method::observe(PaymentMethodObserver::class);
+        Item::observe(ItemObserver::class);
+        Refund::observe(RefundObserver::class);
+        DoctorWallet::observe(DoctorWalletObserver::class);
+        DoctorWithdrawal::observe(DoctorWithdrawalObserver::class);
+        Verification_code::observe(VerificationCodeObserver::class);
     }
 }

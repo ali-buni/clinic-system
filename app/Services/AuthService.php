@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Verification_code;
 use App\Notifications\SendPasswordResetCode;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +15,6 @@ use Illuminate\Support\Facades\Notification;
 
 class AuthService
 {
-
     public function __construct(
         private ApiResponse $apiResponse,
         private ActivityLogService $activityLog,
@@ -25,10 +25,12 @@ class AuthService
         try {
             $this->revokeToken($request);
 
-            $this->activityLog->log('User logged out', 'User logged out', new User(), $request->user());
+            $this->activityLog->log('auth', 'User logged out', $request->user(), $request->user());
+
             return $this->apiResponse->success(null, 'Logged out successfully');
-        } catch (\Exception $e) {
-            Log::error('Failed to log out: ' . $e->getMessage());
+        } catch (Exception $e) {
+            Log::error('Failed to log out: '.$e->getMessage());
+
             return $this->apiResponse->error('Failed to log out', 500);
         }
     }
@@ -45,8 +47,9 @@ class AuthService
     {
         try {
             $user = $request->user();
-            if (!$user) {
+            if (! $user) {
                 Log::channel('structured')->warning('refreshToken - unauthenticated');
+
                 return $this->apiResponse->error('Unauthenticated', 401);
             }
 
@@ -54,11 +57,11 @@ class AuthService
             $request->user()?->currentAccessToken()?->delete();
 
             $this->activityLog->log('auth', 'token refreshed', $user, null, [], 'updated');
-            Log::channel('structured')->info('token refreshed', ['user_id' => $user->id]);
 
             return $this->apiResponse->success(['auth_token' => $newToken], 'Token refreshed successfully');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::channel('structured')->error('Token refresh failed', ['error' => $e->getMessage()]);
+
             return $this->apiResponse->error('Failed to refresh token', 500);
         }
     }
@@ -74,22 +77,23 @@ class AuthService
             DB::commit();
 
             $this->activityLog->log('auth', 'password reset', $user, null, [], 'updated');
-            Log::channel('structured')->info('password reset by', ['user_id' => $user->id, 'email' => $email]);
 
             return $this->apiResponse->success(null, 'the password is reset');
         } catch (Exception $e) {
             DB::rollBack();
             Log::channel('structured')->error('resetPassword failed', ['email' => $email, 'error' => $e->getMessage()]);
+
             return $this->apiResponse->error('error occurred in reset the password. Please try again.');
         }
     }
 
-    public function forgotPassword(string $email): \Illuminate\Http\JsonResponse
+    public function forgotPassword(string $email): JsonResponse
     {
         $user = User::byEmail($email)->first();
 
-        if (!$user) {
+        if (! $user) {
             Log::channel('structured')->warning('forgotPassword - email not found', ['email' => $email]);
+
             return $this->apiResponse->error('No account found with this email.', 404);
         }
 
@@ -97,10 +101,10 @@ class AuthService
 
         DB::transaction(function () use ($user, $code, $email) {
             Verification_code::create([
-                'user_id'    => $user->id,
-                'type'       => 'email_reset',
-                'sent_to'    => $email,
-                'code_hash'  => Hash::make($code),
+                'user_id' => $user->id,
+                'type' => 'email_reset',
+                'sent_to' => $email,
+                'code_hash' => Hash::make($code),
                 'expires_at' => now()->addMinutes(15),
             ]);
         });
@@ -109,17 +113,17 @@ class AuthService
             ->notify(new SendPasswordResetCode($code));
 
         $this->activityLog->log('auth', 'password reset code sent', $user, null, [], 'updated');
-        Log::channel('structured')->info('password reset code sent', ['user_id' => $user->id, 'email' => $email]);
 
         return $this->apiResponse->success(null, 'Password reset code sent to your email.');
     }
 
-    public function resetWithCode(string $email, string $code, string $newPassword): \Illuminate\Http\JsonResponse
+    public function resetWithCode(string $email, string $code, string $newPassword): JsonResponse
     {
         $user = User::byEmail($email)->first();
 
-        if (!$user) {
+        if (! $user) {
             Log::channel('structured')->warning('resetWithCode - user not found', ['email' => $email]);
+
             return $this->apiResponse->error('No account found.', 404);
         }
 
@@ -129,20 +133,23 @@ class AuthService
             ->latest('id')
             ->first();
 
-        if (!$verification) {
+        if (! $verification) {
             Log::channel('structured')->warning('resetWithCode - no valid code', ['user_id' => $user->id]);
+
             return $this->apiResponse->error('No valid reset code found. Please request a new one.');
         }
 
         if ($verification->failed_attempts >= 5) {
             $verification->delete();
             Log::channel('structured')->warning('resetWithCode - too many failed attempts', ['user_id' => $user->id]);
+
             return $this->apiResponse->error('Too many failed attempts. Please request a new reset code.');
         }
 
-        if (!Hash::check($code, $verification->code_hash)) {
+        if (! Hash::check($code, $verification->code_hash)) {
             $verification->increment('failed_attempts');
             $remainingAttempts = 5 - $verification->failed_attempts;
+
             return $this->apiResponse->error("Invalid reset code. {$remainingAttempts} attempts remaining.");
         }
 
@@ -152,7 +159,6 @@ class AuthService
         });
 
         $this->activityLog->log('auth', 'password reset with code', $user, null, [], 'updated');
-        Log::channel('structured')->info('password reset with code', ['user_id' => $user->id, 'email' => $email]);
 
         return $this->apiResponse->success(null, 'Password has been reset successfully.');
     }

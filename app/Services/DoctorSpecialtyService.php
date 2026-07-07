@@ -3,13 +3,11 @@
 namespace App\Services;
 
 use App\Models\Doctor;
-use App\Services\ActivityLogService;
-use Illuminate\Database\Eloquent\Collection;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class DoctorSpecialtyService
 {
@@ -23,9 +21,6 @@ class DoctorSpecialtyService
         Cache::forget('specialties:all');
 
         $this->activityLog->log('doctor', 'specialties attached', $doctor, null, ['specialty_ids' => $specialtyIds], 'updated');
-        Log::channel('structured')->info('specialties attached to doctor', [
-            'doctor_id' => $doctor->id, 'specialty_ids' => $specialtyIds,
-        ]);
 
         return $this->getCurrentSpecialties($doctor);
     }
@@ -34,16 +29,13 @@ class DoctorSpecialtyService
     {
         $hasSpecialty = $doctor->specialties()->where('specialty_id', $specialtyId)->exists();
 
-        if (!$hasSpecialty) {
+        if (! $hasSpecialty) {
             throw new \RuntimeException("Doctor does not have specialty ID {$specialtyId}");
         }
         $doctor->specialties()->detach($specialtyId);
         Cache::forget('specialties:all');
 
         $this->activityLog->log('doctor', 'specialty detached', $doctor, null, ['specialty_id' => $specialtyId], 'updated');
-        Log::channel('structured')->info('specialty detached from doctor', [
-            'doctor_id' => $doctor->id, 'specialty_id' => $specialtyId,
-        ]);
 
         return $this->getCurrentSpecialties($doctor);
     }
@@ -62,9 +54,9 @@ class DoctorSpecialtyService
         }
 
         $doctor = $user->doctorProfile;
+
         return $this->getCurrentSpecialties($doctor);
     }
-
 
     public function getPrimarySpecialty(Doctor $doctor)
     {
@@ -75,6 +67,7 @@ class DoctorSpecialtyService
         if (! $primary) {
             throw new ModelNotFoundException('no primary specialty found');
         }
+
         return $primary;
     }
 
@@ -85,9 +78,7 @@ class DoctorSpecialtyService
 
             if (! in_array($specialtyId, $attachedIds, true)) {
                 $this->activityLog->log('doctor', 'primary specialty update failed - not attached', $doctor, null, ['specialty_id' => $specialtyId], 'updated');
-                Log::channel('structured')->warning('updatePrimarySpecialty - specialty not attached', [
-                    'doctor_id' => $doctor->id, 'specialty_id' => $specialtyId,
-                ]);
+
                 return false;
             }
 
@@ -98,9 +89,6 @@ class DoctorSpecialtyService
             $doctor->specialties()->updateExistingPivot($specialtyId, ['is_primary' => 1]);
 
             $this->activityLog->log('doctor', 'primary specialty updated', $doctor, null, ['specialty_id' => $specialtyId], 'updated');
-            Log::channel('structured')->info('primary specialty updated', [
-                'doctor_id' => $doctor->id, 'specialty_id' => $specialtyId,
-            ]);
 
             return true;
         });

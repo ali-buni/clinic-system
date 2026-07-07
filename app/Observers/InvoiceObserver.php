@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Models\Invoice;
 use App\Services\ActivityLogService;
-use Illuminate\Support\Facades\Log;
 
 class InvoiceObserver
 {
@@ -19,23 +18,42 @@ class InvoiceObserver
             'created invoice',
             $invoice,
             auth()->user(),
-            [],
+            [
+                'invoice_number' => $invoice->invoice_number,
+                'total_cost' => $invoice->total_cost,
+                'clinic_id' => $invoice->clinic_id,
+                'patient_id' => $invoice->patient_id,
+            ],
             'created'
         );
-        Log::channel('structured')->info('invoice created', ['invoice_id' => $invoice->id]);
     }
 
     public function updated(Invoice $invoice): void
     {
+        $oldStatus = $invoice->getOriginal('status');
+        $newStatus = $invoice->status;
+        $oldTotalCost = $invoice->getOriginal('total_cost');
+        $newTotalCost = $invoice->total_cost;
+
+        $details = [];
+        if ($oldStatus !== $newStatus) {
+            $details['status_transition'] = ['from' => $oldStatus, 'to' => $newStatus];
+        }
+        if ($oldTotalCost !== $newTotalCost) {
+            $details['total_cost_changed'] = ['from' => $oldTotalCost, 'to' => $newTotalCost];
+        }
+        if ($invoice->wasChanged('description')) {
+            $details['description_changed'] = true;
+        }
+
         $this->activityLog->log(
             'invoice',
             'updated invoice',
             $invoice,
             auth()->user(),
-            [],
+            $details,
             'updated'
         );
-        Log::channel('structured')->info('invoice updated', ['invoice_id' => $invoice->id]);
     }
 
     public function deleted(Invoice $invoice): void
@@ -48,7 +66,6 @@ class InvoiceObserver
             [],
             'deleted'
         );
-        Log::channel('structured')->info('invoice deleted', ['invoice_id' => $invoice->id]);
     }
 
     public function restored(Invoice $invoice): void
@@ -61,6 +78,5 @@ class InvoiceObserver
             [],
             'restored'
         );
-        Log::channel('structured')->info('invoice restored', ['invoice_id' => $invoice->id]);
     }
 }

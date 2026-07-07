@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Invoice;
 
+use App\Exceptions\PaymentExceedsBalanceException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Payment\ProcessPaymentRequest;
 use App\Http\Requests\Payment\RefundPaymentRequest;
 use App\Http\Resources\Invoice\PaymentResource;
 use App\Models\Doctor;
-use App\Models\Invoice;
 use App\Models\Payment;
-use App\Exceptions\PaymentExceedsBalanceException;
-use App\Services\PaymentService;
 use App\Services\ApiResponse;
+use App\Services\PaymentService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -43,7 +43,7 @@ class PaymentController extends Controller
     {
         $payment = Payment::with('paymentMethod')->find($id);
 
-        if (!$payment) {
+        if (! $payment) {
             return ApiResponse::error('payment not found', 404);
         }
 
@@ -63,11 +63,12 @@ class PaymentController extends Controller
                 $validated['amount'],
             );
 
-            if (isset($result['payment_url']) && !$this->isValidStripeUrl($result['payment_url'])) {
-                Log::error('Invalid Stripe payment URL received', [
+            if (isset($result['payment_url']) && ! $this->isValidStripeUrl($result['payment_url'])) {
+                Log::channel('structured')->error('Invalid Stripe payment URL received', [
                     'invoice_id' => $validated['invoice_id'],
                     'url' => $result['payment_url'],
                 ]);
+
                 return ApiResponse::error('failed to create payment session', 500);
             }
 
@@ -80,13 +81,14 @@ class PaymentController extends Controller
             );
         } catch (\RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 422);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return ApiResponse::error($e->getMessage(), 404);
         } catch (\Exception $e) {
-            Log::error('Payment processing failed', [
+            Log::channel('structured')->error('Payment processing failed', [
                 'invoice_id' => $validated['invoice_id'],
                 'error' => $e->getMessage(),
             ]);
+
             return ApiResponse::error('server error', 500);
         }
     }
@@ -95,7 +97,7 @@ class PaymentController extends Controller
     {
         try {
             $doctor = Doctor::where('user_id', auth()->id())->first();
-            if (!$doctor) {
+            if (! $doctor) {
                 return ApiResponse::error('unauthorized: doctor profile not found', 403);
             }
 
@@ -106,25 +108,29 @@ class PaymentController extends Controller
             foreach ($validated['refunds'] as $index => $refundData) {
                 $payment = Payment::with(['invoice.appointment'])->find($refundData['payment_id']);
 
-                if (!$payment) {
+                if (! $payment) {
                     $errors[$index] = ['payment_id' => $refundData['payment_id'], 'error' => 'payment not found'];
+
                     continue;
                 }
 
                 $appointment = $payment->invoice?->appointment;
-                if (!$appointment || $appointment->doctor_id !== $doctor->id) {
+                if (! $appointment || $appointment->doctor_id !== $doctor->id) {
                     $errors[$index] = ['payment_id' => $refundData['payment_id'], 'error' => 'unauthorized: not your appointment'];
+
                     continue;
                 }
 
                 $refundable = $payment->getRefundableAmount();
                 if ($refundable <= 0) {
                     $errors[$index] = ['payment_id' => $refundData['payment_id'], 'error' => 'no refundable amount remaining'];
+
                     continue;
                 }
 
                 if ($refundData['amount'] > $refundable) {
                     $errors[$index] = ['payment_id' => $refundData['payment_id'], 'error' => "refund amount {$refundData['amount']} exceeds refundable {$refundable}"];
+
                     continue;
                 }
 
@@ -145,16 +151,17 @@ class PaymentController extends Controller
                 ];
             }
 
-            if (empty($results) && !empty($errors)) {
+            if (empty($results) && ! empty($errors)) {
                 return ApiResponse::error('all refunds failed', 422, ['errors' => $errors]);
             }
 
             return ApiResponse::success(
                 ['refunds' => $results, 'errors' => $errors],
-                count($results) . ' refund(s) processed' . (empty($errors) ? '' : ' with ' . count($errors) . ' error(s)')
+                count($results).' refund(s) processed'.(empty($errors) ? '' : ' with '.count($errors).' error(s)')
             );
         } catch (\Exception $e) {
-            Log::error('Batch refund failed', ['error' => $e->getMessage()]);
+            Log::channel('structured')->error('Batch refund failed', ['error' => $e->getMessage()]);
+
             return ApiResponse::error('server error', 500);
         }
     }
@@ -168,10 +175,11 @@ class PaymentController extends Controller
         } catch (\RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 422);
         } catch (\Exception $e) {
-            Log::error('Payment cancellation failed', [
+            Log::channel('structured')->error('Payment cancellation failed', [
                 'payment_id' => $paymentId,
                 'error' => $e->getMessage(),
             ]);
+
             return ApiResponse::error('server error', 500);
         }
     }
@@ -184,7 +192,7 @@ class PaymentController extends Controller
 
         $parsed = parse_url($url);
 
-        if (!$parsed || !isset($parsed['scheme'], $parsed['host'])) {
+        if (! $parsed || ! isset($parsed['scheme'], $parsed['host'])) {
             return false;
         }
 

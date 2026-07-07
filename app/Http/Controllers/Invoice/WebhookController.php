@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Stripe\Exception\SignatureVerificationException;
 use Stripe\Stripe;
 use Stripe\Webhook;
 
@@ -33,10 +34,12 @@ class WebhookController extends Controller
                 config('services.stripe.webhook_secret')
             );
         } catch (\UnexpectedValueException $e) {
-            Log::warning('Stripe webhook: invalid payload');
+            Log::channel('structured')->warning('Stripe webhook: invalid payload');
+
             return response()->json(['error' => 'Invalid payload'], 400);
-        } catch (\Stripe\Exception\SignatureVerificationException $e) {
-            Log::warning('Stripe webhook: invalid signature');
+        } catch (SignatureVerificationException $e) {
+            Log::channel('structured')->warning('Stripe webhook: invalid signature');
+
             return response()->json(['error' => 'Invalid signature'], 400);
         }
 
@@ -51,10 +54,10 @@ class WebhookController extends Controller
                 'checkout.session.completed' => $this->handleCheckoutCompleted($event->data->object),
                 'payment_intent.succeeded' => $this->handlePaymentIntentSucceeded($event->data->object),
                 'charge.refunded' => $this->handleChargeRefunded($event->data->object),
-                default => Log::info('Unhandled Stripe event', ['type' => $event->type]),
+                default => Log::channel('structured')->info('Unhandled Stripe event', ['type' => $event->type]),
             };
         } catch (\Throwable $e) {
-            Log::error('Webhook processing failed', [
+            Log::channel('structured')->error('Webhook processing failed', [
                 'event_id' => $event->id,
                 'type' => $event->type,
                 'error' => $e->getMessage(),
@@ -67,18 +70,20 @@ class WebhookController extends Controller
     private function handleCheckoutCompleted(object $session): void
     {
         if (($session->payment_status ?? '') !== 'paid') {
-            Log::info('Checkout session not paid, skipping', [
+            Log::channel('structured')->info('Checkout session not paid, skipping', [
                 'session_id' => $session->id,
                 'payment_status' => $session->payment_status ?? 'unknown',
             ]);
+
             return;
         }
 
         $invoiceId = $session->metadata->invoice_id ?? null;
         $paymentId = $session->metadata->payment_id ?? null;
 
-        if (!$invoiceId || !$paymentId) {
-            Log::warning('Missing metadata in checkout.session.completed', ['session_id' => $session->id]);
+        if (! $invoiceId || ! $paymentId) {
+            Log::channel('structured')->warning('Missing metadata in checkout.session.completed', ['session_id' => $session->id]);
+
             return;
         }
 
@@ -92,12 +97,12 @@ class WebhookController extends Controller
 
     private function handlePaymentIntentSucceeded(object $paymentIntent): void
     {
-        Log::info('Payment intent succeeded', ['id' => $paymentIntent->id]);
+        Log::channel('structured')->info('Payment intent succeeded', ['id' => $paymentIntent->id]);
     }
 
     private function handleChargeRefunded(object $charge): void
     {
-        Log::info('Charge refunded', ['id' => $charge->id]);
+        Log::channel('structured')->info('Charge refunded', ['id' => $charge->id]);
     }
 
     private function isDuplicateEvent(string $eventId): bool

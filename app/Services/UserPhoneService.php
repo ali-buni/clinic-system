@@ -29,10 +29,10 @@ class UserPhoneService
         try {
             event(new SendMsgEvent(
                 $newPhone,
-                config('app.name') . ": Your verification code is: {$code}"
+                config('app.name').": Your verification code is: {$code}"
             ));
         } catch (\Exception $e) {
-            Log::error("Failed to send phone update SMS: " . $e->getMessage());
+            Log::channel('structured')->error('Failed to send phone update SMS: '.$e->getMessage());
         }
 
         return $this->apiResponse->success(
@@ -46,18 +46,20 @@ class UserPhoneService
         $cacheKey = "phone_update:{$user->id}";
         $data = Cache::get($cacheKey);
 
-        if (!$data) {
+        if (! $data) {
             return $this->apiResponse->error('No verification code found. Please request a new one.');
         }
 
         if (($data['attempts'] ?? 0) >= 5) {
             Cache::forget($cacheKey);
+
             return $this->apiResponse->error('Maximum verification attempts reached. Please request a new code.');
         }
 
-        if (!Hash::check($code, $data['code'])) {
+        if (! Hash::check($code, $data['code'])) {
             $data['attempts'] = ($data['attempts'] ?? 0) + 1;
             Cache::put($cacheKey, $data, now()->addMinutes(15));
+
             return $this->apiResponse->error('Invalid verification code.');
         }
 

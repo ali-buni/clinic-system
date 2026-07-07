@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Models\User;
 use App\Services\ActivityLogService;
-use Illuminate\Support\Facades\Log;
 
 class UserObserver
 {
@@ -14,41 +13,61 @@ class UserObserver
 
     public function created(User $user): void
     {
+        $role = $user->roles->first()?->name;
+
         $this->activityLog->log(
             'user',
             'created user',
             $user,
             auth()->user(),
-            [],
+            ['role' => $role],
             'created'
         );
-        Log::channel('structured')->info('user created', ['user_id' => $user->id]);
     }
 
     public function updated(User $user): void
     {
+        $changes = $user->getChanges();
+        unset($changes['updated_at']);
+
+        $details = ['changed_fields' => array_keys($changes)];
+
+        if (isset($changes['fname']) || isset($changes['lname'])) {
+            $details['name_changed'] = [
+                'from' => $user->getOriginal('fname').' '.$user->getOriginal('lname'),
+                'to' => ($changes['fname'] ?? $user->fname).' '.($changes['lname'] ?? $user->lname),
+            ];
+        }
+
+        if (isset($changes['phone'])) {
+            $details['phone_changed'] = [
+                'from' => $user->getOriginal('phone'),
+                'to' => $changes['phone'],
+            ];
+        }
+
         $this->activityLog->log(
             'user',
             'updated user',
             $user,
             auth()->user(),
-            [],
+            $details,
             'updated'
         );
-        Log::channel('structured')->info('user updated', ['user_id' => $user->id]);
     }
 
     public function deleted(User $user): void
     {
+        $role = $user->roles->first()?->name;
+
         $this->activityLog->log(
             'user',
             'deleted user',
             $user,
             auth()->user(),
-            [],
+            ['role' => $role],
             'deleted'
         );
-        Log::channel('structured')->info('user deleted', ['user_id' => $user->id]);
     }
 
     public function restored(User $user): void
@@ -61,6 +80,5 @@ class UserObserver
             [],
             'restored'
         );
-        Log::channel('structured')->info('user restored', ['user_id' => $user->id]);
     }
 }

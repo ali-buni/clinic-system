@@ -42,11 +42,11 @@ class StripeConnectService
 
             return $account->id;
         } catch (ApiErrorException $e) {
-            Log::error('Failed to create Stripe connected account', [
+            Log::channel('structured')->error('Failed to create Stripe connected account', [
                 'doctor_id' => $doctor->id,
                 'error' => $e->getMessage(),
             ]);
-            throw new \RuntimeException('Failed to create Stripe connected account: ' . $e->getMessage());
+            throw new \RuntimeException('Failed to create Stripe connected account: '.$e->getMessage());
         }
     }
 
@@ -62,11 +62,11 @@ class StripeConnectService
 
             return $accountLink->url;
         } catch (ApiErrorException $e) {
-            Log::error('Failed to generate account link', [
+            Log::channel('structured')->error('Failed to generate account link', [
                 'account_id' => $accountId,
                 'error' => $e->getMessage(),
             ]);
-            throw new \RuntimeException('Failed to generate Stripe onboarding link: ' . $e->getMessage());
+            throw new \RuntimeException('Failed to generate Stripe onboarding link: '.$e->getMessage());
         }
     }
 
@@ -74,7 +74,7 @@ class StripeConnectService
     {
         $accountId = $doctor->stripe_connected_account_id;
 
-        if (!$accountId) {
+        if (! $accountId) {
             throw new \RuntimeException('Doctor does not have a Stripe connected account.');
         }
 
@@ -97,13 +97,13 @@ class StripeConnectService
 
             return $transfer->id;
         } catch (ApiErrorException $e) {
-            Log::error('Stripe transfer failed', [
+            Log::channel('structured')->error('Stripe transfer failed', [
                 'doctor_id' => $doctor->id,
                 'amount' => $amount,
                 'destination' => $accountId,
                 'error' => $e->getMessage(),
             ]);
-            throw new \RuntimeException('Stripe transfer failed: ' . $e->getMessage());
+            throw new \RuntimeException('Stripe transfer failed: '.$e->getMessage());
         }
     }
 
@@ -119,11 +119,11 @@ class StripeConnectService
                 'details_submitted' => $account->details_submitted,
             ];
         } catch (ApiErrorException $e) {
-            Log::error('Failed to retrieve Stripe account status', [
+            Log::channel('structured')->error('Failed to retrieve Stripe account status', [
                 'account_id' => $accountId,
                 'error' => $e->getMessage(),
             ]);
-            throw new \RuntimeException('Failed to retrieve account status: ' . $e->getMessage());
+            throw new \RuntimeException('Failed to retrieve account status: '.$e->getMessage());
         }
     }
 }

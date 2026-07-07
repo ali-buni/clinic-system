@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Events\SendMsgEvent;
 use App\Models\User;
 use App\Models\Verification_code;
 use App\Notifications\SendEmailVerificationCode;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -44,17 +44,19 @@ class VerificationService
             ->latest('id')
             ->first();
 
-        if (!$verification) {
+        if (! $verification) {
             return $this->apiResponse->error('No verification code found. Please request a new one.');
         }
 
         if ($verification->failed_attempts >= 5) {
             $verification->delete();
+
             return $this->apiResponse->error('Maximum verification attempts reached. Please request a new code.');
         }
-        if (!Hash::check($code, $verification->code_hash)) {
+        if (! Hash::check($code, $verification->code_hash)) {
             $verification->failed_attempts += 1;
             $verification->save();
+
             return $this->apiResponse->error('Invalid or expired verification code.');
         }
 
@@ -72,21 +74,21 @@ class VerificationService
         return $this->apiResponse->success(
             [
                 'token' => $token,
-                'id'    => $user->id,
-                'role'  => $role,
-                'name'  => $user->fname . ' ' . $user->lname,
+                'id' => $user->id,
+                'role' => $role,
+                'name' => $user->fname.' '.$user->lname,
             ],
-            ucfirst($type) . ' verified successfully.'
+            ucfirst($type).' verified successfully.'
         );
     }
 
     /**
      * Sends a verification code to the user's phone number or email.
      */
-    public function sendVerificationCode(User $user, string $type): \Illuminate\Http\JsonResponse
+    public function sendVerificationCode(User $user, string $type): JsonResponse
     {
         // Validate type
-        if (!in_array($type, ['phone', 'email'])) {
+        if (! in_array($type, ['phone', 'email'])) {
             return $this->apiResponse->error('Invalid verification type. Must be "phone" or "email".', 400);
         }
 
@@ -110,6 +112,7 @@ class VerificationService
             $remainingSeconds = $attemptData['started_at']
                 ? max(0, $attemptData['started_at'] + 3600 - now()->timestamp)
                 : 3600;
+
             return $this->apiResponse->error(
                 'Too many attempts. Please try again later.',
                 429,
@@ -142,10 +145,10 @@ class VerificationService
 
             // Create new verification code
             Verification_code::create([
-                'user_id'    => $user->id,
-                'type'       => $type,
-                'sent_to'    => $sentTo,
-                'code_hash'  => Hash::make($code),
+                'user_id' => $user->id,
+                'type' => $type,
+                'sent_to' => $sentTo,
+                'code_hash' => Hash::make($code),
                 'expires_at' => now()->addMinutes(15),
             ]);
 
@@ -172,11 +175,12 @@ class VerificationService
 
             return $this->apiResponse->success(
                 null,
-                ucfirst($type) . ' verification code sent successfully.'
+                ucfirst($type).' verification code sent successfully.'
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Failed to send {$type} verification code: " . $e->getMessage());
+            Log::channel('structured')->error("Failed to send {$type} verification code: ".$e->getMessage());
+
             return $this->apiResponse->error(
                 'Failed to send verification code. Please try again.',
                 500

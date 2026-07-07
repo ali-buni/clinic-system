@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Models\Patient_record;
 use App\Services\ActivityLogService;
-use Illuminate\Support\Facades\Log;
 
 class PatientRecordObserver
 {
@@ -22,7 +21,6 @@ class PatientRecordObserver
             [],
             'created'
         );
-        Log::channel('structured')->info('patient record created', ['patient_record_id' => $record->id]);
     }
 
     public function updated(Patient_record $record): void
@@ -35,7 +33,6 @@ class PatientRecordObserver
             [],
             'updated'
         );
-        Log::channel('structured')->info('patient record updated', ['patient_record_id' => $record->id]);
     }
 
     public function deleted(Patient_record $record): void
@@ -48,7 +45,6 @@ class PatientRecordObserver
             [],
             'deleted'
         );
-        Log::channel('structured')->info('patient record deleted', ['patient_record_id' => $record->id]);
     }
 
     public function restored(Patient_record $record): void
@@ -61,6 +57,5 @@ class PatientRecordObserver
             [],
             'restored'
         );
-        Log::channel('structured')->info('patient record restored', ['patient_record_id' => $record->id]);
     }
 }
