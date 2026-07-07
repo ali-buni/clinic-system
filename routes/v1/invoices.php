@@ -16,7 +16,7 @@ Route::middleware(['auth:sanctum', 'throttle:100,1'])->group(function () {
             ->middleware(['checkaccess:role:owner,secretary', 'resourceAccess:secretary_rooms:room_ids']);
 
         Route::get('/', 'index')
-            ->middleware(['checkaccess:role:owner']);
+            ->middleware(['checkaccess:role:owner', 'resourceAccess:owner_clinic:clinic_id']);
         Route::post('/', 'store')
             ->middleware(['checkaccess:role:secretary,doctor', 'resourceAccess:owns:Appointment:appointment_id']);
         Route::get('{invoiceId}', 'show')

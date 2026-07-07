@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Enums\InvoiceStatus;
 use App\Models\Invoice;
-use App\Services\PaymentService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class InvoiceService
@@ -12,6 +12,7 @@ class InvoiceService
     public function __construct(
         protected PaymentService $paymentService
     ) {}
+
     public function createInvoice(array $data): Invoice
     {
         return DB::transaction(function () use ($data) {
@@ -52,7 +53,7 @@ class InvoiceService
                 $invoice->description = $data['description'];
             }
 
-            if (!empty($data['updated_items'])) {
+            if (! empty($data['updated_items'])) {
                 $totalCost = collect($data['updated_items'])
                     ->sum(fn(array $item) => $item['price'] * $item['quantity']);
 
@@ -83,34 +84,49 @@ class InvoiceService
 
     public function getAllInvoicesFiltered(array $filters, int $perPage = 15)
     {
-        return Invoice::query()
-            ->withSum(['completedPayments as total_paid'], 'amount')
+        $invoices = Invoice::query()
+            ->with(['completedPayments'])
             ->when($filters['status'] ?? null, fn($q, $s) => $q->where('status', $s))
             ->when($filters['date_from'] ?? null, fn($q, $d) => $q->whereDate('created_at', '>=', $d))
             ->when($filters['date_to'] ?? null, fn($q, $d) => $q->whereDate('created_at', '<=', $d))
+            ->where('clinic_id', $filters['clinic_id'])
             ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+            ->get()
+            ->each(function ($invoice) {
+                $invoice->total_paid = $invoice->completedPayments->sum('amount');
+            });
+
+        return $invoices->paginate($perPage, page: $filters['page'] ?? 1);
     }
 
-    public function getPatientInvoices(int $patientId)
+    public function getPatientInvoices(int $patientId): Collection
     {
         return Invoice::where('patient_id', $patientId)
-            ->withSum(['completedPayments as total_paid'], 'amount')
-            ->get(['id', 'patient_id', 'total_cost', 'status', 'description']);
+            ->with(['completedPayments'])
+            ->get()
+            ->each(function ($invoice) {
+                $invoice->total_paid = $invoice->completedPayments->sum('amount');
+            });
     }
 
-    public function getRoomsInvoices(array $roomIds)
+    public function getRoomsInvoices(array $roomIds): Collection
     {
         return Invoice::whereHas('appointment', fn($q) => $q->whereIn('room_id', $roomIds))
-            ->withSum(['completedPayments as total_paid'], 'amount')
-            ->get(['id', 'total_cost', 'status', 'appointment_id']);
+            ->with(['completedPayments'])
+            ->get()
+            ->each(function ($invoice) {
+                $invoice->total_paid = $invoice->completedPayments->sum('amount');
+            });
     }
 
-    public function getDoctorInvoices(int $doctorId)
+    public function getDoctorInvoices(int $doctorId): Collection
     {
         return Invoice::whereHas('appointment', fn($q) => $q->where('doctor_id', $doctorId))
-            ->withSum(['completedPayments as total_paid'], 'amount')
-            ->get(['id', 'total_cost', 'status', 'appointment_id']);
+            ->with(['completedPayments'])
+            ->get()
+            ->each(function ($invoice) {
+                $invoice->total_paid = $invoice->completedPayments->sum('amount');
+            });
     }
 
     private function generateInvoiceNumber(): string
@@ -119,11 +135,11 @@ class InvoiceService
             $year = now()->year;
             $prefix = 'INV-' . $year . '-';
 
-            DB::statement("
+            DB::statement('
             INSERT INTO invoice_sequences (year, last_number, created_at, updated_at)
             VALUES (?, 1, NOW(), NOW())
             ON DUPLICATE KEY UPDATE last_number = LAST_INSERT_ID(last_number + 1)
-        ", [$year]);
+        ', [$year]);
 
             $number = DB::getPdo()->lastInsertId();
 

@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Models\Doctor;
 use App\Models\DoctorWallet;
+use App\Models\Payment;
 use App\Models\Refund;
-use Illuminate\Support\Facades\DB;
 
 class DoctorEarningsService
 {
@@ -13,23 +13,19 @@ class DoctorEarningsService
 
     public function calculateGrossEarnings(Doctor $doctor): float
     {
-        return (float) DB::table('payments')
-            ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
-            ->join('appointments', 'invoices.appointment_id', '=', 'appointments.id')
-            ->where('appointments.doctor_id', $doctor->id)
-            ->whereNotNull('payments.paid_at')
-            ->whereNull('payments.deleted_at')
-            ->sum('payments.amount');
+        $payments = Payment::whereHas('invoice.appointment', fn ($q) => $q->where('doctor_id', $doctor->id))
+            ->whereNotNull('paid_at')
+            ->get();
+
+        return (float) $payments->sum('amount');
     }
 
     public function calculateTotalRefunded(Doctor $doctor): float
     {
-        return (float) DB::table('refunds')
-            ->join('payments', 'refunds.payment_id', '=', 'payments.id')
-            ->join('invoices', 'payments.invoice_id', '=', 'invoices.id')
-            ->join('appointments', 'invoices.appointment_id', '=', 'appointments.id')
-            ->where('appointments.doctor_id', $doctor->id)
-            ->sum('refunds.amount');
+        $refunds = Refund::whereHas('payment.invoice.appointment', fn ($q) => $q->where('doctor_id', $doctor->id))
+            ->get();
+
+        return (float) $refunds->sum('amount');
     }
 
     public function calculateNetEarnings(Doctor $doctor): float

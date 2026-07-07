@@ -10,6 +10,7 @@ use Carbon\Carbon;
 class ClinicHealthScoreService
 {
     private const FULFILLMENT_WEIGHT = 0.6;
+
     private const UTILIZATION_WEIGHT = 0.4;
 
     public function __construct(
@@ -28,9 +29,9 @@ class ClinicHealthScoreService
         $patientHealth = $this->getPatientHealth($clinicId, $fromDate, $toDate);
 
         $weights = $this->normalizeWeights([
-            'financial'    => (float) $this->settings->get('weight_financial', 0.35),
-            'operational'  => (float) $this->settings->get('weight_operational', 0.30),
-            'patient'      => (float) $this->settings->get('weight_patient', 0.35),
+            'financial' => (float) $this->settings->get('weight_financial', 0.35),
+            'operational' => (float) $this->settings->get('weight_operational', 0.30),
+            'patient' => (float) $this->settings->get('weight_patient', 0.35),
         ]);
 
         $finalScore = ($financialHealth['score_numeric'] * $weights['financial'])
@@ -38,14 +39,14 @@ class ClinicHealthScoreService
             + ($patientHealth['score_numeric'] * $weights['patient']);
 
         return [
-            'from'           => $fromDate?->toDateString(),
-            'to'             => $toDate->toDateString(),
-            'overall_score'  => round($finalScore, 2),
+            'from' => $fromDate?->toDateString(),
+            'to' => $toDate->toDateString(),
+            'overall_score' => round($finalScore, 2),
             'overall_status' => $this->getStatus($finalScore),
-            'sub_scores'     => [
-                'financial'    => $financialHealth,
-                'operational'  => $operationalHealth,
-                'patient'      => $patientHealth,
+            'sub_scores' => [
+                'financial' => $financialHealth,
+                'operational' => $operationalHealth,
+                'patient' => $patientHealth,
             ],
             'recommendations' => $this->generateRecommendations($financialHealth, $operationalHealth, $patientHealth),
         ];
@@ -55,14 +56,16 @@ class ClinicHealthScoreService
     {
         $revenueTotal = Invoice::where('clinic_id', $clinicId)
             ->where('status', 'paid')
-            ->when($from, fn($q) => $q->where('created_at', '>=', $from))
-            ->when($to, fn($q) => $q->where('created_at', '<=', $to))
+            ->when($from, fn ($q) => $q->where('created_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('created_at', '<=', $to))
+            ->get()
             ->sum('total_cost');
 
         $outstandingTotal = Invoice::where('clinic_id', $clinicId)
             ->where('status', 'unpaid')
-            ->when($from, fn($q) => $q->where('created_at', '>=', $from))
-            ->when($to, fn($q) => $q->where('created_at', '<=', $to))
+            ->when($from, fn ($q) => $q->where('created_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('created_at', '<=', $to))
+            ->get()
             ->sum('total_cost');
 
         $targetRevenue = (float) $this->settings->get('target_revenue', 10000);
@@ -80,12 +83,12 @@ class ClinicHealthScoreService
         $scoreVal = round(max(0, $adjustedScore), 2);
 
         return [
-            'score'             => $scoreVal,
-            'score_numeric'     => $scoreVal,
-            'status'            => $this->getStatus($scoreVal),
-            'total_revenue'     => round($revenueTotal, 2),
-            'outstanding'       => round($outstandingTotal, 2),
-            'outstanding_ratio' => $outstandingRatio . '%',
+            'score' => $scoreVal,
+            'score_numeric' => $scoreVal,
+            'status' => $this->getStatus($scoreVal),
+            'total_revenue' => round($revenueTotal, 2),
+            'outstanding' => round($outstandingTotal, 2),
+            'outstanding_ratio' => $outstandingRatio.'%',
         ];
     }
 
@@ -95,20 +98,20 @@ class ClinicHealthScoreService
 
         $totalNonCancelled = Appointment::where('clinic_id', $clinicId)
             ->whereIn('status', ['completed', 'no_show', 'scheduled', 'in_progress'])
-            ->when($from, fn($q) => $q->where('start_time', '>=', $from))
-            ->when($to, fn($q) => $q->where('start_time', '<=', $to))
+            ->when($from, fn ($q) => $q->where('start_time', '>=', $from))
+            ->when($to, fn ($q) => $q->where('start_time', '<=', $to))
             ->count();
 
         $completed = Appointment::where('clinic_id', $clinicId)
             ->where('status', 'completed')
-            ->when($from, fn($q) => $q->where('start_time', '>=', $from))
-            ->when($to, fn($q) => $q->where('start_time', '<=', $to))
+            ->when($from, fn ($q) => $q->where('start_time', '>=', $from))
+            ->when($to, fn ($q) => $q->where('start_time', '<=', $to))
             ->count();
 
         $noShowCount = Appointment::where('clinic_id', $clinicId)
             ->where('status', 'no_show')
-            ->when($from, fn($q) => $q->where('start_time', '>=', $from))
-            ->when($to, fn($q) => $q->where('start_time', '<=', $to))
+            ->when($from, fn ($q) => $q->where('start_time', '>=', $from))
+            ->when($to, fn ($q) => $q->where('start_time', '<=', $to))
             ->count();
 
         $fulfillmentRate = $totalNonCancelled > 0
@@ -123,13 +126,13 @@ class ClinicHealthScoreService
         );
 
         return [
-            'score'              => $scoreVal,
-            'score_numeric'      => $scoreVal,
-            'status'             => $this->getStatus($scoreVal),
-            'active_doctors'     => $totalDoctors,
-            'completion_rate'    => $fulfillmentRate . '%',
-            'avg_utilization'    => round($doctorUtilization, 2) . '%',
-            'no_show_count'      => $noShowCount,
+            'score' => $scoreVal,
+            'score_numeric' => $scoreVal,
+            'status' => $this->getStatus($scoreVal),
+            'active_doctors' => $totalDoctors,
+            'completion_rate' => $fulfillmentRate.'%',
+            'avg_utilization' => round($doctorUtilization, 2).'%',
+            'no_show_count' => $noShowCount,
         ];
     }
 
@@ -137,8 +140,8 @@ class ClinicHealthScoreService
     {
         $totalPatients = Appointment::where('clinic_id', $clinicId)
             ->whereNotNull('patient_id')
-            ->when($from, fn($q) => $q->where('created_at', '>=', $from))
-            ->when($to, fn($q) => $q->where('created_at', '<=', $to))
+            ->when($from, fn ($q) => $q->where('created_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('created_at', '<=', $to))
             ->distinct('patient_id')
             ->count('patient_id');
 
@@ -156,14 +159,14 @@ class ClinicHealthScoreService
         $scoreVal = round(($retentionRate * 0.6) + ($growthBalance * 0.4), 2);
 
         return [
-            'score'              => $scoreVal,
-            'score_numeric'      => $scoreVal,
-            'status'             => $this->getStatus($scoreVal),
-            'total_patients'     => $totalPatients,
-            'retention_rate'     => $retentionRate . '%',
-            'lost_patients'      => $lostCount,
-            'new_patients'       => $newCount,
-            'growth_balance'     => round($growthBalance, 2) . '%',
+            'score' => $scoreVal,
+            'score_numeric' => $scoreVal,
+            'status' => $this->getStatus($scoreVal),
+            'total_patients' => $totalPatients,
+            'retention_rate' => $retentionRate.'%',
+            'lost_patients' => $lostCount,
+            'new_patients' => $newCount,
+            'growth_balance' => round($growthBalance, 2).'%',
         ];
     }
 
@@ -174,9 +177,9 @@ class ClinicHealthScoreService
         $fromDate = $from
             ? Carbon::parse($from)
             : match ($period) {
-                'year'  => $now->copy()->subYear(),
+                'year' => $now->copy()->subYear(),
                 'month' => $now->copy()->subMonth(),
-                'day'   => $now->copy()->subDay(),
+                'day' => $now->copy()->subDay(),
                 default => null,
             };
 
@@ -192,7 +195,7 @@ class ClinicHealthScoreService
             return ['financial' => 0.34, 'operational' => 0.33, 'patient' => 0.33];
         }
 
-        return array_map(fn($w) => $w / $total, $weights);
+        return array_map(fn ($w) => $w / $total, $weights);
     }
 
     private function averageUtilization(int $clinicId, ?Carbon $from, ?Carbon $to): float
@@ -203,9 +206,9 @@ class ClinicHealthScoreService
             return 0;
         }
 
-        $rates = $utilization->flatMap(fn($d) => collect($d['periods'] ?? [])
+        $rates = $utilization->flatMap(fn ($d) => collect($d['periods'] ?? [])
             ->pluck('utilization_rate')
-            ->map(fn($r) => (float) str_replace('%', '', $r)));
+            ->map(fn ($r) => (float) str_replace('%', '', $r)));
 
         return $rates->isNotEmpty() ? round($rates->avg(), 2) : 0;
     }
@@ -218,13 +221,20 @@ class ClinicHealthScoreService
     private function getStatus(float $score): string
     {
         $excellent = (float) $this->settings->get('threshold_excellent', 80);
-        $good      = (float) $this->settings->get('threshold_good', 60);
-        $fair      = (float) $this->settings->get('threshold_fair', 40);
+        $good = (float) $this->settings->get('threshold_good', 60);
+        $fair = (float) $this->settings->get('threshold_fair', 40);
 
-        if ($score >= $excellent) return 'ممتاز';
-        if ($score >= $good)      return 'جيد';
-        if ($score >= $fair)      return 'متوسط';
-        return 'يحتاج تحسين';
+        if ($score >= $excellent) {
+            return 'Excellent';
+        }
+        if ($score >= $good) {
+            return 'good';
+        }
+        if ($score >= $fair) {
+            return 'fair';
+        }
+
+        return 'need enhance';
     }
 
     private function generateRecommendations(array $financial, array $operational, array $patient): array
@@ -255,9 +265,9 @@ class ClinicHealthScoreService
             foreach ($thresholds as $t) {
                 if ($scoreVal < $t['max']) {
                     $recommendations[] = [
-                        'area'     => $area,
+                        'area' => $area,
                         'priority' => $t['priority'],
-                        'message'  => $t['message'],
+                        'message' => $t['message'],
                     ];
                     break;
                 }
@@ -266,14 +276,14 @@ class ClinicHealthScoreService
 
         if ($financial['score_numeric'] >= 80 && $operational['score_numeric'] >= 80 && $patient['score_numeric'] >= 80) {
             $recommendations[] = [
-                'area'     => 'overall',
+                'area' => 'overall',
                 'priority' => 'low',
-                'message'  => 'العيادة في وضع ممتاز. استمر في المراقبة والتطوير المستمر.',
+                'message' => 'the clinic is performing excellently across all areas. maintain current strategies and continue monitoring.',
             ];
         }
 
         $priorityOrder = ['critical' => 0, 'high' => 1, 'medium' => 2, 'low' => 3];
-        usort($recommendations, fn($a, $b) => ($priorityOrder[$a['priority']] ?? 99) - ($priorityOrder[$b['priority']] ?? 99));
+        usort($recommendations, fn ($a, $b) => ($priorityOrder[$a['priority']] ?? 99) - ($priorityOrder[$b['priority']] ?? 99));
 
         return $recommendations;
     }

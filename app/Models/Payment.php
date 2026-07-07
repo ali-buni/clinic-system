@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use ParagonIE\CipherSweet\BlindIndex;
+use ParagonIE\CipherSweet\EncryptedRow;
+use Spatie\LaravelCipherSweet\Concerns\UsesCipherSweet;
+use Spatie\LaravelCipherSweet\Contracts\CipherSweetEncrypted;
 
-class Payment extends Model
+class Payment extends Model implements CipherSweetEncrypted
 {
-    use SoftDeletes;
+    use SoftDeletes, UsesCipherSweet;
 
     protected $fillable = [
         'payment_method_id',
@@ -23,8 +27,21 @@ class Payment extends Model
 
     protected $casts = [
         'paid_at' => 'datetime',
-        'refunded_amount' => 'decimal:2',
     ];
+
+    public static function getEncryptedColumns(): array
+    {
+        return ['amount', 'refunded_amount', 'stripe_session_id', 'stripe_payment_intent_id'];
+    }
+
+    public static function configureCipherSweet(EncryptedRow $encryptedRow): void
+    {
+        $encryptedRow
+            ->addField('amount')
+            ->addField('refunded_amount')
+            ->addField('stripe_session_id')
+            ->addBlindIndex('stripe_session_id', new BlindIndex('stripe_session_id_index'));
+    }
 
     public function invoice(): BelongsTo
     {

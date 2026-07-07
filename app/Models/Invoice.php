@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use ParagonIE\CipherSweet\BlindIndex;
+use ParagonIE\CipherSweet\EncryptedRow;
+use Spatie\LaravelCipherSweet\Concerns\UsesCipherSweet;
+use Spatie\LaravelCipherSweet\Contracts\CipherSweetEncrypted;
 
-class Invoice extends Model
+class Invoice extends Model implements CipherSweetEncrypted
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, UsesCipherSweet;
 
     protected $fillable = [
         'clinic_id',
@@ -23,9 +28,21 @@ class Invoice extends Model
         'description',
     ];
 
-    protected $casts = [
-        'total_cost' => 'decimal:2',
-    ];
+    protected $casts = [];
+
+    public static function getEncryptedColumns(): array
+    {
+        return ['invoice_number', 'total_cost', 'description'];
+    }
+
+    public static function configureCipherSweet(EncryptedRow $encryptedRow): void
+    {
+        $encryptedRow
+            ->addField('invoice_number')
+            ->addField('total_cost')
+            ->addField('description')
+            ->addBlindIndex('invoice_number', new BlindIndex('invoice_number_index'));
+    }
 
     public function clinic(): BelongsTo
     {
@@ -66,9 +83,13 @@ class Invoice extends Model
 
     public function getRemainingBalance(): float
     {
-        $totalPaid = $this->total_paid
-            ?? $this->completedPayments()->sum('amount');
+        $totalPaid = $this->completedPayments->sum('amount');
 
         return (float) $this->total_cost - (float) $totalPaid;
+    }
+
+    public function scopeByInvoiceNumber(Builder $query, string $invoiceNumber): Builder
+    {
+        return $query->whereBlind('invoice_number', 'invoice_number_index', $invoiceNumber);
     }
 }

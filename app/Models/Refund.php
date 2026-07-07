@@ -4,9 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use ParagonIE\CipherSweet\EncryptedRow;
+use Spatie\LaravelCipherSweet\Concerns\UsesCipherSweet;
+use Spatie\LaravelCipherSweet\Contracts\CipherSweetEncrypted;
 
-class Refund extends Model
+class Refund extends Model implements CipherSweetEncrypted
 {
+    use UsesCipherSweet;
+
     protected $fillable = [
         'payment_id',
         'invoice_id',
@@ -16,9 +21,19 @@ class Refund extends Model
         'stripe_refund_id',
     ];
 
-    protected $casts = [
-        'amount' => 'decimal:2',
-    ];
+    protected $casts = [];
+
+    public static function getEncryptedColumns(): array
+    {
+        return ['amount', 'stripe_refund_id'];
+    }
+
+    public static function configureCipherSweet(EncryptedRow $encryptedRow): void
+    {
+        $encryptedRow
+            ->addField('amount')
+            ->addField('stripe_refund_id');
+    }
 
     public function payment(): BelongsTo
     {

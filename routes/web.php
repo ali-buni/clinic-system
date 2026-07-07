@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PaymentCallbackController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -10,4 +11,7 @@ Route::get('/health', function () {
     return response()->json(['status' => 'ok'], 200);
 });
 
-require __DIR__ . '/admin.php';
+Route::get('/payment-success', [PaymentCallbackController::class, 'success'])->name('payment.success');
+Route::get('/payment-failed', [PaymentCallbackController::class, 'failed'])->name('payment.failed');
+
+require __DIR__.'/admin.php';

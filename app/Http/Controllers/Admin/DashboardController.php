@@ -11,12 +11,13 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $roleCounts = \Spatie\Permission\Models\Role::pluck('id', 'name');
+        $roleCounts = Role::pluck('id', 'name');
 
         $data = [
             'totalClinics' => Clinic::count(),
@@ -29,7 +30,7 @@ class DashboardController extends Controller
                 'patients' => $roleCounts['patient'] ? User::role('patient')->count() : 0,
             ],
             'totalAppointments' => Appointment::count(),
-            'totalRevenue' => Invoice::sum('total_cost'),
+            'totalRevenue' => Invoice::all()->sum('total_cost'),
             'pendingPayments' => Payment::whereNull('paid_at')->count(),
             'totalPayments' => Payment::count(),
         ];

@@ -48,13 +48,14 @@ class InvoiceController extends Controller
     public function show(int $invoiceId): JsonResponse
     {
         try {
-            $invoice = Invoice::withSum(['completedPayments as total_paid'], 'amount')
-                ->with(['completedPayments.paymentMethod', 'items'])
+            $invoice = Invoice::with(['completedPayments.paymentMethod', 'items'])
                 ->find($invoiceId);
 
-            if (!$invoice) {
+            if (! $invoice) {
                 return ApiResponse::error('the invoice not found', 404);
             }
+
+            $invoice->total_paid = $invoice->completedPayments->sum('amount');
 
             return ApiResponse::success(
                 new InvoiceResource($invoice),
@@ -89,6 +90,7 @@ class InvoiceController extends Controller
             if ($invoices->isEmpty()) {
                 return ApiResponse::error('the invoice not found', 404);
             }
+
             return ApiResponse::success(
                 InvoiceResource::collection($invoices),
                 'success'
@@ -105,6 +107,7 @@ class InvoiceController extends Controller
             if ($invoices->isEmpty()) {
                 return ApiResponse::error('the invoice not found', 404);
             }
+
             return ApiResponse::success(
                 InvoiceResource::collection($invoices),
                 'success'
@@ -121,6 +124,7 @@ class InvoiceController extends Controller
             if ($invoices->isEmpty()) {
                 return ApiResponse::error('the invoice not found', 404);
             }
+
             return ApiResponse::success(
                 InvoiceResource::collection($invoices),
                 'success'

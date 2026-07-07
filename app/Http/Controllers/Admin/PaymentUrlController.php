@@ -74,10 +74,10 @@ class PaymentUrlController extends Controller
         if (! $invoiceId) {
             $invoice = Invoice::create([
                 'clinic_id' => $clinic->id,
-                'invoice_number' => 'INV-' . strtoupper(uniqid()),
+                'invoice_number' => 'INV-'.strtoupper(uniqid()),
                 'status' => 'draft',
                 'total_cost' => $request->amount,
-                'description' => 'Admin-initiated payment for ' . $clinic->title,
+                'description' => 'Admin-initiated payment for '.$clinic->title,
             ]);
             $invoiceId = $invoice->id;
         }
@@ -88,7 +88,7 @@ class PaymentUrlController extends Controller
             $request->amount
         );
 
-        $payment = Payment::where('stripe_session_id', $result['session_id'])->first();
+        $payment = Payment::whereBlind('stripe_session_id', 'stripe_session_id_index', $result['session_id'])->first();
 
         Log::channel('structured')->info('admin sent payment url', [
             'admin_id' => auth()->id(),

@@ -11,6 +11,8 @@ use App\Models\Payment;
 use App\Models\Payment_method;
 use App\Models\Refund;
 use App\Services\Payment\Contracts\PaymentGatewayInterface;
+use App\Services\Payment\Gateways\CashGateway;
+use App\Services\Payment\Gateways\StripeGateway;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 
@@ -19,6 +21,7 @@ class PaymentService
     public function __construct(
         private readonly DoctorEarningsService $earningsService
     ) {}
+
     public function processPayment(int $invoiceId, int $paymentMethodId, float $amount): array
     {
         return DB::transaction(function () use ($invoiceId, $paymentMethodId, $amount) {
@@ -57,7 +60,7 @@ class PaymentService
         DB::transaction(function () use ($invoiceId, $paymentId) {
             $payment = Payment::lockForUpdate()->find($paymentId);
 
-            if (!$payment || $payment->paid_at !== null) {
+            if (! $payment || $payment->paid_at !== null) {
                 return;
             }
 
@@ -103,7 +106,8 @@ class PaymentService
                 'stripe_refund_id' => $result['stripe_refund_id'] ?? null,
             ]);
 
-            $payment->increment('refunded_amount', $amount);
+            $payment->refunded_amount = (float) $payment->refunded_amount + $amount;
+            $payment->save();
 
             $invoice = Invoice::lockForUpdate()->find($payment->invoice_id);
             if ($invoice) {
@@ -120,11 +124,11 @@ class PaymentService
         $invoice->loadMissing(['completedPayments.paymentMethod']);
 
         $cashPaid = $invoice->completedPayments
-            ->filter(fn($p) => $p->paymentMethod->type === PaymentMethodType::Cash)
+            ->filter(fn ($p) => $p->paymentMethod->type === PaymentMethodType::Cash)
             ->sum('amount');
 
         $stripePayments = $invoice->completedPayments
-            ->filter(fn($p) => in_array($p->paymentMethod->type, [PaymentMethodType::Stripe, PaymentMethodType::Card]) && $p->stripe_payment_intent_id)
+            ->filter(fn ($p) => in_array($p->paymentMethod->type, [PaymentMethodType::Stripe, PaymentMethodType::Card]) && $p->stripe_payment_intent_id)
             ->sortByDesc('paid_at');
 
         $stripePaid = $stripePayments->sum('amount');
@@ -159,7 +163,9 @@ class PaymentService
                 'stripe_refund_id' => $result['stripe_refund_id'] ?? null,
             ]);
 
-            $payment->increment('refunded_amount', $refundable);
+            $payment->refunded_amount = (float) $payment->refunded_amount + $refundable;
+            $payment->save();
+
             $remainingRefund -= $refundable;
         }
 
@@ -192,8 +198,10 @@ class PaymentService
 
     public function syncInvoiceStatus(Invoice $invoice): void
     {
-        $totalPaid = $invoice->completedPayments()->sum('amount');
-        $totalRefunded = $invoice->refunds()->sum('amount');
+        $invoice->loadMissing(['completedPayments', 'refunds']);
+
+        $totalPaid = $invoice->completedPayments->sum('amount');
+        $totalRefunded = $invoice->refunds->sum('amount');
         $netPaid = (float) $totalPaid - (float) $totalRefunded;
 
         $newStatus = match (true) {
@@ -211,17 +219,17 @@ class PaymentService
     private function resolveGateway(Payment_method $method): PaymentGatewayInterface
     {
         return match ($method->type) {
-            PaymentMethodType::Cash         => new \App\Services\Payment\Gateways\CashGateway(),
-            PaymentMethodType::Card         => new \App\Services\Payment\Gateways\StripeGateway(),
-            PaymentMethodType::Stripe       => new \App\Services\Payment\Gateways\StripeGateway(),
-            PaymentMethodType::BankTransfer => new \App\Services\Payment\Gateways\CashGateway(),
+            PaymentMethodType::Cash => new CashGateway,
+            PaymentMethodType::Card => new StripeGateway,
+            PaymentMethodType::Stripe => new StripeGateway,
+            PaymentMethodType::BankTransfer => new CashGateway,
             default => throw new \InvalidArgumentException("No gateway for type: {$method->type->value}"),
         };
     }
 
     private function syncDoctorWallet(Invoice $invoice): void
     {
-        if (!$invoice->appointment || !$invoice->appointment->doctor_id) {
+        if (! $invoice->appointment || ! $invoice->appointment->doctor_id) {
             return;
         }
 

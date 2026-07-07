@@ -2,9 +2,9 @@
 
 namespace App\Services\Analytics;
 
-use App\Support\DatabaseHelper;
+use App\Models\Invoice;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class FinancialService
 {
@@ -15,32 +15,23 @@ class FinancialService
         return in_array($period, self::VALID_PERIODS, true) ? $period : 'month';
     }
 
-    private function periodColumns(string $period): ?array
+    private function getPeriodKey(Carbon $date, string $period): string
     {
         return match ($period) {
-            'year' => [
-                DB::raw(DatabaseHelper::year('invoices.created_at') . " as period"),
-                DB::raw(DatabaseHelper::year('invoices.created_at')),
-            ],
-            'day' => [
-                DB::raw("DATE(invoices.created_at) as period"),
-                DB::raw("DATE(invoices.created_at)"),
-            ],
-            'month' => [
-                DB::raw(DatabaseHelper::dateFormat('invoices.created_at', '%Y-%m') . " as period"),
-                DB::raw(DatabaseHelper::dateFormat('invoices.created_at', '%Y-%m')),
-            ],
-            default => null,
+            'year' => $date->format('Y'),
+            'month' => $date->format('Y-m'),
+            'day' => $date->format('Y-m-d'),
+            default => 'total',
         };
     }
 
     private function applyDateRange($query, ?string $from, ?string $to): void
     {
         if ($from) {
-            $query->where('invoices.created_at', '>=', $from);
+            $query->where('created_at', '>=', $from);
         }
         if ($to) {
-            $query->where('invoices.created_at', '<=', $to . ' 23:59:59');
+            $query->where('created_at', '<=', $to.' 23:59:59');
         }
     }
 
@@ -48,80 +39,83 @@ class FinancialService
     {
         $period = $this->normalizePeriod($period);
 
-        $query = DB::table('invoices')
-            ->where('invoices.clinic_id', $clinicId)
-            ->where('invoices.status', 'paid')
-            ->whereNull('invoices.deleted_at');
-
-        $this->applyDateRange($query, $from, $to);
+        $invoices = Invoice::where('clinic_id', $clinicId)
+            ->where('status', 'paid')
+            ->with([]);
+        $this->applyDateRange($invoices, $from, $to);
+        $invoices = $invoices->get();
 
         if ($period === 'total') {
-            return $query->select(
-                DB::raw('COALESCE(SUM(invoices.total_cost), 0) as total_revenue')
-            )->get();
+            return collect([(object) [
+                'total_revenue' => $invoices->sum('total_cost'),
+            ]]);
         }
 
-        [$selectCol, $groupCol] = $this->periodColumns($period);
+        $grouped = $invoices->groupBy(fn ($inv) => $this->getPeriodKey($inv->created_at, $period));
 
-        return $query
-            ->select($selectCol, DB::raw('COALESCE(SUM(invoices.total_cost), 0) as total_revenue'))
-            ->groupBy($groupCol)
-            ->orderBy('period')
-            ->get();
+        return $grouped->map(fn ($group, $periodKey) => (object) [
+            'period' => $periodKey,
+            'total_revenue' => $group->sum('total_cost'),
+        ])->values()->sortBy('period')->values();
     }
 
     public function getRevenueByDoctor(int $clinicId, string $period = 'total', ?string $from = null, ?string $to = null): Collection
     {
         $period = $this->normalizePeriod($period);
 
-        $query = DB::table('invoices')
-            ->join('appointments', 'invoices.appointment_id', '=', 'appointments.id')
-            ->join('doctors', 'appointments.doctor_id', '=', 'doctors.id')
-            ->join('users', 'doctors.user_id', '=', 'users.id')
-            ->where('appointments.clinic_id', $clinicId)
-            ->where('invoices.status', 'paid')
-            ->whereNull('invoices.deleted_at')
-            ->select(
-                'doctors.id as doctor_id',
-                DB::raw("CONCAT(users.fname, ' ', users.lname) as doctor_name"),
-                DB::raw('COALESCE(SUM(invoices.total_cost), 0) as total_revenue')
-            )
-            ->groupBy('doctors.id', 'users.fname', 'users.lname');
+        $invoices = Invoice::whereHas('appointment', fn ($q) => $q->where('clinic_id', $clinicId))
+            ->where('status', 'paid')
+            ->with(['appointment.doctor.user']);
+        $this->applyDateRange($invoices, $from, $to);
+        $invoices = $invoices->get();
 
-        $this->applyDateRange($query, $from, $to);
+        $grouped = $invoices->groupBy(fn ($inv) => $inv->appointment?->doctor_id ?? 'unknown');
 
-        if ($period !== 'total') {
-            [$selectCol, $groupCol] = $this->periodColumns($period);
-            $query->addSelect($selectCol)
-                ->groupBy($groupCol);
-        }
+        $result = $grouped->map(function ($group, $doctorId) use ($period) {
+            $doctor = $group->first()?->appointment?->doctor?->user;
+            $doctorName = $doctor ? trim($doctor->fname.' '.$doctor->lname) : 'Unknown';
 
-        return $query->orderBy('total_revenue', 'desc')->get();
+            $data = (object) [
+                'doctor_id' => $doctorId,
+                'doctor_name' => $doctorName,
+                'total_revenue' => $group->sum('total_cost'),
+            ];
+
+            if ($period !== 'total') {
+                $periodGrouped = $group->groupBy(fn ($inv) => $this->getPeriodKey($inv->created_at, $period));
+                $data->periods = $periodGrouped->map(fn ($periodGroup, $periodKey) => (object) [
+                    'period' => $periodKey,
+                    'total_revenue' => $periodGroup->sum('total_cost'),
+                ])->values();
+            }
+
+            return $data;
+        });
+
+        return $result->values()->sortByDesc('total_revenue')->values();
     }
 
     public function getOutstandingBalance(int $clinicId, string $period = 'total', ?string $from = null, ?string $to = null): Collection
     {
         $period = $this->normalizePeriod($period);
 
-        $query = DB::table('invoices')
-            ->where('invoices.clinic_id', $clinicId)
-            ->whereNotIn('invoices.status', ['paid'])
-            ->whereNull('invoices.deleted_at');
-
-        $this->applyDateRange($query, $from, $to);
+        $invoices = Invoice::where('clinic_id', $clinicId)
+            ->whereNotIn('status', ['paid'])
+            ->with([]);
+        $this->applyDateRange($invoices, $from, $to);
+        $invoices = $invoices->get();
 
         if ($period === 'total') {
-            return $query->select(
-                DB::raw('COALESCE(SUM(invoices.total_cost), 0) as outstanding_balance')
-            )->get();
+            return collect([(object) [
+                'outstanding_balance' => $invoices->sum('total_cost'),
+            ]]);
         }
 
-        [$selectCol, $groupCol] = $this->periodColumns($period);
+        $grouped = $invoices->groupBy(fn ($inv) => $this->getPeriodKey($inv->created_at, $period));
 
-        return $query
-            ->select($selectCol, DB::raw('COALESCE(SUM(invoices.total_cost), 0) as outstanding_balance'))
-            ->groupBy($groupCol)
-            ->orderBy('period')
-            ->get();
+        return $grouped->map(fn ($group, $periodKey) => (object) [
+            'period' => $periodKey,
+            'outstanding_balance' => $group->sum('total_cost'),
+        ])->values()->sortBy('period')->values();
     }
 }
