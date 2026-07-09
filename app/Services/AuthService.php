@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\LogActivityJob;
 use App\Models\User;
 use App\Models\Verification_code;
 use App\Notifications\SendPasswordResetCode;
@@ -17,7 +18,6 @@ class AuthService
 {
     public function __construct(
         private ApiResponse $apiResponse,
-        private ActivityLogService $activityLog,
     ) {}
 
     public function signOut(Request $request)
@@ -25,7 +25,7 @@ class AuthService
         try {
             $this->revokeToken($request);
 
-            $this->activityLog->log('auth', 'User logged out', $request->user(), $request->user());
+            LogActivityJob::dispatch('auth', 'User logged out', get_class($request->user()), $request->user()->id, $request->user());
 
             return $this->apiResponse->success(null, 'Logged out successfully');
         } catch (Exception $e) {
@@ -56,7 +56,7 @@ class AuthService
             $newToken = $user->createToken('auth_token')->plainTextToken;
             $request->user()?->currentAccessToken()?->delete();
 
-            $this->activityLog->log('auth', 'token refreshed', $user, null, [], 'updated');
+            LogActivityJob::dispatch('auth', 'token refreshed', get_class($user), $user->id, null, [], 'updated');
 
             return $this->apiResponse->success(['auth_token' => $newToken], 'Token refreshed successfully');
         } catch (Exception $e) {
@@ -76,7 +76,7 @@ class AuthService
 
             DB::commit();
 
-            $this->activityLog->log('auth', 'password reset', $user, null, [], 'updated');
+            LogActivityJob::dispatch('auth', 'password reset', get_class($user), $user->id, null, [], 'updated');
 
             return $this->apiResponse->success(null, 'the password is reset');
         } catch (Exception $e) {
@@ -112,7 +112,7 @@ class AuthService
         Notification::route('mail', $email)
             ->notify(new SendPasswordResetCode($code));
 
-        $this->activityLog->log('auth', 'password reset code sent', $user, null, [], 'updated');
+        LogActivityJob::dispatch('auth', 'password reset code sent', get_class($user), $user->id, null, [], 'updated');
 
         return $this->apiResponse->success(null, 'Password reset code sent to your email.');
     }
@@ -158,7 +158,7 @@ class AuthService
             $verification->delete();
         });
 
-        $this->activityLog->log('auth', 'password reset with code', $user, null, [], 'updated');
+        LogActivityJob::dispatch('auth', 'password reset with code', get_class($user), $user->id, null, [], 'updated');
 
         return $this->apiResponse->success(null, 'Password has been reset successfully.');
     }

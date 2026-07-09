@@ -2,22 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Payment;
-use App\Services\ActivityLogService;
 
 class PaymentObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(Payment $payment): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'payment',
             'created payment',
-            $payment,
-            auth()->user(),
+            get_class($payment),
+            $payment->id,
+            auth()->id(),
             ['amount' => $payment->amount, 'invoice_id' => $payment->invoice_id],
             'created'
         );
@@ -42,11 +39,12 @@ class PaymentObserver
             ];
         }
 
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'payment',
             'updated payment',
-            $payment,
-            auth()->user(),
+            get_class($payment),
+            $payment->id,
+            auth()->id(),
             $details,
             'updated'
         );
@@ -54,11 +52,12 @@ class PaymentObserver
 
     public function deleted(Payment $payment): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'payment',
             'deleted payment',
-            $payment,
-            auth()->user(),
+            get_class($payment),
+            $payment->id,
+            auth()->id(),
             [],
             'deleted'
         );
@@ -66,11 +65,12 @@ class PaymentObserver
 
     public function restored(Payment $payment): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'payment',
             'restored payment',
-            $payment,
-            auth()->user(),
+            get_class($payment),
+            $payment->id,
+            auth()->id(),
             [],
             'restored'
         );

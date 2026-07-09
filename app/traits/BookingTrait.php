@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Jobs\SendAppointmentStatusNotificationJob;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Work_hour;
@@ -150,6 +151,15 @@ trait BookingTrait
                 ], $attributes)
             )->load(['type', 'room', 'patient', 'doctor']);
             Cache::increment("cache_v:doctor:{$doctorId}:slot");
+
+            SendAppointmentStatusNotificationJob::dispatch(
+                $appointment->id,
+                'booked',
+                'doctor_and_secretary',
+                $appointment->start_time?->toDateString(),
+                $appointment->start_time?->format('H:i')
+            );
+
             return $appointment;
         }, attempts: 3);
     }
@@ -181,12 +191,25 @@ trait BookingTrait
                 throw new Exception("Update failed: The new time frame is unavailable or overlaps with another appointment.");
             }
 
+            $previousStartTime = $appointment->start_time?->copy();
+
             $appointment->update(array_merge([
                 'start_time' => $start,
                 'end_time'   => $end,
             ], $attributes));
 
             Cache::increment("cache_v:doctor:{$doctorId}:slot");
+
+            SendAppointmentStatusNotificationJob::dispatch(
+                $appointment->id,
+                'updated',
+                'doctor_and_secretary',
+                $appointment->start_time?->toDateString(),
+                $appointment->start_time?->format('H:i'),
+                $previousStartTime?->toDateString(),
+                $previousStartTime?->format('H:i')
+            );
+
             return $appointment->load(['type', 'room', 'patient', 'doctor']);
         }, attempts: 3);
     }

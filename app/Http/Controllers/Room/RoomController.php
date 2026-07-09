@@ -1,5 +1,5 @@
 <?php
-// TODO: exceptions
+
 namespace App\Http\Controllers\Room;
 
 use App\Http\Controllers\Controller;

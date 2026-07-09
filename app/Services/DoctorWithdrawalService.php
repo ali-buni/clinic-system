@@ -3,18 +3,17 @@
 namespace App\Services;
 
 use App\Enums\WithdrawalStatus;
+use App\Jobs\NotifyAdminsOfWithdrawalJob;
+use App\Jobs\ProcessStripeTransferJob;
 use App\Models\Doctor;
 use App\Models\DoctorWithdrawal;
-use App\Notifications\WithdrawalCompleted;
 use App\Notifications\WithdrawalRejected;
-use App\Notifications\WithdrawalRequestSubmitted;
 use Illuminate\Support\Facades\DB;
 
 class DoctorWithdrawalService
 {
     public function __construct(
         private readonly DoctorEarningsService $earningsService,
-        private readonly StripeConnectService $stripeConnectService,
     ) {}
 
     public function requestWithdrawal(Doctor $doctor, float $amount): DoctorWithdrawal
@@ -40,7 +39,7 @@ class DoctorWithdrawalService
                 'status' => WithdrawalStatus::Pending,
             ]);
 
-            $this->notifyAdmins($withdrawal);
+            NotifyAdminsOfWithdrawalJob::dispatch($withdrawal->id);
 
             return $withdrawal;
         });
@@ -53,25 +52,13 @@ class DoctorWithdrawalService
                 throw new \RuntimeException('Only pending withdrawals can be approved.');
             }
 
-            $transferId = $this->stripeConnectService->createTransfer(
-                $withdrawal->doctor,
-                (float) $withdrawal->amount
-            );
-
             $withdrawal->update([
-                'status' => WithdrawalStatus::Completed,
+                'status' => WithdrawalStatus::Processing,
                 'approved_by' => $approvedBy,
                 'approved_at' => now(),
-                'stripe_transfer_id' => $transferId,
-                'processed_at' => now(),
             ]);
 
-            $wallet = $withdrawal->doctor->wallet;
-            if ($wallet) {
-                $wallet->removePending((float) $withdrawal->amount);
-            }
-
-            $withdrawal->doctor->notify(new WithdrawalCompleted($withdrawal));
+            ProcessStripeTransferJob::dispatch($withdrawal->id, $approvedBy);
 
             return $withdrawal;
         });
@@ -113,14 +100,5 @@ class DoctorWithdrawalService
             'pending_withdrawal' => $wallet ? (float) $wallet->pending_withdrawal : 0,
             'total_earnings' => $this->earningsService->calculateDoctorShare($doctor),
         ];
-    }
-
-    private function notifyAdmins(DoctorWithdrawal $withdrawal): void
-    {
-        $admins = \App\Models\User::role('admin')->get();
-
-        foreach ($admins as $admin) {
-            $admin->notify(new WithdrawalRequestSubmitted($withdrawal));
-        }
     }
 }

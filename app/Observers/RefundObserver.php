@@ -2,22 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Refund;
-use App\Services\ActivityLogService;
 
 class RefundObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(Refund $refund): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'refund',
             'created refund',
-            $refund,
-            auth()->user(),
+            get_class($refund),
+            $refund->id,
+            auth()->id(),
             [
                 'amount' => $refund->amount,
                 'payment_id' => $refund->payment_id,

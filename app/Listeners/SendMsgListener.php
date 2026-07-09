@@ -11,9 +11,12 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
-class SendMsgListener
+class SendMsgListener implements ShouldQueue
 {
     use InteractsWithQueue, Queueable, SerializesModels;
+
+    public int $tries = 3;
+    public int $backoff = 30;
 
     private string $url;
     private string $token;
@@ -24,9 +27,6 @@ class SendMsgListener
         $this->token = config('services.traccar.api');
     }
 
-    /**
-     * Handle the event.
-     */
     public function handle(SendMsgEvent $event): void
     {
         if (empty($this->url)) {
@@ -36,25 +36,34 @@ class SendMsgListener
         $phone = $event->phone;
         $msg = $event->msg;
 
-        try {
-            $response = Http::asForm()->post($this->url, [
-                'token' => $this->token,
-                'to' => $phone,
-                'body' => $msg
+        if (empty($phone) || empty($msg)) {
+            Log::channel('structured')->warning('[SMS] Missing phone or message', [
+                'phone' => $phone,
+                'msg' => $msg,
             ]);
-
-            Log::info('[SMS] Response', [
-                'satus' => $response->status(),
-                'body'   => $response->body(),
-            ]);
-
-            if ($response->successful()) {
-                echo $response->body();
-            } else {
-                throw new RuntimeException('SMS failed: ' . $response->reason());
-            }
-        } catch (\Exception $e) {
-            throw $e;
+            return;
         }
+
+        $response = Http::asForm()->post($this->url, [
+            'token' => $this->token,
+            'to' => $phone,
+            'body' => $msg
+        ]);
+
+        Log::channel('structured')->info('[SMS] Response', [
+            'status' => $response->status(),
+            'body'   => $response->body(),
+        ]);
+
+        if (! $response->successful()) {
+            throw new RuntimeException('SMS failed: ' . $response->reason());
+        }
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        Log::channel('structured')->error('[SMS] Job failed', [
+            'error' => $exception->getMessage(),
+        ]);
     }
 }

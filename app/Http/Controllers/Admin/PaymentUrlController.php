@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SendPaymentRequest;
+use App\Jobs\SendPaymentUrlEmailJob;
 use App\Models\Clinic;
 use App\Models\Invoice;
 use App\Models\Payment;
@@ -11,7 +12,6 @@ use App\Models\Payment_method;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 class PaymentUrlController extends Controller
 {
@@ -99,17 +99,11 @@ class PaymentUrlController extends Controller
         ]);
 
         if ($clinic->owner && $clinic->owner->email) {
-            try {
-                Mail::raw("Payment URL for clinic {$clinic->title}: {$result['payment_url']}", function ($message) use ($clinic) {
-                    $message->to($clinic->owner->email)
-                        ->subject('Payment URL - Clinic System');
-                });
-            } catch (\Exception $e) {
-                Log::channel('structured')->warning('failed to send payment email', [
-                    'clinic_id' => $clinic->id,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+            SendPaymentUrlEmailJob::dispatch(
+                $clinic->owner->email,
+                $clinic->title,
+                $result['payment_url']
+            );
         }
 
         return view('admin.payments.success', [
@@ -130,17 +124,15 @@ class PaymentUrlController extends Controller
         $clinic = $payment->invoice->clinic;
 
         if ($clinic && $clinic->owner && $clinic->owner->email) {
-            try {
-                $paymentUrl = "https://checkout.stripe.com/pay/{$payment->stripe_session_id}";
-                Mail::raw("Payment URL for invoice #{$payment->invoice->invoice_number}: {$paymentUrl}", function ($message) use ($clinic) {
-                    $message->to($clinic->owner->email)
-                        ->subject('Payment URL - Clinic System (Resent)');
-                });
+            $paymentUrl = "https://checkout.stripe.com/pay/{$payment->stripe_session_id}";
+            SendPaymentUrlEmailJob::dispatch(
+                $clinic->owner->email,
+                $clinic->title,
+                $paymentUrl,
+                'Payment URL - Clinic System (Resent)'
+            );
 
-                return back()->with('success', 'Payment URL resent successfully.');
-            } catch (\Exception $e) {
-                return back()->withErrors(['error' => 'Failed to resend email: '.$e->getMessage()]);
-            }
+            return back()->with('success', 'Payment URL resent successfully.');
         }
 
         return back()->withErrors(['error' => 'Clinic owner not found.']);

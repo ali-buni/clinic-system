@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Doctor;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -11,16 +12,12 @@ use Illuminate\Support\Facades\DB;
 
 class DoctorSpecialtyService
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog,
-    ) {}
-
     public function attachSpecialties(Doctor $doctor, array $specialtyIds): Collection
     {
         $doctor->specialties()->syncWithoutDetaching($specialtyIds);
         Cache::forget('specialties:all');
 
-        $this->activityLog->log('doctor', 'specialties attached', $doctor, null, ['specialty_ids' => $specialtyIds], 'updated');
+        LogActivityJob::dispatch('doctor', 'specialties attached', get_class($doctor), $doctor->id, null, ['specialty_ids' => $specialtyIds], 'updated');
 
         return $this->getCurrentSpecialties($doctor);
     }
@@ -35,7 +32,7 @@ class DoctorSpecialtyService
         $doctor->specialties()->detach($specialtyId);
         Cache::forget('specialties:all');
 
-        $this->activityLog->log('doctor', 'specialty detached', $doctor, null, ['specialty_id' => $specialtyId], 'updated');
+        LogActivityJob::dispatch('doctor', 'specialty detached', get_class($doctor), $doctor->id, null, ['specialty_id' => $specialtyId], 'updated');
 
         return $this->getCurrentSpecialties($doctor);
     }
@@ -77,7 +74,7 @@ class DoctorSpecialtyService
             $attachedIds = $doctor->specialties()->pluck('id')->toArray();
 
             if (! in_array($specialtyId, $attachedIds, true)) {
-                $this->activityLog->log('doctor', 'primary specialty update failed - not attached', $doctor, null, ['specialty_id' => $specialtyId], 'updated');
+                LogActivityJob::dispatch('doctor', 'primary specialty update failed - not attached', get_class($doctor), $doctor->id, null, ['specialty_id' => $specialtyId], 'updated');
 
                 return false;
             }
@@ -88,7 +85,7 @@ class DoctorSpecialtyService
 
             $doctor->specialties()->updateExistingPivot($specialtyId, ['is_primary' => 1]);
 
-            $this->activityLog->log('doctor', 'primary specialty updated', $doctor, null, ['specialty_id' => $specialtyId], 'updated');
+            LogActivityJob::dispatch('doctor', 'primary specialty updated', get_class($doctor), $doctor->id, null, ['specialty_id' => $specialtyId], 'updated');
 
             return true;
         });

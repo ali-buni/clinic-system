@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Events\SendMsgEvent;
 use App\Helpers\PermissionHelper;
+use App\Jobs\LogActivityJob;
 use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\Secretary;
@@ -14,10 +15,6 @@ use RuntimeException;
 
 class ClinicServices
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog,
-    ) {}
-
     /**
      * Create a new doctor account with associated permissions.
      *
@@ -57,17 +54,23 @@ class ClinicServices
                 try {
                     event(new SendMsgEvent(
                         $user->phone,
-                        config('app.name').": Your password is: {$temporaryPassword}. Please change it after login."
+                        config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
                     ));
                 } catch (\Exception $e) {
-                    throw new RuntimeException('Failed to send SMS: '.$e->getMessage());
+                    throw new RuntimeException('Failed to send SMS: ' . $e->getMessage());
                 }
             }
 
-            $this->activityLog->log(
-                'clinic', 'created doctor account', $doctor, null, [
+            LogActivityJob::dispatch(
+                'clinic',
+                'created doctor account',
+                get_class($doctor),
+                $doctor->id,
+                null,
+                [
                     'clinic_id' => $data['clinic_id'],
-                ], 'created'
+                ],
+                'created'
             );
 
             return true;
@@ -113,17 +116,23 @@ class ClinicServices
                 try {
                     event(new SendMsgEvent(
                         $user->phone,
-                        config('app.name').": Your password is: {$temporaryPassword}. Please change it after login."
+                        config('app.name') . ": Your password is: {$temporaryPassword}. Please change it after login."
                     ));
                 } catch (\Exception $e) {
-                    throw new RuntimeException('Failed to send SMS: '.$e->getMessage());
+                    throw new RuntimeException('Failed to send SMS: ' . $e->getMessage());
                 }
             }
 
-            $this->activityLog->log(
-                'clinic', 'created secretary account', $secretary, null, [
+            LogActivityJob::dispatch(
+                'clinic',
+                'created secretary account',
+                get_class($secretary),
+                $secretary->id,
+                null,
+                [
                     'clinic_id' => $data['clinic_id'],
-                ], 'created'
+                ],
+                'created'
             );
 
             return true;
@@ -148,10 +157,16 @@ class ClinicServices
 
             $result = $clinic->update($data);
 
-            $this->activityLog->log(
-                'clinic', 'updated clinic info', $clinic, null, [
+            LogActivityJob::dispatch(
+                'clinic',
+                'updated clinic info',
+                get_class($clinic),
+                $clinic->id,
+                null,
+                [
                     'updated_fields' => array_keys($data),
-                ], 'updated'
+                ],
+                'updated'
             );
 
             return $result;

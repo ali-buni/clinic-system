@@ -2,22 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Item;
-use App\Services\ActivityLogService;
 
 class ItemObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(Item $item): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'item',
             'created item',
-            $item,
-            auth()->user(),
+            get_class($item),
+            $item->id,
+            auth()->id(),
             ['item_name' => $item->item_name, 'clinic_id' => $item->clinic_id],
             'created'
         );
@@ -28,11 +25,12 @@ class ItemObserver
         $changes = $item->getChanges();
         unset($changes['updated_at']);
 
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'item',
             'updated item',
-            $item,
-            auth()->user(),
+            get_class($item),
+            $item->id,
+            auth()->id(),
             ['changed_fields' => array_keys($changes)],
             'updated'
         );
@@ -40,11 +38,12 @@ class ItemObserver
 
     public function deleted(Item $item): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'item',
             'deleted item',
-            $item,
-            auth()->user(),
+            get_class($item),
+            $item->id,
+            auth()->id(),
             [],
             'deleted'
         );

@@ -14,7 +14,7 @@ return new class extends Migration
             $table->decimal('amount', 12, 2);
             $table->string('stripe_transfer_id')->nullable();
             $table->string('stripe_connected_account_id');
-            $table->enum('status', ['pending', 'approved', 'rejected', 'completed', 'failed'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'completed', 'failed', 'processing'])->default('pending');
             $table->foreignId('approved_by')->nullable()->constrained('users');
             $table->timestamp('approved_at')->nullable();
             $table->text('rejection_reason')->nullable();

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateDashboardCacheJob;
 use App\Models\ClinicAnalyticsSnapshot;
 use App\Services\Analytics\{OperationalService, FinancialService, PatientAnalyticsService, MedicalAnalyticsService, PredictiveService, NLAService, ClinicHealthScoreService};
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class AnalyticsController extends Controller
@@ -128,7 +130,6 @@ class AnalyticsController extends Controller
         [$from, $to] = $this->resolveDateRange($validated);
 
         return $this->respond('success', null, [
-            'period'                => $period,
             'from'                  => $from,
             'to'                    => $to,
             'crowding'              => $pre->getCrowdingRisk($clinicId, $from, $to),
@@ -167,44 +168,26 @@ class AnalyticsController extends Controller
         return $this->respond('success', $scoreService->calculateScore($clinicId, $period, $from, $to));
     }
 
-    public function getDashboard(Request $request, OperationalService $ops, FinancialService $fin, PatientAnalyticsService $pat, MedicalAnalyticsService $med, PredictiveService $pre, ClinicHealthScoreService $scoreService): JsonResponse
+    public function getDashboard(Request $request): JsonResponse
     {
         $clinicId = $this->resolveClinicId($request);
-        $validated = $request->validate(array_merge($this->periodRule(), $this->dateRangeRules()));
-        $period = $this->resolvePeriod($validated);
+        $validated = $request->validate($this->dateRangeRules());
         [$from, $to] = $this->resolveDateRange($validated);
 
-        return $this->respond('success', null, [
-            'period'       => $period,
-            'from'         => $from,
-            'to'           => $to,
-            'operational'  => [
-                'today_utilization' => $ops->getDoctorUtilization($clinicId, 'day', today()->toDateString(), today()->toDateString()),
-                'appointments'      => $ops->getAppointmentsByPeriod($clinicId, $period, $from, $to),
-                'completion'        => $ops->getCompletionByPeriod($clinicId, $period, $from, $to),
-                'no_show'           => $ops->getNoShowByPeriod($clinicId, $period, $from, $to),
-                'doctor_utilization_by_period' => $ops->getDoctorUtilization($clinicId, $period, $from, $to),
-            ],
-            'financial'    => [
-                'by_period'           => $fin->getRevenueByPeriod($clinicId, $period, $from, $to),
-                'by_doctor'           => $fin->getRevenueByDoctor($clinicId, $period, $from, $to),
-                'outstanding_balance' => $fin->getOutstandingBalance($clinicId, $period, $from, $to),
-            ],
-            'patients'     => [
-                'retention'     => $pat->getRetentionMetrics($clinicId, $period),
-                'lost_patients' => $pat->getLostPatients($clinicId, 6, $period),
-            ],
-            'medical'      => [
-                'top_diseases' => $med->getTopDiseases($clinicId),
-                'by_age'       => $med->getDiseasesByAgeGroup($clinicId),
-            ],
-            'predictive'   => [
-                'crowding'             => $pre->getCrowdingRisk($clinicId, $from, $to),
-                'no_show_prediction'   => $pre->getNoShowPrediction($clinicId, $from, $to),
-                'busy_hours'           => $pre->getBusyHours($clinicId, $period, $from, $to),
-                'utilization_forecast' => $pre->getUtilizationForecast($clinicId, $period, $from, $to),
-            ],
-            'health_score' => $scoreService->calculateScore($clinicId, $period, $from, $to),
-        ]);
+        $cacheKey = "dashboard:clinic:{$clinicId}:total:from:{$from}:to:{$to}";
+        if (Cache::has($cacheKey)) {
+            Log::channel('structured')->info('Dashboard cache hit', [
+                'clinic_id' => $clinicId,
+                'period' => 'total',
+            ]);
+        } else {
+            Log::channel('structured')->info('Dashboard cache miss', [
+                'clinic_id' => $clinicId,
+                'period' => 'total',
+            ]);
+            GenerateDashboardCacheJob::dispatchSync($clinicId, 'total', $from, $to);
+        }
+        $data = Cache::get($cacheKey);
+        return $this->respond('success', $data);
     }
 }

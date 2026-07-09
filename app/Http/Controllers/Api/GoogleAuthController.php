@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\DownloadAndStoreImageJob;
 use App\Models\User;
 use App\Services\ApiResponse;
 use App\Traits\HandleUserImage;
@@ -33,21 +34,20 @@ class GoogleAuthController extends Controller
             ->first();
 
         if (!$user) {
-            $image = $this->uploadUserImageFromUrl($googleUser->getAvatar());
             $user = User::create([
                 'fname' => $googleUser->getName(),
                 'email' => $googleUser->getEmail(),
                 'google_id' => $googleUser->getId(),
-                'profile_image' => $image,
+                'profile_image' => $this->defaultUserImage(),
                 'password' => Hash::make(Str::random(16))
             ]);
+            DownloadAndStoreImageJob::dispatch($user->id, $googleUser->getAvatar());
         } else {
             if (!$user->google_id) {
                 $user->update(['google_id' => $googleUser->getId()]);
             }
             if ($user->profile_image === $this->defaultUserImage() || !$user->profile_image) {
-                $this->deleteUserImage($user->profile_image);
-                $user->update(['profile_image' => $this->uploadUserImageFromUrl($googleUser->getAvatar())]);
+                DownloadAndStoreImageJob::dispatch($user->id, $googleUser->getAvatar());
             }
         }
         $user->tokens()->delete();

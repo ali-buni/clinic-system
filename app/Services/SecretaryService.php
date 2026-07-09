@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Room;
 use App\Models\Secretary;
 use App\Models\User;
@@ -10,10 +11,6 @@ use Illuminate\Support\Facades\Log;
 
 class SecretaryService
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog,
-    ) {}
-
     /**
      * Get secretary information with eager-loaded relationships.
      */
@@ -49,7 +46,7 @@ class SecretaryService
 
             $secretary->save();
 
-            $this->activityLog->log('secretary', 'secretary updated', $secretary, null, [
+            LogActivityJob::dispatch('secretary', 'secretary updated', get_class($secretary), $secretary->id, null, [
                 'updated_fields' => array_keys($data),
             ], 'updated');
 

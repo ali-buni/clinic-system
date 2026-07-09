@@ -2,22 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\DoctorWithdrawal;
-use App\Services\ActivityLogService;
 
 class DoctorWithdrawalObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(DoctorWithdrawal $withdrawal): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'doctor_withdrawal',
             'created withdrawal request',
-            $withdrawal,
-            auth()->user(),
+            get_class($withdrawal),
+            $withdrawal->id,
+            auth()->id(),
             [
                 'doctor_id' => $withdrawal->doctor_id,
                 'amount' => $withdrawal->amount,
@@ -49,11 +46,12 @@ class DoctorWithdrawalObserver
             $details['rejection_reason'] = $changes['rejection_reason'];
         }
 
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'doctor_withdrawal',
             'updated withdrawal',
-            $withdrawal,
-            auth()->user(),
+            get_class($withdrawal),
+            $withdrawal->id,
+            auth()->id(),
             $details,
             'updated'
         );

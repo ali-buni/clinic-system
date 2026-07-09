@@ -2,22 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\PatientInfo;
-use App\Services\ActivityLogService;
 
 class PatientInfoObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(PatientInfo $patientInfo): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'patient_info',
             'created patient info',
-            $patientInfo,
-            auth()->user(),
+            get_class($patientInfo),
+            $patientInfo->id,
+            auth()->id(),
             [],
             'created'
         );
@@ -25,11 +22,12 @@ class PatientInfoObserver
 
     public function updated(PatientInfo $patientInfo): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'patient_info',
             'updated patient info',
-            $patientInfo,
-            auth()->user(),
+            get_class($patientInfo),
+            $patientInfo->id,
+            auth()->id(),
             [],
             'updated'
         );
@@ -37,11 +35,12 @@ class PatientInfoObserver
 
     public function deleted(PatientInfo $patientInfo): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'patient_info',
             'deleted patient info',
-            $patientInfo,
-            auth()->user(),
+            get_class($patientInfo),
+            $patientInfo->id,
+            auth()->id(),
             [],
             'deleted'
         );
@@ -49,11 +48,12 @@ class PatientInfoObserver
 
     public function restored(PatientInfo $patientInfo): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'patient_info',
             'restored patient info',
-            $patientInfo,
-            auth()->user(),
+            get_class($patientInfo),
+            $patientInfo->id,
+            auth()->id(),
             [],
             'restored'
         );

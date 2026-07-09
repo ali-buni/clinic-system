@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Events\SendMsgEvent;
+use App\Jobs\SendAppointmentStatusNotificationJob;
 use App\Models\Appointment;
 use App\Traits\BookingTrait;
 use Exception;
@@ -34,7 +34,9 @@ class AppointmentService
             ]);
 
             Cache::increment("cache_v:doctor:{$appointment->doctor_id}:slot");
-            // TODO: send msg to doctor and patient
+
+            SendAppointmentStatusNotificationJob::dispatch($appointment->id, 'cancelled', 'all');
+
             return true;
         });
     }
@@ -50,7 +52,9 @@ class AppointmentService
             $appointment->update(['status' => 'completed']);
 
             Cache::increment("cache_v:doctor:{$appointment->doctor_id}:slot");
-            // TODO: send msg to secretary
+
+            SendAppointmentStatusNotificationJob::dispatch($appointment->id, 'completed', 'secretary');
+
             return true;
         });
     }
@@ -66,7 +70,9 @@ class AppointmentService
             $appointment->update(['status' => 'confirmed']);
 
             Cache::increment("cache_v:doctor:{$appointment->doctor_id}:slot");
-            // TODO: send msg
+
+            SendAppointmentStatusNotificationJob::dispatch($appointment->id, 'confirmed', 'all');
+
             return true;
         });
     }

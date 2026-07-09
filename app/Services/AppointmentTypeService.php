@@ -2,14 +2,11 @@
 
 namespace App\Services;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Appointment_type;
 
 class AppointmentTypeService
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog,
-    ) {}
-
     /**
      * Return list of appointment.
      */
@@ -27,7 +24,7 @@ class AppointmentTypeService
     {
         $type = Appointment_type::create($data);
 
-        $this->activityLog->log('appointment_type', 'appointment type created', $type, null, [
+        LogActivityJob::dispatch('appointment_type', 'appointment type created', get_class($type), $type->id, null, [
             'name' => $data['en_name'] ?? null,
         ], 'created');
 
@@ -41,7 +38,7 @@ class AppointmentTypeService
     {
         $type = Appointment_type::findOrFail($id);
 
-        $this->activityLog->log('appointment_type', 'appointment type deleted', $type, null, [
+        LogActivityJob::dispatch('appointment_type', 'appointment type deleted', get_class($type), $type->id, null, [
             'name' => $type->en_name ?? null,
         ], 'deleted');
 

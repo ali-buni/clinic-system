@@ -2,22 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Doctor;
-use App\Services\ActivityLogService;
 
 class DoctorObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(Doctor $doctor): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'doctor',
             'created doctor',
-            $doctor,
-            auth()->user(),
+            get_class($doctor),
+            $doctor->id,
+            auth()->id(),
             [],
             'created'
         );
@@ -25,11 +22,12 @@ class DoctorObserver
 
     public function updated(Doctor $doctor): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'doctor',
             'updated doctor',
-            $doctor,
-            auth()->user(),
+            get_class($doctor),
+            $doctor->id,
+            auth()->id(),
             [],
             'updated'
         );
@@ -37,11 +35,12 @@ class DoctorObserver
 
     public function deleted(Doctor $doctor): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'doctor',
             'deleted doctor',
-            $doctor,
-            auth()->user(),
+            get_class($doctor),
+            $doctor->id,
+            auth()->id(),
             [],
             'deleted'
         );
@@ -49,11 +48,12 @@ class DoctorObserver
 
     public function restored(Doctor $doctor): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'doctor',
             'restored doctor',
-            $doctor,
-            auth()->user(),
+            get_class($doctor),
+            $doctor->id,
+            auth()->id(),
             [],
             'restored'
         );

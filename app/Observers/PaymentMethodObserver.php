@@ -2,22 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Payment_method;
-use App\Services\ActivityLogService;
 
 class PaymentMethodObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(Payment_method $method): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'payment_method',
             'created payment method',
-            $method,
-            auth()->user(),
+            get_class($method),
+            $method->id,
+            auth()->id(),
             ['type' => $method->type->value, 'en_name' => $method->en_name],
             'created'
         );
@@ -28,11 +25,12 @@ class PaymentMethodObserver
         $changes = $method->getChanges();
         unset($changes['updated_at']);
 
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'payment_method',
             'updated payment method',
-            $method,
-            auth()->user(),
+            get_class($method),
+            $method->id,
+            auth()->id(),
             ['changed_fields' => array_keys($changes)],
             'updated'
         );
@@ -40,11 +38,12 @@ class PaymentMethodObserver
 
     public function deleted(Payment_method $method): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'payment_method',
             'deleted payment method',
-            $method,
-            auth()->user(),
+            get_class($method),
+            $method->id,
+            auth()->id(),
             [],
             'deleted'
         );

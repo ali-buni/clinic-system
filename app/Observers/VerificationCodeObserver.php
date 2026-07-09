@@ -2,22 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Verification_code;
-use App\Services\ActivityLogService;
 
 class VerificationCodeObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(Verification_code $code): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'verification_code',
             'created verification code',
-            $code,
-            auth()->user(),
+            get_class($code),
+            $code->id,
+            auth()->id(),
             [
                 'user_id' => $code->user_id,
                 'type' => $code->type,
@@ -29,11 +26,12 @@ class VerificationCodeObserver
 
     public function deleted(Verification_code $code): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'verification_code',
             'deleted verification code',
-            $code,
-            auth()->user(),
+            get_class($code),
+            $code->id,
+            auth()->id(),
             [
                 'user_id' => $code->user_id,
                 'type' => $code->type,

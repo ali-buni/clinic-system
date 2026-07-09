@@ -14,14 +14,6 @@ trait HandleUserImage
         return $image->storeAs('profile_images', $name, 'public');
     }
 
-    public function uploadUserImageFromUrl(string $url): string
-    {
-        $name = now()->format('Ymd_His') . '_' . uniqid() . '.jpg';
-        $contents = Http::timeout(10)->get($url)->body();
-        Storage::disk('public')->put('profile_images/' . $name, $contents);
-        return 'profile_images/' . $name;
-    }
-
     public function defaultUserImage(): string
     {
         return 'defaults/avatar.svg';

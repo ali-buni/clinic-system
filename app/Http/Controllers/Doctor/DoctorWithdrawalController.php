@@ -85,22 +85,11 @@ class DoctorWithdrawalController extends Controller
             }
 
             $stripeService = app(StripeConnectService::class);
-
-            if ($doctor->stripe_connected_account_id) {
-                $onboardingUrl = $stripeService->generateAccountLink($doctor->stripe_connected_account_id);
-
-                return ApiResponse::success(
-                    ['onboarding_url' => $onboardingUrl],
-                    'Stripe onboarding link generated'
-                );
-            }
-
-            $accountId = $stripeService->createConnectedAccount($doctor);
-            $onboardingUrl = $stripeService->generateAccountLink($accountId);
+            $stripeService->ensureConnectedAccountAndGetOnboardingUrl($doctor);
 
             return ApiResponse::success(
-                ['onboarding_url' => $onboardingUrl],
-                'Stripe connected account created'
+                null,
+                'Stripe onboarding link generated and will sent to your email'
             );
         } catch (\RuntimeException $e) {
             return ApiResponse::error($e->getMessage(), 422);

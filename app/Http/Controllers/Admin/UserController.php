@@ -5,17 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Jobs\LogActivityJob;
 use App\Models\User;
-use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function index(Request $request)
     {
         $query = User::with('roles');
@@ -92,10 +88,11 @@ class UserController extends Controller
             $oldRole = $user->roles->first()?->name;
             $user->syncRoles([$role]);
 
-            $this->activityLog->log(
+            LogActivityJob::dispatch(
                 'user',
                 'changed user role',
-                $user,
+                get_class($user),
+                $user->id,
                 auth()->user(),
                 ['old_role' => $oldRole, 'new_role' => $role],
                 'role_changed'

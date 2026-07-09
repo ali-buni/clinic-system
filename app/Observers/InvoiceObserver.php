@@ -2,22 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Invoice;
-use App\Services\ActivityLogService;
 
 class InvoiceObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(Invoice $invoice): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'invoice',
             'created invoice',
-            $invoice,
-            auth()->user(),
+            get_class($invoice),
+            $invoice->id,
+            auth()->id(),
             [
                 'invoice_number' => $invoice->invoice_number,
                 'total_cost' => $invoice->total_cost,
@@ -46,11 +43,12 @@ class InvoiceObserver
             $details['description_changed'] = true;
         }
 
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'invoice',
             'updated invoice',
-            $invoice,
-            auth()->user(),
+            get_class($invoice),
+            $invoice->id,
+            auth()->id(),
             $details,
             'updated'
         );
@@ -58,11 +56,12 @@ class InvoiceObserver
 
     public function deleted(Invoice $invoice): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'invoice',
             'deleted invoice',
-            $invoice,
-            auth()->user(),
+            get_class($invoice),
+            $invoice->id,
+            auth()->id(),
             [],
             'deleted'
         );
@@ -70,11 +69,12 @@ class InvoiceObserver
 
     public function restored(Invoice $invoice): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'invoice',
             'restored invoice',
-            $invoice,
-            auth()->user(),
+            get_class($invoice),
+            $invoice->id,
+            auth()->id(),
             [],
             'restored'
         );

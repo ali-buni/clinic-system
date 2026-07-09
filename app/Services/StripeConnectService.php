@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Doctor;
+use App\Notifications\SendStripeAccountLink;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Stripe;
@@ -68,6 +69,19 @@ class StripeConnectService
             ]);
             throw new \RuntimeException('Failed to generate Stripe onboarding link: '.$e->getMessage());
         }
+    }
+
+    public function ensureConnectedAccountAndGetOnboardingUrl(Doctor $doctor)
+    {
+        $accountId = $doctor->stripe_connected_account_id;
+
+        if (! $accountId) {
+            $accountId = $this->createConnectedAccount($doctor);
+        }
+
+        $accountUrl = $this->generateAccountLink($accountId);
+        $doctor->user->notify(new SendStripeAccountLink($accountUrl, $doctor));
+        return $accountUrl;
     }
 
     public function createTransfer(Doctor $doctor, float $amount): string

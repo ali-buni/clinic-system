@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Helpers\PermissionHelper;
+use App\Jobs\LogActivityJob;
 use App\Models\Doctor;
 use App\Models\Room;
 use App\Models\Secretary;
@@ -12,10 +13,6 @@ use Illuminate\Support\Facades\Log;
 
 class RoomServices
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog,
-    ) {}
-
     /**
      * Create a new room.
      *
@@ -25,10 +22,16 @@ class RoomServices
     {
         $room = Room::create($data);
 
-        $this->activityLog->log(
-            'room', 'created room', $room, null, [
+        LogActivityJob::dispatch(
+            'room',
+            'created room',
+            get_class($room),
+            $room->id,
+            null,
+            [
                 'clinic_id' => $data['clinic_id'] ?? null,
-            ], 'created'
+            ],
+            'created'
         );
 
         return $room;
@@ -41,8 +44,14 @@ class RoomServices
     {
         $result = (bool) Room::where('id', $id)->delete();
 
-        $this->activityLog->log(
-            'room', 'deleted room', null, null, ['room_id' => $id], 'deleted'
+        LogActivityJob::dispatch(
+            'room',
+            'deleted room',
+            new Room,
+            null,
+            null,
+            ['room_id' => $id],
+            'deleted'
         );
 
         return $result;
@@ -57,10 +66,16 @@ class RoomServices
         $result = $room ? (bool) $room->update($data) : false;
 
         if ($room) {
-            $this->activityLog->log(
-                'room', 'updated room', $room, null, [
+            LogActivityJob::dispatch(
+                'room',
+                'updated room',
+                get_class($room),
+                $room->id,
+                null,
+                [
                     'updated_fields' => array_keys($data),
-                ], 'updated'
+                ],
+                'updated'
             );
         }
 
@@ -103,7 +118,8 @@ class RoomServices
 
             if (! $room || ! $doctor || $room->clinic_id !== $doctor->clinic_id) {
                 Log::channel('structured')->warning('addDoctorToRoom failed - clinic mismatch', [
-                    'room_id' => $roomId, 'doctor_id' => $doctorId,
+                    'room_id' => $roomId,
+                    'doctor_id' => $doctorId,
                 ]);
 
                 return null;
@@ -114,8 +130,14 @@ class RoomServices
 
             PermissionHelper::grantRoomPermission($doctor->user, $roomId);
 
-            $this->activityLog->log(
-                'room', 'assigned doctor to room', $doctor, null, ['room_id' => $roomId], 'updated'
+            LogActivityJob::dispatch(
+                'room',
+                'assigned doctor to room',
+                get_class($doctor),
+                $doctor->id,
+                null,
+                ['room_id' => $roomId],
+                'updated'
             );
 
             return true;
@@ -135,7 +157,8 @@ class RoomServices
 
             if (! $doctor) {
                 Log::channel('structured')->warning('delDoctorFromRoom - doctor not in room', [
-                    'doctor_id' => $doctorId, 'room_id' => $roomId,
+                    'doctor_id' => $doctorId,
+                    'room_id' => $roomId,
                 ]);
 
                 return false;
@@ -146,8 +169,14 @@ class RoomServices
 
             PermissionHelper::revokeRoomPermission($doctor->user, $roomId);
 
-            $this->activityLog->log(
-                'room', 'removed doctor from room', $doctor, null, ['room_id' => $roomId], 'updated'
+            LogActivityJob::dispatch(
+                'room',
+                'removed doctor from room',
+                get_class($doctor),
+                $doctor->id,
+                null,
+                ['room_id' => $roomId],
+                'updated'
             );
 
             return true;
@@ -178,7 +207,8 @@ class RoomServices
 
             if (empty($validRooms)) {
                 Log::channel('structured')->warning('addSecretaryToRoom - no valid rooms', [
-                    'secretary_id' => $secretaryId, 'requested_rooms' => $roomIds,
+                    'secretary_id' => $secretaryId,
+                    'requested_rooms' => $roomIds,
                 ]);
 
                 return false;
@@ -190,8 +220,14 @@ class RoomServices
                 PermissionHelper::grantRoomPermission($secretary->user, $roomId);
             }
 
-            $this->activityLog->log(
-                'room', 'assigned secretary to rooms', $secretary, null, ['room_ids' => $validRooms], 'updated'
+            LogActivityJob::dispatch(
+                'room',
+                'assigned secretary to rooms',
+                get_class($secretary),
+                $secretary->id,
+                null,
+                ['room_ids' => $validRooms],
+                'updated'
             );
 
             return true;
@@ -222,7 +258,8 @@ class RoomServices
 
             if (empty($validRooms)) {
                 Log::channel('structured')->warning('delSecretaryFromRoom - no valid rooms', [
-                    'secretary_id' => $secretaryId, 'requested_rooms' => $roomIds,
+                    'secretary_id' => $secretaryId,
+                    'requested_rooms' => $roomIds,
                 ]);
 
                 return false;
@@ -234,8 +271,14 @@ class RoomServices
                 PermissionHelper::revokeRoomPermission($secretary->user, $roomId);
             }
 
-            $this->activityLog->log(
-                'room', 'removed secretary from rooms', $secretary, null, ['room_ids' => $validRooms], 'updated'
+            LogActivityJob::dispatch(
+                'room',
+                'removed secretary from rooms',
+                get_class($secretary),
+                $secretary->id,
+                null,
+                ['room_ids' => $validRooms],
+                'updated'
             );
 
             return true;

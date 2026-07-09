@@ -2,22 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Patient_record;
-use App\Services\ActivityLogService;
 
 class PatientRecordObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(Patient_record $record): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'patient_record',
             'created patient record',
-            $record,
-            auth()->user(),
+            get_class($record),
+            $record->id,
+            auth()->id(),
             [],
             'created'
         );
@@ -25,11 +22,12 @@ class PatientRecordObserver
 
     public function updated(Patient_record $record): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'patient_record',
             'updated patient record',
-            $record,
-            auth()->user(),
+            get_class($record),
+            $record->id,
+            auth()->id(),
             [],
             'updated'
         );
@@ -37,11 +35,12 @@ class PatientRecordObserver
 
     public function deleted(Patient_record $record): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'patient_record',
             'deleted patient record',
-            $record,
-            auth()->user(),
+            get_class($record),
+            $record->id,
+            auth()->id(),
             [],
             'deleted'
         );
@@ -49,11 +48,12 @@ class PatientRecordObserver
 
     public function restored(Patient_record $record): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'patient_record',
             'restored patient record',
-            $record,
-            auth()->user(),
+            get_class($record),
+            $record->id,
+            auth()->id(),
             [],
             'restored'
         );

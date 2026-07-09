@@ -2,22 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\DoctorWallet;
-use App\Services\ActivityLogService;
 
 class DoctorWalletObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(DoctorWallet $wallet): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'doctor_wallet',
             'created doctor wallet',
-            $wallet,
-            auth()->user(),
+            get_class($wallet),
+            $wallet->id,
+            auth()->id(),
             ['doctor_id' => $wallet->doctor_id, 'balance' => $wallet->balance],
             'created'
         );
@@ -49,11 +46,12 @@ class DoctorWalletObserver
             ];
         }
 
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'doctor_wallet',
             'updated doctor wallet',
-            $wallet,
-            auth()->user(),
+            get_class($wallet),
+            $wallet->id,
+            auth()->id(),
             $details,
             'updated'
         );

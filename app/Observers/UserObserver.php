@@ -2,24 +2,21 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\User;
-use App\Services\ActivityLogService;
 
 class UserObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(User $user): void
     {
         $role = $user->roles->first()?->name;
 
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'user',
             'created user',
-            $user,
-            auth()->user(),
+            get_class($user),
+            $user->id,
+            auth()->id(),
             ['role' => $role],
             'created'
         );
@@ -46,11 +43,12 @@ class UserObserver
             ];
         }
 
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'user',
             'updated user',
-            $user,
-            auth()->user(),
+            get_class($user),
+            $user->id,
+            auth()->id(),
             $details,
             'updated'
         );
@@ -60,11 +58,12 @@ class UserObserver
     {
         $role = $user->roles->first()?->name;
 
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'user',
             'deleted user',
-            $user,
-            auth()->user(),
+            get_class($user),
+            $user->id,
+            auth()->id(),
             ['role' => $role],
             'deleted'
         );
@@ -72,11 +71,12 @@ class UserObserver
 
     public function restored(User $user): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'user',
             'restored user',
-            $user,
-            auth()->user(),
+            get_class($user),
+            $user->id,
+            auth()->id(),
             [],
             'restored'
         );

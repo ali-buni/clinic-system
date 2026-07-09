@@ -2,22 +2,19 @@
 
 namespace App\Observers;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Appointment;
-use App\Services\ActivityLogService;
 
 class AppointmentObserver
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog
-    ) {}
-
     public function created(Appointment $appointment): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'appointment',
             'created appointment',
-            $appointment,
-            auth()->user(),
+            get_class($appointment),
+            $appointment->id,
+            auth()->id(),
             [],
             'created'
         );
@@ -25,11 +22,12 @@ class AppointmentObserver
 
     public function updated(Appointment $appointment): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'appointment',
             'updated appointment',
-            $appointment,
-            auth()->user(),
+            get_class($appointment),
+            $appointment->id,
+            auth()->id(),
             [],
             'updated'
         );
@@ -37,11 +35,12 @@ class AppointmentObserver
 
     public function deleted(Appointment $appointment): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'appointment',
             'deleted appointment',
-            $appointment,
-            auth()->user(),
+            get_class($appointment),
+            $appointment->id,
+            auth()->id(),
             [],
             'deleted'
         );
@@ -49,11 +48,12 @@ class AppointmentObserver
 
     public function restored(Appointment $appointment): void
     {
-        $this->activityLog->log(
+        LogActivityJob::dispatch(
             'appointment',
             'restored appointment',
-            $appointment,
-            auth()->user(),
+            get_class($appointment),
+            $appointment->id,
+            auth()->id(),
             [],
             'restored'
         );

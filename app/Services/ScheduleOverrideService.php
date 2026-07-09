@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Doctor;
 use App\Models\Schedule_override;
 use Carbon\Carbon;
@@ -10,17 +11,13 @@ use Illuminate\Support\Collection;
 
 class ScheduleOverrideService
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog,
-    ) {}
-
     public function create(Doctor $doctor, array $data): Schedule_override
     {
         $this->validateNoOverlap($doctor, $data);
 
         $override = $doctor->scheduleOverrides()->create($data);
 
-        $this->activityLog->log('schedule', 'schedule override created', $override, null, [
+        LogActivityJob::dispatch('schedule', 'schedule override created', get_class($override), $override->id, null, [
             'doctor_id' => $doctor->id, 'date' => $data['override_date'] ?? null,
         ], 'created');
 
@@ -40,7 +37,7 @@ class ScheduleOverrideService
 
         $override->update($data);
 
-        $this->activityLog->log('schedule', 'schedule override updated', $override, null, [
+        LogActivityJob::dispatch('schedule', 'schedule override updated', get_class($override), $override->id, null, [
             'doctor_id' => $doctor->id,
         ], 'updated');
 
@@ -57,7 +54,7 @@ class ScheduleOverrideService
 
         $result = $override->delete();
 
-        $this->activityLog->log('schedule', 'schedule override deleted', null, null, [
+        LogActivityJob::dispatch('schedule', 'schedule override deleted', get_class($override), $override->id, [
             'doctor_id' => $doctor->id, 'override_id' => $overrideId,
         ], 'deleted');
 

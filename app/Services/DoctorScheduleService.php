@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\LogActivityJob;
 use App\Models\Doctor;
 use App\Models\Work_hour;
 use Carbon\Carbon;
@@ -12,10 +13,6 @@ use Illuminate\Support\Facades\DB;
 
 class DoctorScheduleService
 {
-    public function __construct(
-        private readonly ActivityLogService $activityLog,
-    ) {}
-
     public function createWorkHour(Doctor $doctor, array $data): Work_hour
     {
         if ($this->dayAlreadyExists($doctor, $data['day_of_week'])) {
@@ -29,7 +26,7 @@ class DoctorScheduleService
         $workHour = $doctor->workHours()->create($data);
         Cache::increment("cache_v:doctor:{$doctor->id}:interval");
 
-        $this->activityLog->log('schedule', 'work hour created', $workHour, null, [
+        LogActivityJob::dispatch('schedule', 'work hour created', get_class($workHour), $workHour->id, null, [
             'doctor_id' => $doctor->id, 'day_of_week' => $data['day_of_week'],
         ], 'created');
 
@@ -65,7 +62,7 @@ class DoctorScheduleService
         $workHour->update($data);
         Cache::increment("cache_v:doctor:{$doctor->id}:interval");
 
-        $this->activityLog->log('schedule', 'work hour updated', $workHour, null, [
+        LogActivityJob::dispatch('schedule', 'work hour updated', get_class($workHour), $workHour->id, null, [
             'doctor_id' => $doctor->id, 'day_of_week' => $workHour->day_of_week,
         ], 'updated');
 
@@ -86,7 +83,7 @@ class DoctorScheduleService
         $result = $workHour->forceDelete();
         Cache::increment("cache_v:doctor:{$doctor->id}:interval");
 
-        $this->activityLog->log('schedule', 'work hour deleted', null, null, [
+        LogActivityJob::dispatch('schedule', 'work hour deleted', get_class($workHour), $workHour->id, null, [
             'doctor_id' => $doctor->id, 'work_hour_id' => $workHourId,
         ], 'deleted');
 

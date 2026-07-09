@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Enums\InvoiceStatus;
 use App\Enums\PaymentMethodType;
 use App\Exceptions\PaymentExceedsBalanceException;
+use App\Jobs\ProcessStripeRefundJob;
+use App\Jobs\SyncDoctorWalletJob;
 use App\Models\Doctor;
 use App\Models\Invoice;
 use App\Models\Payment;
@@ -18,9 +20,7 @@ use Illuminate\Support\Facades\DB;
 
 class PaymentService
 {
-    public function __construct(
-        private readonly DoctorEarningsService $earningsService
-    ) {}
+    public function __construct() {}
 
     public function processPayment(int $invoiceId, int $paymentMethodId, float $amount): array
     {
@@ -74,14 +74,14 @@ class PaymentService
 
             if ($invoice) {
                 $this->syncInvoiceStatus($invoice);
-                $this->syncDoctorWallet($invoice);
+                $this->dispatchWalletSync($invoice);
             }
         });
     }
 
     public function refundPayment(int $paymentId, float $amount, ?string $reason = null, ?int $refundedBy = null): Refund
     {
-        return DB::transaction(function () use ($paymentId, $amount, $reason, $refundedBy) {
+        $refund = DB::transaction(function () use ($paymentId, $amount, $reason, $refundedBy) {
             $payment = Payment::lockForUpdate()->findOrFail($paymentId);
 
             if ($amount <= 0) {
@@ -109,14 +109,16 @@ class PaymentService
             $payment->refunded_amount = (float) $payment->refunded_amount + $amount;
             $payment->save();
 
-            $invoice = Invoice::lockForUpdate()->find($payment->invoice_id);
-            if ($invoice) {
-                $this->syncInvoiceStatus($invoice);
-                $this->syncDoctorWallet($invoice);
-            }
-
             return $refund;
         });
+
+        $invoice = Invoice::lockForUpdate()->find($refund->invoice_id);
+        if ($invoice) {
+            $this->syncInvoiceStatus($invoice);
+            $this->dispatchWalletSync($invoice);
+        }
+
+        return $refund;
     }
 
     public function refundOverpaidStripePayments(Invoice $invoice, float $newTotalCost): float
@@ -151,20 +153,8 @@ class PaymentService
                 continue;
             }
 
-            $method = Payment_method::findOrFail($payment->payment_method_id);
-            $gateway = $this->resolveGateway($method);
-            $result = $gateway->refundPayment($payment, $refundable);
+            ProcessStripeRefundJob::dispatchSync($payment->id, $refundable, 'Auto-refund: invoice total decreased');
 
-            Refund::create([
-                'payment_id' => $payment->id,
-                'invoice_id' => $payment->invoice_id,
-                'amount' => $refundable,
-                'reason' => 'Auto-refund: invoice total decreased',
-                'stripe_refund_id' => $result['stripe_refund_id'] ?? null,
-            ]);
-
-            $payment->refunded_amount = (float) $payment->refunded_amount + $refundable;
-            $payment->save();
 
             $remainingRefund -= $refundable;
         }
@@ -192,7 +182,7 @@ class PaymentService
 
             $payment->delete();
             $this->syncInvoiceStatus($invoice);
-            $this->syncDoctorWallet($invoice);
+            $this->dispatchWalletSync($invoice);
         });
     }
 
@@ -227,15 +217,12 @@ class PaymentService
         };
     }
 
-    private function syncDoctorWallet(Invoice $invoice): void
+    private function dispatchWalletSync(Invoice $invoice): void
     {
         if (! $invoice->appointment || ! $invoice->appointment->doctor_id) {
             return;
         }
 
-        $doctor = Doctor::find($invoice->appointment->doctor_id);
-        if ($doctor) {
-            $this->earningsService->syncWalletBalance($doctor);
-        }
+        SyncDoctorWalletJob::dispatch($invoice->appointment->doctor_id);
     }
 }
