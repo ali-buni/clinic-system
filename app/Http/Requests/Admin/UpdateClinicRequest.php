@@ -17,8 +17,11 @@ class UpdateClinicRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'phone' => ['required', 'string', Rule::unique('clinics', 'phone')->ignore($this->route('clinic'))],
-            'location' => 'required|string|max:255',
             'user_id' => 'nullable|exists:users,id',
+            'location_country' => 'nullable|string|max:255',
+            'location_governorate' => 'nullable|string|max:255',
+            'location_city' => 'nullable|string|max:255',
+            'location_name' => 'nullable|string|max:255',
         ];
     }
 }

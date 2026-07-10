@@ -18,11 +18,6 @@
                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Location *</label>
-                <input type="text" name="location" value="{{ old('location') }}" required
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Owner</label>
                 <select name="user_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">No owner</option>
@@ -33,6 +28,40 @@
                     @endforeach
                 </select>
             </div>
+            <div class="border-t pt-4">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Location *</h4>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Country *</label>
+                        <select id="location_country" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Country</option>
+                        </select>
+                        <input type="hidden" name="location_country" id="location_country_name" value="{{ old('location_country') }}">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Governorate *</label>
+                        <select id="location_governorate" required disabled
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Governorate</option>
+                        </select>
+                        <input type="hidden" name="location_governorate" id="location_governorate_name" value="{{ old('location_governorate') }}">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">City *</label>
+                        <select id="location_city" required disabled
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select City</option>
+                        </select>
+                        <input type="hidden" name="location_city" id="location_city_name" value="{{ old('location_city') }}">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">Place Name</label>
+                        <input type="text" name="location_name" value="{{ old('location_name') }}" placeholder="e.g. Near Central Hospital, Downtown area..."
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="mt-6 flex gap-2">
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Create Clinic</button>
@@ -40,4 +69,77 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const countrySelect = document.getElementById('location_country');
+    const governorateSelect = document.getElementById('location_governorate');
+    const citySelect = document.getElementById('location_city');
+    const countryNameInput = document.getElementById('location_country_name');
+    const governorateNameInput = document.getElementById('location_governorate_name');
+    const cityNameInput = document.getElementById('location_city_name');
+
+    const apiBase = '{{ url("/api/v1") }}';
+
+    fetch(`${apiBase}/countries`)
+        .then(res => res.json())
+        .then(countries => {
+            countries.forEach(c => {
+                const opt = new Option(c.name, c.iso2);
+                countrySelect.add(opt);
+            });
+        });
+
+    countrySelect.addEventListener('change', function() {
+        countryNameInput.value = this.options[this.selectedIndex].text;
+        governorateSelect.innerHTML = '<option value="">Select Governorate</option>';
+        governorateNameInput.value = '';
+        cityNameInput.value = '';
+        citySelect.innerHTML = '<option value="">Select City</option>';
+        citySelect.disabled = true;
+
+        if (!this.value) {
+            governorateSelect.disabled = true;
+            governorateNameInput.value = '';
+            return;
+        }
+
+        fetch(`${apiBase}/countries/${this.value}/governorates`)
+            .then(res => res.json())
+            .then(governorates => {
+                governorateSelect.disabled = false;
+                governorates.forEach(g => {
+                    const opt = new Option(g.name, g.iso2);
+                    governorateSelect.add(opt);
+                });
+            });
+    });
+
+    governorateSelect.addEventListener('change', function() {
+        governorateNameInput.value = this.options[this.selectedIndex].text;
+        cityNameInput.value = '';
+        citySelect.innerHTML = '<option value="">Select City</option>';
+
+        if (!this.value) {
+            citySelect.disabled = true;
+            return;
+        }
+
+        const countryCode = countrySelect.value;
+        fetch(`${apiBase}/countries/${countryCode}/governorates/${this.value}/cities`)
+            .then(res => res.json())
+            .then(cities => {
+                citySelect.disabled = false;
+                cities.forEach(city => {
+                    const opt = new Option(city.name, city.name);
+                    citySelect.add(opt);
+                });
+            });
+    });
+
+    citySelect.addEventListener('change', function() {
+        cityNameInput.value = this.options[this.selectedIndex].text;
+    });
+});
+</script>
 @endsection

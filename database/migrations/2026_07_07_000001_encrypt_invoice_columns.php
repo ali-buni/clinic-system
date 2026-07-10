@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            $table->text('invoice_number')->change();
+            $table->string('invoice_number', 200)->change();
             $table->text('total_cost')->change();
         });
     }

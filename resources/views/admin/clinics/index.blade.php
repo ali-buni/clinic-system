@@ -36,7 +36,7 @@
                     <td class="px-4 py-3 text-sm">{{ $clinic->id }}</td>
                     <td class="px-4 py-3 text-sm font-medium">{{ $clinic->title }}</td>
                     <td class="px-4 py-3 text-sm">{{ $clinic->phone }}</td>
-                    <td class="px-4 py-3 text-sm">{{ $clinic->location }}</td>
+                    <td class="px-4 py-3 text-sm">{{ $clinic->location?->city }}, {{ $clinic->location?->governorate }}, {{ $clinic->location?->country }}</td>
                     <td class="px-4 py-3 text-sm">{{ $clinic->owner?->fname }} {{ $clinic->owner?->lname }}</td>
                     <td class="px-4 py-3 text-sm text-gray-500">{{ $clinic->created_at->format('M d, Y') }}</td>
                     <td class="px-4 py-3 text-sm space-x-2">

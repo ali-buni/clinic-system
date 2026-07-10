@@ -7,6 +7,7 @@ use App\Helpers\PermissionHelper;
 use App\Jobs\LogActivityJob;
 use App\Models\Clinic;
 use App\Models\Doctor;
+use App\Models\Location;
 use App\Models\Secretary;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -155,7 +156,29 @@ class ClinicServices
                 return false;
             }
 
-            $result = $clinic->update($data);
+            $locationFields = ['country', 'governorate', 'city', 'name'];
+            $hasLocationData = array_intersect_key($data, array_flip($locationFields));
+
+            if (! empty($hasLocationData)) {
+                $location = $clinic->location;
+
+                if ($location) {
+                    $location->update($hasLocationData);
+                } else {
+                    $location = Location::create($hasLocationData);
+                }
+
+                $clinic->update([
+                    'location_id' => $location->id,
+                    'location' => $location->makeLocation(),
+                ]);
+
+                $data = array_diff_key($data, array_flip($locationFields));
+            }
+
+            if (! empty($data)) {
+                $clinic->update($data);
+            }
 
             LogActivityJob::dispatch(
                 'clinic',
@@ -169,7 +192,7 @@ class ClinicServices
                 'updated'
             );
 
-            return $result;
+            return true;
         }, attempts: 3);
     }
 
@@ -179,7 +202,7 @@ class ClinicServices
     public function getClinicInfoByOwner(int $userId): ?Clinic
     {
         return Clinic::query()
-            ->with(['rooms', 'doctors.user', 'secretaries.user'])
+            ->with(['rooms', 'doctors.user', 'secretaries.user', 'location'])
             ->where('user_id', $userId)
             ->first();
     }

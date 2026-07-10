@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('clinics', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('location');
+            $table->string('location')->nullable();
             $table->string('title');
             $table->string('phone');
             $table->timestamps();

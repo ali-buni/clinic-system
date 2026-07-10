@@ -15,6 +15,7 @@ class Clinic extends Model
     protected $fillable = [
         'user_id',
         'location',
+        'location_id',
         'title',
         'phone',
     ];
@@ -50,5 +51,9 @@ class Clinic extends Model
     public function rooms(): HasMany
     {
         return $this->hasMany(Room::class, 'clinic_id', 'id');
+    }
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class, 'location_id', 'id');
     }
 }
