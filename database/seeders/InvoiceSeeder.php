@@ -53,6 +53,7 @@ class InvoiceSeeder extends Seeder
                     'payment_method_id' => $paymentMethods->random()->id,
                     'amount' => $totalCost,
                     'paid_at' => $appointment->start_time,
+                    'refunded_amount' => 0,
                 ]);
             }
         }

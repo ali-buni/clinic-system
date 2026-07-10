@@ -38,8 +38,8 @@ class Payment extends Model implements CipherSweetEncrypted
     {
         $encryptedRow
             ->addField('amount')
-            ->addField('refunded_amount')
-            ->addField('stripe_session_id')
+            ->addOptionalTextField('refunded_amount')
+            ->addOptionalTextField('stripe_session_id')
             ->addBlindIndex('stripe_session_id', new BlindIndex('stripe_session_id_index'));
     }
 

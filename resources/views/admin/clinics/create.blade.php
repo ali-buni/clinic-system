@@ -79,47 +79,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const governorateNameInput = document.getElementById('location_governorate_name');
     const cityNameInput = document.getElementById('location_city_name');
 
-    const apiBase = '{{ url("/api/v1/clinic-system") }}';
+    const apiBase = '{{ url("/api/v1") }}';
 
-    async function loadCountries() {
-        try {
-            const res = await fetch(`${apiBase}/countries`);
-            const countries = await res.json();
+    fetch(`${apiBase}/countries`)
+        .then(res => res.json())
+        .then(countries => {
             countries.forEach(c => {
-                countrySelect.add(new Option(c.name, c.iso2));
+                const opt = new Option(c.name, c.iso2);
+                countrySelect.add(opt);
             });
-        } catch (err) {
-            console.error('Failed to load countries:', err);
-        }
-    }
-
-    async function loadGovernorates(countryCode) {
-        try {
-            const res = await fetch(`${apiBase}/countries/${countryCode}/governorates`);
-            const governorates = await res.json();
-            governorateSelect.disabled = false;
-            governorates.forEach(g => {
-                governorateSelect.add(new Option(g.name, g.iso2));
-            });
-        } catch (err) {
-            console.error('Failed to load governorates:', err);
-        }
-    }
-
-    async function loadCities(countryCode, governorateCode) {
-        try {
-            const res = await fetch(`${apiBase}/countries/${countryCode}/governorates/${governorateCode}/cities`);
-            const cities = await res.json();
-            citySelect.disabled = false;
-            cities.forEach(city => {
-                citySelect.add(new Option(city.name, city.name));
-            });
-        } catch (err) {
-            console.error('Failed to load cities:', err);
-        }
-    }
-
-    loadCountries();
+        });
 
     countrySelect.addEventListener('change', function() {
         countryNameInput.value = this.options[this.selectedIndex].text;
@@ -135,7 +104,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        loadGovernorates(this.value);
+        fetch(`${apiBase}/countries/${this.value}/governorates`)
+            .then(res => res.json())
+            .then(governorates => {
+                governorateSelect.disabled = false;
+                governorates.forEach(g => {
+                    const opt = new Option(g.name, g.iso2);
+                    governorateSelect.add(opt);
+                });
+            });
     });
 
     governorateSelect.addEventListener('change', function() {
@@ -148,7 +125,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        loadCities(countrySelect.value, this.value);
+        const countryCode = countrySelect.value;
+        fetch(`${apiBase}/countries/${countryCode}/governorates/${this.value}/cities`)
+            .then(res => res.json())
+            .then(cities => {
+                citySelect.disabled = false;
+                cities.forEach(city => {
+                    const opt = new Option(city.name, city.name);
+                    citySelect.add(opt);
+                });
+            });
     });
 
     citySelect.addEventListener('change', function() {

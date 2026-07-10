@@ -59,22 +59,21 @@ class ClinicController extends Controller
     public function show(Clinic $clinic)
     {
         $clinic->load(['owner', 'location', 'doctors.user', 'secretaries.user', 'appointments', 'rooms']);
-        $loc = $clinic->location()->first();
-        return view('admin.clinics.show', compact('clinic', 'loc'));
+
+        return view('admin.clinics.show', compact('clinic'));
     }
 
     public function edit(Clinic $clinic)
     {
         $owners = User::role('owner')->get();
         $clinic->load('location');
-        $loc = $clinic->location()->first();
 
-        return view('admin.clinics.edit', compact('clinic', 'owners', 'loc'));
+        return view('admin.clinics.edit', compact('clinic', 'owners'));
     }
 
     public function update(UpdateClinicRequest $request, Clinic $clinic)
     {
-        $location = $clinic->location()->first();
+        $location = $clinic->location;
 
         if ($location) {
             $location->update([

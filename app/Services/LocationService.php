@@ -8,12 +8,12 @@ use Illuminate\Support\Facades\Http;
 
 class LocationService
 {
-    protected string $baseUrl = 'https://api.countrystatecity.in/v1';
+    protected string $baseUrl = 'https://api.countrystatecity.in/v1/';
     protected string $apiKey;
 
     public function __construct()
     {
-        $this->apiKey = config('services.location.ApiKey') ?? env('CSC_API_KEY');
+        $this->apiKey = config('services.csc.ApiKey');
     }
 
     private function makeRequest(string $endpoint): array
