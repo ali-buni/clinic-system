@@ -8,6 +8,7 @@ use App\Models\DoctorWallet;
 use App\Models\DoctorWithdrawal;
 use App\Models\Invoice;
 use App\Models\Item;
+use App\Models\Location;
 use App\Models\Patient_record;
 use App\Models\PatientInfo;
 use App\Models\Payment;
@@ -21,6 +22,7 @@ use App\Observers\DoctorWalletObserver;
 use App\Observers\DoctorWithdrawalObserver;
 use App\Observers\InvoiceObserver;
 use App\Observers\ItemObserver;
+use App\Observers\LocationObserver;
 use App\Observers\PatientInfoObserver;
 use App\Observers\PatientRecordObserver;
 use App\Observers\PaymentMethodObserver;
@@ -105,5 +107,6 @@ class AppServiceProvider extends ServiceProvider
         DoctorWallet::observe(DoctorWalletObserver::class);
         DoctorWithdrawal::observe(DoctorWithdrawalObserver::class);
         Verification_code::observe(VerificationCodeObserver::class);
+        Location::observe(LocationObserver::class);
     }
 }

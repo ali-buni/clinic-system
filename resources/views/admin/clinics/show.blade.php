@@ -13,7 +13,7 @@
             <dl class="grid grid-cols-2 gap-4">
                 <div><dt class="text-sm text-gray-500">Title</dt><dd class="font-medium">{{ $clinic->title }}</dd></div>
                 <div><dt class="text-sm text-gray-500">Phone</dt><dd class="font-medium">{{ $clinic->phone }}</dd></div>
-                <div><dt class="text-sm text-gray-500">Location</dt><dd class="font-medium">{{ $clinic->location?->city }}, {{ $clinic->location?->governorate }}, {{ $clinic->location?->country }}</dd></div>
+                <div><dt class="text-sm text-gray-500">Location</dt><dd class="font-medium">{{ $loc?->city }}, {{ $loc?->governorate }}, {{ $loc?->country }}, {{ $loc?->name }}</dd></div>
                 <div><dt class="text-sm text-gray-500">Owner</dt><dd class="font-medium">{{ $clinic->owner?->fname }} {{ $clinic->owner?->lname }}</dd></div>
                 <div><dt class="text-sm text-gray-500">Doctors</dt><dd class="font-medium">{{ $clinic->doctors->count() }}</dd></div>
                 <div><dt class="text-sm text-gray-500">Secretaries</dt><dd class="font-medium">{{ $clinic->secretaries->count() }}</dd></div>

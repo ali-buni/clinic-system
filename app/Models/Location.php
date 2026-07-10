@@ -23,6 +23,6 @@ class Location extends Model
 
     public function makeLocation(): string
     {
-        return $this->country . ', ' . $this->governorate . ', ' . $this->city . ', ' . $this->name;
+        return $this->city . ', ' . $this->governorate . ', ' . $this->country . ', ' . $this->name;
     }
 }

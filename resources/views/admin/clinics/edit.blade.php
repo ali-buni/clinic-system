@@ -37,7 +37,7 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">Select Country</option>
                         </select>
-                        <input type="hidden" name="location_country" id="location_country_name" value="{{ old('location_country', $clinic->location?->country) }}">
+                        <input type="hidden" name="location_country" id="location_country_name" value="{{ old('location_country', $loc?->country) }}">
                     </div>
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Governorate *</label>
@@ -45,7 +45,7 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">Select Governorate</option>
                         </select>
-                        <input type="hidden" name="location_governorate" id="location_governorate_name" value="{{ old('location_governorate', $clinic->location?->governorate) }}">
+                        <input type="hidden" name="location_governorate" id="location_governorate_name" value="{{ old('location_governorate', $loc?->governorate) }}">
                     </div>
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">City *</label>
@@ -53,11 +53,11 @@
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">Select City</option>
                         </select>
-                        <input type="hidden" name="location_city" id="location_city_name" value="{{ old('location_city', $clinic->location?->city) }}">
+                        <input type="hidden" name="location_city" id="location_city_name" value="{{ old('location_city', $loc?->city) }}">
                     </div>
                     <div>
                         <label class="block text-sm text-gray-600 mb-1">Place Name</label>
-                        <input type="text" name="location_name" value="{{ old('location_name', $clinic->location?->name) }}" placeholder="e.g. Near Central Hospital, Downtown area..."
+                        <input type="text" name="location_name" value="{{ old('location_name', $loc?->name) }}" placeholder="e.g. Near Central Hospital, Downtown area..."
                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
@@ -79,14 +79,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const governorateNameInput = document.getElementById('location_governorate_name');
     const cityNameInput = document.getElementById('location_city_name');
 
-    const apiBase = '{{ url("/api/v1") }}';
+    const apiBase = '{{ url("/api/v1/clinic-system") }}';
     const existingCountry = '{{ $clinic->location?->country ?? "" }}';
     const existingGovernorate = '{{ $clinic->location?->governorate ?? "" }}';
     const existingCity = '{{ $clinic->location?->city ?? "" }}';
 
-    fetch(`${apiBase}/countries`)
-        .then(res => res.json())
-        .then(countries => {
+    async function loadCountries() {
+        try {
+            const res = await fetch(`${apiBase}/countries`);
+            const countries = await res.json();
             let foundCountry = null;
             countries.forEach(c => {
                 const opt = new Option(c.name, c.iso2);
@@ -97,44 +98,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 countrySelect.add(opt);
             });
             if (foundCountry) {
-                loadGovernorates(foundCountry.iso2);
+                await loadGovernorates(foundCountry.iso2);
             }
-        });
+        } catch (err) {
+            console.error('Failed to load countries:', err);
+        }
+    }
 
-    function loadGovernorates(countryCode) {
-        fetch(`${apiBase}/countries/${countryCode}/governorates`)
-            .then(res => res.json())
-            .then(governorates => {
-                governorateSelect.disabled = false;
-                governorateSelect.innerHTML = '<option value="">Select Governorate</option>';
-                let foundGovernorate = null;
-                governorates.forEach(g => {
-                    const opt = new Option(g.name, g.iso2);
-                    if (g.name === existingGovernorate) {
-                        opt.selected = true;
-                        foundGovernorate = g;
-                    }
-                    governorateSelect.add(opt);
-                });
-                if (foundGovernorate) {
-                    loadCities(countryCode, foundGovernorate.iso2);
+    async function loadGovernorates(countryCode) {
+        try {
+            const res = await fetch(`${apiBase}/countries/${countryCode}/governorates`);
+            const governorates = await res.json();
+            governorateSelect.disabled = false;
+            governorateSelect.innerHTML = '<option value="">Select Governorate</option>';
+            let foundGovernorate = null;
+            governorates.forEach(g => {
+                const opt = new Option(g.name, g.iso2);
+                if (g.name === existingGovernorate) {
+                    opt.selected = true;
+                    foundGovernorate = g;
                 }
+                governorateSelect.add(opt);
             });
+            if (foundGovernorate) {
+                await loadCities(countryCode, foundGovernorate.iso2);
+            }
+        } catch (err) {
+            console.error('Failed to load governorates:', err);
+        }
     }
 
-    function loadCities(countryCode, governorateCode) {
-        fetch(`${apiBase}/countries/${countryCode}/governorates/${governorateCode}/cities`)
-            .then(res => res.json())
-            .then(cities => {
-                citySelect.disabled = false;
-                citySelect.innerHTML = '<option value="">Select City</option>';
-                cities.forEach(city => {
-                    const opt = new Option(city.name, city.name);
-                    if (city.name === existingCity) opt.selected = true;
-                    citySelect.add(opt);
-                });
+    async function loadCities(countryCode, governorateCode) {
+        try {
+            const res = await fetch(`${apiBase}/countries/${countryCode}/governorates/${governorateCode}/cities`);
+            const cities = await res.json();
+            citySelect.disabled = false;
+            citySelect.innerHTML = '<option value="">Select City</option>';
+            cities.forEach(city => {
+                const opt = new Option(city.name, city.name);
+                if (city.name === existingCity) opt.selected = true;
+                citySelect.add(opt);
             });
+        } catch (err) {
+            console.error('Failed to load cities:', err);
+        }
     }
+
+    loadCountries();
 
     countrySelect.addEventListener('change', function() {
         countryNameInput.value = this.options[this.selectedIndex].text;

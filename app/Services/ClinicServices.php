@@ -160,7 +160,7 @@ class ClinicServices
             $hasLocationData = array_intersect_key($data, array_flip($locationFields));
 
             if (! empty($hasLocationData)) {
-                $location = $clinic->location;
+                $location = $clinic->location()->first();
 
                 if ($location) {
                     $location->update($hasLocationData);

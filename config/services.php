@@ -51,7 +51,7 @@ return [
         'connected_account_type' => env('STRIPE_CONNECTED_ACCOUNT_TYPE', 'express'),
     ],
 
-    'csc' => [
+    'location' => [
         'ApiKey' => env('CSC_API_KEY')
-    ]
+    ],
 ];
