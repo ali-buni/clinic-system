@@ -31,7 +31,7 @@ class CheckAccess
             return ApiResponse::permissionDenied();
         }
 
-        if ($type === 'permission' && !$user->hasAnyPermission($allValues)) {
+        else if ($type === 'permission' && !$user->hasAnyPermission($allValues)) {
             return ApiResponse::permissionDenied();
         }
 

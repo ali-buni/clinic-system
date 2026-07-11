@@ -54,6 +54,7 @@ $entities = [
     'users'              => 'User info & profile endpoints',
     'doctors'            => 'Doctor management endpoints',
     'patients'           => 'Patient management endpoints',
+    'patient_doctor_search' => 'Patient doctor search endpoints',
     'appointments'       => 'Appointment booking & management',
     'clinic'             => 'Clinic info & staff creation',
     'specialties'        => 'Doctor specialty management',
