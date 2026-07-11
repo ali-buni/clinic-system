@@ -15,8 +15,8 @@ class RescheduleAppointmentRequest extends FormRequest
     {
         return [
             'start_time' => 'required|date_format:H:i',
-            'date' => 'required|date|date_format:Y-m-d',
-            'type_id' => 'sometimes|exists:appointment_types,id'
+            'date' => 'required|date|date_format:Y-m-d|after:today',
+            'type_id' => 'sometimes|exists:appointment_types,id',
         ];
     }
 }

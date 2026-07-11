@@ -69,6 +69,8 @@ Get available appointment slots for a doctor on a date. Authenticated users.
 
 Book an appointment. Patient only.
 
+**Note:** The appointment date must be at least 1 day in advance (tomorrow or later). Booking for today is not allowed.
+
 ### Test Cases
 
 #### `book-patient-success.json` — Success (201)
@@ -307,6 +309,8 @@ Complete an appointment. Doctor only.
 
 Cancel an appointment. Owner only.
 
+**Note:** Appointments cannot be cancelled less than 1 day before the start time.
+
 ### Test Cases
 
 #### `cancel-book-success.json` — Book for Cancel (201)
@@ -369,6 +373,8 @@ Cancel an appointment. Owner only.
 ## POST `/appointments/{id}/reschedule`
 
 Reschedule an appointment. Patient only.
+
+**Note:** The new appointment date must be at least 1 day in advance (tomorrow or later). Rescheduling to today is not allowed.
 
 ### Test Cases
 

@@ -19,7 +19,7 @@ class BookAppointmentRequest extends FormRequest
             'clinic_id' => 'required|integer|exists:clinics,id',
             'appointment_type_id' => 'required|integer|exists:appointment_types,id',
             'start_time' => 'required|date_format:H:i',
-            'date' => 'required|date|date_format:Y-m-d',
+            'date' => 'required|date|date_format:Y-m-d|after:today',
             'visit_reason' => 'nullable|string',
         ];
     }

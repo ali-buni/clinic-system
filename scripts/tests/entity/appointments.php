@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/../helpers.php';
+
+require_once __DIR__.'/../helpers.php';
 
 $apptId = 1;
 
@@ -19,6 +20,11 @@ if ($patientToken) {
 if ($patientToken) {
     runTest('appointment', 'book-patient-success', 'POST', "$V1/appointments/book", authHeaders($patientToken),
         ['doctor_id' => $doctorId, 'patient_id' => $patientId, 'clinic_id' => $clinicId, 'appointment_type_id' => $apptTypeId, 'date' => '2099-06-01', 'start_time' => '10:00']);
+}
+
+if ($patientToken) {
+    runTest('appointment', 'book-today-validation', 'POST', "$V1/appointments/book", authHeaders($patientToken),
+        ['doctor_id' => $doctorId, 'patient_id' => $patientId, 'clinic_id' => $clinicId, 'appointment_type_id' => $apptTypeId, 'date' => date('Y-m-d'), 'start_time' => '10:00']);
 }
 
 if ($ownerToken) {
@@ -76,6 +82,11 @@ if ($patientToken) {
                 authHeaders($patientToken), ['start_time' => '14:00', 'date' => '2099-06-01']);
         }
     }
+}
+
+if ($patientToken) {
+    runTest('appointment', 'reschedule-today-validation', 'POST', "$V1/appointments/$apptId/reschedule",
+        authHeaders($patientToken), ['start_time' => '10:00', 'date' => date('Y-m-d')]);
 }
 
 // Confirm + Complete flow
@@ -144,8 +155,9 @@ runTest('appointment', 'available-slots-unauthenticated', 'GET', "$V1/appointmen
 if ($patientToken) {
     runTest('appointment', 'available-slots-success', 'GET', "$V1/appointments/available-slots",
         authHeaders($patientToken), null,
-        ['doctor_id' => (string)$doctorId, 'date' => date('Y-m-d', strtotime('+1 day'))]);
+        ['doctor_id' => (string) $doctorId, 'date' => date('Y-m-d', strtotime('+1 day'))]);
 }
 
 summary('appointment');
+
 return ['total' => $totalTests, 'passed' => $passedTests, 'failed' => $failedTests];

@@ -7,10 +7,9 @@ use App\Models\Appointment;
 use App\Traits\BookingTrait;
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
 
 class AppointmentService
 {
@@ -19,18 +18,21 @@ class AppointmentService
     /**
      * Book a new appointment. Throws ModelNotFoundException if related models not found.
      */
-
     public function cancelAppointment(int $id, string $reason)
     {
         return DB::transaction(function () use ($id, $reason) {
             $appointment = Appointment::findOrFail($id);
 
             if ($appointment->status !== 'scheduled') {
-                throw new Exception("the appointment is not scheduled");
+                throw new Exception('the appointment is not scheduled');
+            }
+
+            if (Carbon::parse($appointment->start_time)->lte(Carbon::now()->addDay()->startOfDay())) {
+                throw new Exception('Cannot cancel appointment less than 1 day before start time.');
             }
             $appointment->update([
                 'status' => 'cancelled',
-                'cancel_reason' => $reason ?? "no reason",
+                'cancel_reason' => $reason ?? 'no reason',
             ]);
 
             Cache::increment("cache_v:doctor:{$appointment->doctor_id}:slot");
@@ -47,7 +49,7 @@ class AppointmentService
             $appointment = Appointment::findOrFail($id);
 
             if ($appointment->status !== 'confirmed') {
-                throw new Exception("the appointment is not confirmed");
+                throw new Exception('the appointment is not confirmed');
             }
             $appointment->update(['status' => 'completed']);
 
@@ -65,7 +67,7 @@ class AppointmentService
             $appointment = Appointment::findOrFail($id);
 
             if ($appointment->status !== 'scheduled') {
-                throw new Exception("the appointment is not scheduled");
+                throw new Exception('the appointment is not scheduled');
             }
             $appointment->update(['status' => 'confirmed']);
 
@@ -85,12 +87,14 @@ class AppointmentService
     public function getPatientAppointments(int $patientId, array $data): LengthAwarePaginator
     {
         $q = Appointment::where('patient_id', $patientId)->with(['doctor', 'patient', 'room', 'type']);
+
         return ModelFilter::filter($q, $data);
     }
 
     public function getDoctorAppointments(int $doctorId, array $data): LengthAwarePaginator
     {
         $q = Appointment::where('doctor_id', $doctorId)->with(['patient', 'clinic', 'room', 'type']);
+
         return ModelFilter::filter($q, $data);
     }
 
@@ -98,12 +102,14 @@ class AppointmentService
     {
         $q = Appointment::where('clinic_id', $clinicId)
             ->with(['doctor', 'patient', 'room', 'type']);
+
         return ModelFilter::filter($q, $data);
     }
 
     public function getRoomAppointments(array $roomIds, array $data): LengthAwarePaginator
     {
         $q = Appointment::whereIn('room_id', $roomIds)->with(['doctor', 'patient', 'room', 'type']);
+
         return ModelFilter::filter($q, $data);
     }
 
@@ -125,6 +131,6 @@ class AppointmentService
             ->orderBy('start_time', 'asc')
             ->get();
 
-            return $appointments;
+        return $appointments;
     }
 }

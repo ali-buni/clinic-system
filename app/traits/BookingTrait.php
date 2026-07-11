@@ -7,23 +7,23 @@ use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Work_hour;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Exception;
 
 trait BookingTrait
 {
     /**
      * Get the allowed working intervals for a specific doctor on a given date.
      *
-     * @param int $doctorId
-     * @param string $date (Y-m-d)
-     * @return array<int, array{0: \Carbon\Carbon, 1: \Carbon\Carbon}>
+     * @param  string  $date  (Y-m-d)
+     * @return array<int, array{0: Carbon, 1: Carbon}>
      */
     public function getAllowedIntervalsForDoctorDate(int $doctorId, string $date): array
     {
         $v = Cache::get("cache_v:doctor:{$doctorId}:interval", 0);
+
         return Cache::remember("intervals:doctor:{$doctorId}:{$date}:v{$v}", 300, function () use ($doctorId, $date) {
             $doctor = Doctor::findOrFail($doctorId);
 
@@ -57,6 +57,7 @@ trait BookingTrait
         }
 
         $v = Cache::get("cache_v:doctor:{$doctorId}:slot", 0);
+
         return Cache::remember("slots:doctor:{$doctorId}:{$date}:v{$v}", 60, function () use ($doctorId, $date) {
             return $this->computeSlots($doctorId, $date);
         });
@@ -76,7 +77,9 @@ trait BookingTrait
 
         $slotMinutes = ($doctor->appointment_duration ?? 30);
         $intervals = $this->getAllowedIntervalsForDoctorDate($doctorId, $date);
-        if (empty($intervals)) return [];
+        if (empty($intervals)) {
+            return [];
+        }
 
         $existing = Appointment::scheduledInDate($doctorId, $date)
             ->when($excludeAppointmentId, function ($query) use ($excludeAppointmentId) {
@@ -92,7 +95,9 @@ trait BookingTrait
             while (true) {
                 $slotStart = $cursor->copy();
                 $slotEnd = $slotStart->copy()->addMinutes($slotMinutes);
-                if ($slotEnd->gt($e)) break;
+                if ($slotEnd->gt($e)) {
+                    break;
+                }
 
                 $overlap = false;
                 foreach ($existing as $b) {
@@ -101,7 +106,7 @@ trait BookingTrait
                         break;
                     }
                 }
-                if (!$overlap) {
+                if (! $overlap) {
                     $slots[] = ['start' => $slotStart->toDateTimeString(), 'end' => $slotEnd->toDateTimeString()];
                 }
 
@@ -120,10 +125,14 @@ trait BookingTrait
     public function bookAppointment(int $doctorId, string $date, string $startTime, string $endTime, array $attributes = []): Appointment
     {
         return DB::transaction(function () use ($doctorId, $date, $startTime, $endTime, $attributes) {
+            if (Carbon::parse($date)->lte(Carbon::now()->addDay()->startOfDay())) {
+                throw new Exception('Appointment date must be at least 1 day in advance.');
+            }
+
             Work_hour::where('doctor_id', $doctorId)->lockForUpdate()->first();
 
-            $start = Carbon::parse($date . ' ' . $startTime);
-            $end = Carbon::parse($date . ' ' . $endTime);
+            $start = Carbon::parse($date.' '.$startTime);
+            $end = Carbon::parse($date.' '.$endTime);
 
             $workHours = Work_hour::where('doctor_id', $doctorId)
                 ->where('day_of_week', $start->dayOfWeek)
@@ -131,23 +140,23 @@ trait BookingTrait
                 ->get();
 
             if (count($workHours) === 0) {
-                throw new  Exception("no work hour valid for this date");
+                throw new Exception('no work hour valid for this date');
             }
 
             if ($this->isDailyPatientLimitReached($doctorId, $date, $workHours)) {
-                throw new Exception("Booking failed: The doctor has reached the maximum patient limit for this day.");
+                throw new Exception('Booking failed: The doctor has reached the maximum patient limit for this day.');
             }
 
-            if (!$this->isTimeRangeAvailable($doctorId, $date, $start, $end)) {
-                throw new Exception("Booking failed: The selected time frame is unavailable or overlaps with an existing appointment.");
+            if (! $this->isTimeRangeAvailable($doctorId, $date, $start, $end)) {
+                throw new Exception('Booking failed: The selected time frame is unavailable or overlaps with an existing appointment.');
             }
 
             $appointment = Appointment::create(
                 array_merge([
-                    'doctor_id'  => $doctorId,
+                    'doctor_id' => $doctorId,
                     'start_time' => $start,
-                    'end_time'   => $end,
-                    'status'     => 'scheduled'
+                    'end_time' => $end,
+                    'status' => 'scheduled',
                 ], $attributes)
             )->load(['type', 'room', 'patient', 'doctor']);
             Cache::increment("cache_v:doctor:{$doctorId}:slot");
@@ -172,11 +181,15 @@ trait BookingTrait
     public function updateAppointment(int $appointmentId, string $date, string $startTime, string $endTime, array $attributes = []): Appointment
     {
         return DB::transaction(function () use ($appointmentId, $date, $startTime, $endTime, $attributes) {
+            if (Carbon::parse($date)->lte(Carbon::now()->addDay()->startOfDay())) {
+                throw new Exception('Appointment date must be at least 1 day in advance.');
+            }
+
             $appointment = Appointment::lockForUpdate()->findOrFail($appointmentId);
             $doctorId = $appointment->doctor_id;
 
-            $start = Carbon::parse($date . ' ' . $startTime);
-            $end = Carbon::parse($date . ' ' . $endTime);
+            $start = Carbon::parse($date.' '.$startTime);
+            $end = Carbon::parse($date.' '.$endTime);
 
             $workHours = Work_hour::where('doctor_id', $doctorId)
                 ->where('day_of_week', $start->dayOfWeek)
@@ -184,18 +197,18 @@ trait BookingTrait
                 ->get();
 
             if ($this->isDailyPatientLimitReached($doctorId, $date, $workHours, $appointmentId)) {
-                throw new Exception("Update failed: The doctor has reached the maximum patient limit for this day.");
+                throw new Exception('Update failed: The doctor has reached the maximum patient limit for this day.');
             }
 
-            if (!$this->isTimeRangeAvailable($doctorId, $date, $start, $end, $appointmentId)) {
-                throw new Exception("Update failed: The new time frame is unavailable or overlaps with another appointment.");
+            if (! $this->isTimeRangeAvailable($doctorId, $date, $start, $end, $appointmentId)) {
+                throw new Exception('Update failed: The new time frame is unavailable or overlaps with another appointment.');
             }
 
             $previousStartTime = $appointment->start_time?->copy();
 
             $appointment->update(array_merge([
                 'start_time' => $start,
-                'end_time'   => $end,
+                'end_time' => $end,
             ], $attributes));
 
             Cache::increment("cache_v:doctor:{$doctorId}:slot");
@@ -267,7 +280,7 @@ trait BookingTrait
             $slotEndStr = $cursor->addMinutes($slotMinutes)->format('H:i');
             $key = "$slotStartStr-$slotEndStr";
 
-            if (!isset($lookup[$key])) {
+            if (! isset($lookup[$key])) {
                 return false;
             }
             $matchedSlotsCount++;
@@ -283,11 +296,11 @@ trait BookingTrait
     {
         $intervals = [];
         foreach ($workHours as $wh) {
-            $whStart = Carbon::parse($date . ' ' . $wh->start_time);
-            $whEnd   = Carbon::parse($date . ' ' . $wh->end_time);
+            $whStart = Carbon::parse($date.' '.$wh->start_time);
+            $whEnd = Carbon::parse($date.' '.$wh->end_time);
 
-            $breakStart = $wh->break_start ? Carbon::parse($date . ' ' . $wh->break_start) : null;
-            $breakEnd   = $wh->break_end ? Carbon::parse($date . ' ' . $wh->break_end) : null;
+            $breakStart = $wh->break_start ? Carbon::parse($date.' '.$wh->break_start) : null;
+            $breakEnd = $wh->break_end ? Carbon::parse($date.' '.$wh->break_end) : null;
 
             if ($breakStart && $breakEnd && $breakEnd->gt($breakStart)) {
                 if ($whStart->lt($breakStart)) {
@@ -300,6 +313,7 @@ trait BookingTrait
                 $intervals[] = [$whStart, $whEnd];
             }
         }
+
         return $intervals;
     }
 
@@ -313,8 +327,8 @@ trait BookingTrait
         }
 
         if ($override->start_time && $override->end_time) {
-            $ovStart = Carbon::parse($date . ' ' . Carbon::parse($override->start_time)->format('H:i:s'));
-            $ovEnd   = Carbon::parse($date . ' ' . Carbon::parse($override->end_time)->format('H:i:s'));
+            $ovStart = Carbon::parse($date.' '.Carbon::parse($override->start_time)->format('H:i:s'));
+            $ovEnd = Carbon::parse($date.' '.Carbon::parse($override->end_time)->format('H:i:s'));
 
             $newIntervals = [];
             foreach ($intervals as [$s, $e]) {
@@ -331,6 +345,7 @@ trait BookingTrait
                     }
                 }
             }
+
             return $newIntervals;
         }
 
@@ -347,7 +362,10 @@ trait BookingTrait
         }
 
         usort($intervals, function ($a, $b) {
-            if ($a[0]->eq($b[0])) return 0;
+            if ($a[0]->eq($b[0])) {
+                return 0;
+            }
+
             return $a[0]->lt($b[0]) ? -1 : 1;
         });
 
@@ -355,6 +373,7 @@ trait BookingTrait
         foreach ($intervals as $int) {
             if (empty($merged)) {
                 $merged[] = $int;
+
                 continue;
             }
 
