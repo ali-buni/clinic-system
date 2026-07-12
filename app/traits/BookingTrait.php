@@ -6,6 +6,7 @@ use App\Jobs\SendAppointmentStatusNotificationJob;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Work_hour;
+use App\Services\InvoiceService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -160,6 +161,8 @@ trait BookingTrait
                 ], $attributes)
             )->load(['type', 'room', 'patient', 'doctor']);
             Cache::increment("cache_v:doctor:{$doctorId}:slot");
+
+            app(InvoiceService::class)->createBookingInvoice($appointment);
 
             SendAppointmentStatusNotificationJob::dispatch(
                 $appointment->id,

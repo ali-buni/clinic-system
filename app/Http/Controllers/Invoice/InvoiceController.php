@@ -11,6 +11,8 @@ use App\Http\Resources\Invoice\InvoiceResource;
 use App\Models\Invoice;
 use App\Services\ApiResponse;
 use App\Services\InvoiceService;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 
 class InvoiceController extends Controller
@@ -36,13 +38,19 @@ class InvoiceController extends Controller
 
     public function store(CreateInvoiceRequest $request): JsonResponse
     {
-        $invoice = $this->invoiceService->createInvoice($request->validated());
+        try {
+            $invoice = $this->invoiceService->createInvoice($request->validated());
 
-        return ApiResponse::success(
-            new InvoiceResource($invoice),
-            'success',
-            201
-        );
+            return ApiResponse::success(
+                new InvoiceResource($invoice),
+                'success',
+                201
+            );
+        } catch (ModelNotFoundException $e) {
+            return ApiResponse::error($e->getMessage(), $e->getCode());
+        } catch (Exception $e) {
+            return ApiResponse::error($e->getMessage());
+        }
     }
 
     public function show(int $invoiceId): JsonResponse

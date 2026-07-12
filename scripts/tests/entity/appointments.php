@@ -27,6 +27,44 @@ if ($patientToken) {
         ['doctor_id' => $doctorId, 'patient_id' => $patientId, 'clinic_id' => $clinicId, 'appointment_type_id' => $apptTypeId, 'date' => date('Y-m-d'), 'start_time' => '10:00']);
 }
 
+section('Invoice auto-creation on booking');
+
+if ($patientToken) {
+    $r = runTest('appointment', 'book-creates-invoice', 'POST', "$V1/appointments/book", authHeaders($patientToken),
+        ['doctor_id' => $doctorId, 'patient_id' => $patientId, 'clinic_id' => $clinicId, 'appointment_type_id' => $apptTypeId, 'date' => '2099-06-01', 'start_time' => '10:00']);
+    if (($r['status'] ?? 0) === 201) {
+        $invoices = $r['body']['data']['invoices'] ?? [];
+        if (count($invoices) > 0) {
+            $inv = $invoices[0];
+            echo "  OK invoice_id:{$inv['id']} status:{$inv['status']}\n";
+        } else {
+            echo "  FAIL invoices array empty in response\n";
+            $failedTests++;
+        }
+    }
+}
+
+if ($patientToken) {
+    $r = runTest('appointment', 'reschedule-includes-invoices', 'POST', "$V1/appointments/book", authHeaders($patientToken),
+        ['doctor_id' => $doctorId, 'patient_id' => $patientId, 'clinic_id' => $clinicId, 'appointment_type_id' => $apptTypeId, 'date' => '2099-06-01', 'start_time' => '17:00']);
+    if (($r['status'] ?? 0) === 201) {
+        $id = $r['body']['data']['id'] ?? null;
+        if ($id) {
+            $r2 = runTest('appointment', 'reschedule-success-with-invoices', 'POST', "$V1/appointments/$id/reschedule",
+                authHeaders($patientToken), ['start_time' => '18:00', 'date' => '2099-06-01']);
+            if (($r2['status'] ?? 0) === 200) {
+                $invoices = $r2['body']['data']['invoices'] ?? [];
+                if (count($invoices) > 0) {
+                    echo "  OK reschedule invoice_id:{$invoices[0]['id']}\n";
+                } else {
+                    echo "  FAIL invoices not in reschedule response\n";
+                    $failedTests++;
+                }
+            }
+        }
+    }
+}
+
 if ($ownerToken) {
     runTest('appointment', 'show-owner-success', 'GET', "$V1/appointments/$apptId", authHeaders($ownerToken), null);
 }

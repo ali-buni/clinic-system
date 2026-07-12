@@ -5,9 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use ParagonIE\CipherSweet\Constants;
 use ParagonIE\CipherSweet\EncryptedRow;
 use Spatie\LaravelCipherSweet\Concerns\UsesCipherSweet;
@@ -70,14 +71,17 @@ class Appointment extends Model implements CipherSweetEncrypted
     {
         return $this->belongsTo(Clinic::class, 'clinic_id', 'id');
     }
+
     public function room(): BelongsTo
     {
         return $this->belongsTo(Room::class, 'room_id', 'id');
     }
+
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(Doctor::class, 'doctor_id', 'id');
     }
+
     public function patient(): BelongsTo
     {
         return $this->belongsTo(PatientInfo::class, 'patient_id', 'id');
@@ -92,8 +96,9 @@ class Appointment extends Model implements CipherSweetEncrypted
     {
         return $this->hasOne(Patient_record::class);
     }
-    public function invoice(): HasOne
+
+    public function invoices(): HasMany
     {
-        return $this->hasOne(Invoice::class);
+        return $this->hasMany(Invoice::class);
     }
 }

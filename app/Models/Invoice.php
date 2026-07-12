@@ -41,7 +41,8 @@ class Invoice extends Model implements CipherSweetEncrypted
             ->addField('invoice_number')
             ->addField('total_cost')
             ->addField('description')
-            ->addBlindIndex('invoice_number', new BlindIndex('invoice_number_index'));
+            ->addBlindIndex('invoice_number', new BlindIndex('invoice_number_index'))
+            ->addBlindIndex('description', new BlindIndex('description_index'));
     }
 
     public function clinic(): BelongsTo
@@ -91,5 +92,10 @@ class Invoice extends Model implements CipherSweetEncrypted
     public function scopeByInvoiceNumber(Builder $query, string $invoiceNumber): Builder
     {
         return $query->whereBlind('invoice_number', 'invoice_number_index', $invoiceNumber);
+    }
+
+    public function scopeByDescription(Builder $query, string $description): Builder
+    {
+        return $query->whereBlind('description', 'description_index', $description);
     }
 }

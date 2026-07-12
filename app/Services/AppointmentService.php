@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\InvoiceStatus;
 use App\Jobs\SendAppointmentStatusNotificationJob;
 use App\Models\Appointment;
+use App\Models\Invoice;
 use App\Traits\BookingTrait;
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -34,6 +36,24 @@ class AppointmentService
                 'status' => 'cancelled',
                 'cancel_reason' => $reason ?? 'no reason',
             ]);
+
+            $bookingInvoice = Invoice::where('appointment_id', $appointment->id)
+                ->byDescription('Booking fee')
+                ->first();
+
+            if ($bookingInvoice) {
+                foreach ($bookingInvoice->completedPayments as $payment) {
+                    if ($payment->getRefundableAmount() > 0) {
+                        app(PaymentService::class)->refundPayment(
+                            $payment->id,
+                            $payment->getRefundableAmount(),
+                            'Appointment cancelled',
+                            auth()->id()
+                        );
+                    }
+                }
+                $bookingInvoice->update(['status' => InvoiceStatus::Void->value]);
+            }
 
             Cache::increment("cache_v:doctor:{$appointment->doctor_id}:slot");
 

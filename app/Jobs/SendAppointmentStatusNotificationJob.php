@@ -5,19 +5,20 @@ namespace App\Jobs;
 use App\Events\SendMsgEvent;
 use App\Models\Appointment;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class SendAppointmentStatusNotificationJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $backoff = 30;
 
     public function __construct(
@@ -69,7 +70,7 @@ class SendAppointmentStatusNotificationJob implements ShouldQueue
             'updated' => $previousScheduleLabel && $scheduleLabel
                 ? "Your appointment was updated from {$previousScheduleLabel} to {$scheduleLabel}."
                 : ($scheduleLabel ? "Your appointment was updated. New schedule: {$scheduleLabel}." : 'Your appointment was updated.'),
-            'cancelled' => "Your appointment has been cancelled. Reason: {$appointment->cancel_reason}" . ($scheduleLabel ? " Scheduled time: {$scheduleLabel}." : ''),
+            'cancelled' => "Your appointment has been cancelled. Reason: {$appointment->cancel_reason}".($scheduleLabel ? " Scheduled time: {$scheduleLabel}." : ''),
             'completed' => $scheduleLabel
                 ? "Your appointment has been completed for {$scheduleLabel}."
                 : 'Your appointment has been completed.',
@@ -79,7 +80,10 @@ class SendAppointmentStatusNotificationJob implements ShouldQueue
             'reminder' => $scheduleLabel
                 ? "Reminder: You have an upcoming appointment on {$scheduleLabel}."
                 : 'Reminder: You have an upcoming appointment.',
-            default => 'Appointment status update: ' . $this->action . ($scheduleLabel ? " for {$scheduleLabel}." : '.'),
+            'payment_reminder' => $scheduleLabel
+                ? "Payment reminder: You have an unpaid invoice for your appointment on {$scheduleLabel}. Please complete payment before the appointment."
+                : 'Payment reminder: You have an unpaid invoice for your upcoming appointment. Please complete payment.',
+            default => 'Appointment status update: '.$this->action.($scheduleLabel ? " for {$scheduleLabel}." : '.'),
         };
     }
 
@@ -115,7 +119,7 @@ class SendAppointmentStatusNotificationJob implements ShouldQueue
             'doctor_and_secretary' => array_values(array_filter(array_merge(
                 [$appointment->doctor?->user],
                 $appointment->doctor?->room?->secretaries
-                    ?->map(fn($secretary) => $secretary->user)
+                    ?->map(fn ($secretary) => $secretary->user)
                     ->filter()
                     ->all() ?? [],
             ))),

@@ -640,3 +640,59 @@ Get room appointments. Secretary only.
 ---
 
 [Back to Index](./00-INDEX.md)
+
+## Invoice & Payment Flow
+
+Each appointment can have **at most 2 invoices**:
+1. **Booking Invoice** — auto-created on booking
+2. **Treatment Invoice** — created by doctor after completion via `POST /invoices`
+
+### Auto-Invoice on Booking
+When an appointment is booked via `POST /appointments/book`, a booking invoice is automatically created inside the transaction:
+- **total_cost**: `doctor.consultation_fee × appointment_type.types` (slot multiplier)
+- **status**: `draft`
+- **description**: `Booking fee` (encrypted, queryable via blind index)
+- **items**: Auto-attached "Consultation Fee" item from items catalog
+- **appointment_id**: Linked to the booked appointment
+
+The booking response now includes an `invoices` array:
+```json
+{
+    "data": {
+        "appointment": { ... },
+        "invoices": [
+            {
+                "id": 1,
+                "invoice_number": "INV-2026-000001",
+                "total_cost": 200.00,
+                "status": "draft",
+                "description": "Booking fee"
+            }
+        ]
+    }
+}
+```
+
+### Treatment Invoice (After Completion)
+After the doctor marks an appointment as completed, they can create a treatment invoice via the existing `POST /invoices` endpoint. The system validates:
+- Maximum 2 invoices per appointment (1 booking + 1 treatment)
+- Returns 422 error if limit is reached
+
+### Payment Flow
+- Patient views their invoices (via `GET /invoices/patient/{id}`)
+- Patient pays via Stripe from the invoice page
+- Payment confirms via Stripe webhook → invoice status updates
+
+### Cancellation Refund
+When an appointment is cancelled via `POST /appointments/{id}/cancel`:
+1. System finds the booking invoice (identified by description `Booking fee` via blind index)
+2. All completed payments on the booking invoice are refunded (full refund)
+3. Booking invoice status is set to `void`
+4. Refunds are processed via the original payment gateway (Stripe)
+
+### Payment Reminders (Hourly Job)
+- Appointments within 2 hours with unpaid booking invoices → patient receives payment reminder
+- Past appointments with unpaid booking invoices → marked as `no_show`, booking invoice voided
+
+### Reschedule
+When an appointment is rescheduled, the booking invoice remains unchanged (cost is per-appointment, not per-time-slot). The reschedule response includes the updated `invoices` array.
