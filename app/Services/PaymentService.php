@@ -27,7 +27,11 @@ class PaymentService
         return DB::transaction(function () use ($invoiceId, $paymentMethodId, $amount) {
             $invoice = Invoice::lockForUpdate()->findOrFail($invoiceId);
 
-            if ($invoice->status === InvoiceStatus::Paid->value) {
+            if (
+                $invoice->status === InvoiceStatus::Paid->value ||
+                $invoice->status === InvoiceStatus::Refunded->value ||
+                $invoice->status === InvoiceStatus::Void->value
+            ) {
                 throw new \RuntimeException('the invoice is paid');
             }
 
@@ -126,11 +130,11 @@ class PaymentService
         $invoice->loadMissing(['completedPayments.paymentMethod']);
 
         $cashPaid = $invoice->completedPayments
-            ->filter(fn ($p) => $p->paymentMethod->type === PaymentMethodType::Cash)
+            ->filter(fn($p) => $p->paymentMethod->type === PaymentMethodType::Cash)
             ->sum('amount');
 
         $stripePayments = $invoice->completedPayments
-            ->filter(fn ($p) => in_array($p->paymentMethod->type, [PaymentMethodType::Stripe, PaymentMethodType::Card]) && $p->stripe_payment_intent_id)
+            ->filter(fn($p) => in_array($p->paymentMethod->type, [PaymentMethodType::Stripe, PaymentMethodType::Card]) && $p->stripe_payment_intent_id)
             ->sortByDesc('paid_at');
 
         $stripePaid = $stripePayments->sum('amount');
