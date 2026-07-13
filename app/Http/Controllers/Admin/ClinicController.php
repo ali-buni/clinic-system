@@ -9,6 +9,7 @@ use App\Models\Clinic;
 use App\Models\Location;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ClinicController extends Controller
 {
@@ -25,8 +26,8 @@ class ClinicController extends Controller
         }
 
         $clinics = $query->latest()->paginate(15)->withQueryString();
-
-        return view('admin.clinics.index', compact('clinics'));
+        $location = $query->get()->pluck('location')->first();
+        return view('admin.clinics.index', compact('clinics', 'location'));
     }
 
     public function create()
@@ -38,6 +39,7 @@ class ClinicController extends Controller
 
     public function store(StoreClinicRequest $request)
     {
+        Cache::forget('locations:all');
         $location = Location::create([
             'name' => $request->location_name,
             'country' => $request->location_country,
@@ -67,27 +69,41 @@ class ClinicController extends Controller
     {
         $owners = User::role('owner')->get();
         $clinic->load('location');
+        $location = $clinic->location()->first();
 
-        return view('admin.clinics.edit', compact('clinic', 'owners'));
+        return view('admin.clinics.edit', compact('clinic', 'owners', 'location'));
     }
 
     public function update(UpdateClinicRequest $request, Clinic $clinic)
     {
-        $location = $clinic->location;
+        $location = $clinic->location()->first();
 
-        if ($location) {
+        if (
+            $location &&
+            ($location->name !== $request->location_name ||
+                $location->country !== $request->location_country ||
+                $location->governorate !== $request->location_governorate ||
+                $location->city !== $request->location_city
+            )
+        ) {
+            Cache::forget('locations:all');
             $location->update([
                 'name' => $request->location_name,
                 'country' => $request->location_country,
                 'governorate' => $request->location_governorate,
                 'city' => $request->location_city,
             ]);
-        } else {
+        } else if (
+            ! empty($request->location_name) ||
+            ! empty($request->location_country) ||
+            ! empty($request->location_governorate) ||
+            ! empty($request->location_city)
+        ) {
             $location = Location::create([
-                'name' => $request->location_name,
-                'country' => $request->location_country,
-                'governorate' => $request->location_governorate,
-                'city' => $request->location_city,
+                'name' => $request->location_name ?: null,
+                'country' => $request->location_country ?: null,
+                'governorate' => $request->location_governorate ?: null,
+                'city' => $request->location_city ?: null,
             ]);
         }
 

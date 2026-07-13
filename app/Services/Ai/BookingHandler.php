@@ -4,8 +4,11 @@ namespace App\Services\Ai;
 
 use App\Models\Appointment_type;
 use App\Models\Doctor;
+use App\Models\Location;
 use App\Models\Specialty;
 use App\Services\AppointmentService;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class BookingHandler
@@ -28,19 +31,33 @@ class BookingHandler
         ], $this->getDoctorsBySpecialty($specialtyId, $clinicId, $date), ['next_step' => 'select_doctor']);
     }
 
-    public function getDoctorsBySpecialty(int $specialtyId, ?int $clinicId, string $date): array
+    public function getDoctorsBySpecialty(int $specialtyId, ?int $clinicId, string $date, ?string $location = null): array
     {
         $query = Doctor::whereHas('specialties', fn($q) => $q->where('specialty_id', $specialtyId))
-            ->with('user');
+            ->with(['user', 'clinic.location']);
 
         if ($clinicId) {
             $query->where('clinic_id', $clinicId);
         }
 
+        if ($location) {
+            $locationLower = mb_strtolower($location);
+            $query->whereHas('clinic', function ($q) use ($locationLower) {
+                $q->where(function ($subQ) use ($locationLower) {
+                    $subQ->WhereRaw('LOWER(location) LIKE ?', ["%{$locationLower}%"]);
+                })->orWhereHas('location', function ($locQ) use ($locationLower) {
+                    $locQ->whereRaw('LOWER(name) LIKE ?', ["%{$locationLower}%"])
+                        ->orWhereRaw('LOWER(city) LIKE ?', ["%{$locationLower}%"])
+                        ->orWhereRaw('LOWER(governorate) LIKE ?', ["%{$locationLower}%"])
+                        ->orWhereRaw('LOWER(country) LIKE ?', ["%{$locationLower}%"]);
+                });
+            });
+        }
+
         $doctors = $query->get();
 
         if ($doctors->isEmpty()) {
-            return ['error' => 'No doctors found for this specialty', 'next_step' => 'error'];
+            return ['doctors' => [], 'message' => 'No doctors found for this specialty' . ($location ? " in {$location}" : '')];
         }
 
         $result = [];
@@ -61,6 +78,11 @@ class BookingHandler
                 'name' => $doctor->user?->fname . ' ' . $doctor->user?->lname ?? 'Unknown',
                 'bio' => $doctor->bio,
                 'fee' => $doctor->consultation_fee,
+                'clinic' => $doctor->clinic ? [
+                    'id' => $doctor->clinic->id,
+                    'title' => $doctor->clinic->title,
+                    'location' => $doctor->clinic->location,
+                ] : null,
                 'available_slots' => $slots,
             ];
         }
@@ -95,6 +117,97 @@ class BookingHandler
             'available_slots' => $slots,
             'next_step' => 'select_time',
         ];
+    }
+
+    public function getDoctorSlotsForWeek(int $doctorId): array
+    {
+        $doctor = Doctor::with('user')->find($doctorId);
+        if (!$doctor) {
+            return ['error' => 'Doctor not found', 'next_step' => 'error'];
+        }
+
+        $weeklySlots = [];
+        $startDate = Carbon::tomorrow();
+
+        for ($i = 0; $i < 7; $i++) {
+            $date = $startDate->copy()->addDays($i)->format('Y-m-d');
+            $dayName = $startDate->copy()->addDays($i)->dayName;
+
+            try {
+                $rawSlots = $this->appointmentService->getAvailableSlots($doctorId, $date);
+                $slots = array_map(fn($s) => [
+                    'start' => date('H:i', strtotime($s['start'])),
+                    'end' => date('H:i', strtotime($s['end'])),
+                ], $rawSlots);
+
+                if (!empty($slots)) {
+                    $weeklySlots[$date] = [
+                        'day_name' => $dayName,
+                        'slots' => $slots,
+                    ];
+                }
+            } catch (\Throwable $e) {
+                Log::warning("getAvailableSlots failed for doctor {$doctorId} on {$date}", ['error' => $e->getMessage()]);
+            }
+        }
+
+        return [
+            'doctor' => [
+                'id' => $doctor->id,
+                'name' => $doctor->user?->fname . ' ' . $doctor->user?->lname ?? 'Unknown',
+            ],
+            'available_slots' => $weeklySlots,
+            'next_step' => 'select_time',
+        ];
+    }
+
+    public function findDoctorByName(string $doctorName): ?Doctor
+    {
+        $words = array_filter(explode(' ', trim($doctorName)));
+
+        if (empty($words)) {
+            return null;
+        }
+
+        $result = Doctor::whereHas('user', function ($q) use ($words) {
+            $q->where(function ($sub) use ($words) {
+                foreach ($words as $word) {
+                    $sub->where(function ($inner) use ($word) {
+                        $inner->whereRaw('LOWER(fname) LIKE ?', ["%{$word}%"])
+                            ->orWhereRaw('LOWER(lname) LIKE ?', ["%{$word}%"]);
+                    });
+                }
+            });
+        })->with('user')->first();
+
+        if ($result) {
+            return $result;
+        }
+
+        return Doctor::whereHas('user', function ($q) use ($words) {
+            $q->where(function ($sub) use ($words) {
+                foreach ($words as $word) {
+                    $sub->orWhereRaw('LOWER(fname) LIKE ?', ["%{$word}%"])
+                        ->orWhereRaw('LOWER(lname) LIKE ?', ["%{$word}%"]);
+                }
+            });
+        })->with('user')->first();
+    }
+
+    public function getAllLocations(): array
+    {
+        return Cache::remember('locations:all', 3600, function () {
+            return Location::select('id', 'name', 'city', 'governorate', 'country')
+                ->get()
+                ->map(fn($l) => [
+                    'id' => $l->id,
+                    'name' => $l->name,
+                    'city' => $l->city,
+                    'governorate' => $l->governorate,
+                    'country' => $l->country,
+                ])
+                ->toArray();
+        });
     }
 
     public function bookAppointment(
@@ -136,7 +249,9 @@ class BookingHandler
             );
 
             Log::channel('structured')->info('AI appointment booked successfully', [
-                'appointment_id' => $appointment->id, 'doctor_id' => $doctorId, 'patient_id' => $patientId,
+                'appointment_id' => $appointment->id,
+                'doctor_id' => $doctorId,
+                'patient_id' => $patientId,
             ]);
 
             return [
@@ -152,7 +267,9 @@ class BookingHandler
             ];
         } catch (\Throwable $e) {
             Log::channel('structured')->error('AppointmentAssistant booking failed', [
-                'doctor_id' => $doctorId, 'patient_id' => $patientId, 'error' => $e->getMessage(),
+                'doctor_id' => $doctorId,
+                'patient_id' => $patientId,
+                'error' => $e->getMessage(),
             ]);
             return ['error' => $e->getMessage(), 'next_step' => 'retry'];
         }

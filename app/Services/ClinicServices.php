@@ -10,6 +10,7 @@ use App\Models\Doctor;
 use App\Models\Location;
 use App\Models\Secretary;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -160,8 +161,8 @@ class ClinicServices
             $hasLocationData = array_intersect_key($data, array_flip($locationFields));
 
             if (! empty($hasLocationData)) {
-                $location = $clinic->location;
-
+                $location = $clinic->location()->first();
+                Cache::forget('locations:all');
                 if ($location) {
                     $location->update($hasLocationData);
                 } else {

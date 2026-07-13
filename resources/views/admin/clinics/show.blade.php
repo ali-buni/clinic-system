@@ -2,7 +2,7 @@
 @section('title', $clinic->title)
 @section('header', $clinic->title)
 @section('actions')
-    <a href="{{ route('admin.clinics.send-payment', $clinic) }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Send Payment URL</a>
+<a href="{{ route('admin.clinics.send-payment', $clinic) }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Send Payment URL</a>
 @endsection
 
 @section('content')
@@ -11,13 +11,34 @@
         <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold mb-4">Clinic Info</h3>
             <dl class="grid grid-cols-2 gap-4">
-                <div><dt class="text-sm text-gray-500">Title</dt><dd class="font-medium">{{ $clinic->title }}</dd></div>
-                <div><dt class="text-sm text-gray-500">Phone</dt><dd class="font-medium">{{ $clinic->phone }}</dd></div>
-                <div><dt class="text-sm text-gray-500">Location</dt><dd class="font-medium">{{ $clinic->location?->city }}, {{ $clinic->location?->governorate }}, {{ $clinic->location?->country }}</dd></div>
-                <div><dt class="text-sm text-gray-500">Owner</dt><dd class="font-medium">{{ $clinic->owner?->fname }} {{ $clinic->owner?->lname }}</dd></div>
-                <div><dt class="text-sm text-gray-500">Doctors</dt><dd class="font-medium">{{ $clinic->doctors->count() }}</dd></div>
-                <div><dt class="text-sm text-gray-500">Secretaries</dt><dd class="font-medium">{{ $clinic->secretaries->count() }}</dd></div>
-                <div><dt class="text-sm text-gray-500">Appointments</dt><dd class="font-medium">{{ $clinic->appointments->count() }}</dd></div>
+                <div>
+                    <dt class="text-sm text-gray-500">Title</dt>
+                    <dd class="font-medium">{{ $clinic->title }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm text-gray-500">Phone</dt>
+                    <dd class="font-medium">{{ $clinic->phone }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm text-gray-500">Location</dt>
+                    <dd class="font-medium">{{ $clinic->location }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm text-gray-500">Owner</dt>
+                    <dd class="font-medium">{{ $clinic->owner?->fname }} {{ $clinic->owner?->lname }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm text-gray-500">Doctors</dt>
+                    <dd class="font-medium">{{ $clinic->doctors->count() }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm text-gray-500">Secretaries</dt>
+                    <dd class="font-medium">{{ $clinic->secretaries->count() }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm text-gray-500">Appointments</dt>
+                    <dd class="font-medium">{{ $clinic->appointments->count() }}</dd>
+                </div>
             </dl>
         </div>
 
@@ -26,10 +47,10 @@
             <h3 class="text-lg font-semibold mb-4">Doctors</h3>
             <ul class="divide-y divide-gray-200">
                 @foreach($clinic->doctors as $doctor)
-                    <li class="py-2">
-                        <span class="font-medium">{{ $doctor->user?->fname }} {{ $doctor->user?->lname }}</span>
-                        <span class="text-sm text-gray-500 ml-2">({{ $doctor->user?->email }})</span>
-                    </li>
+                <li class="py-2">
+                    <span class="font-medium">{{ $doctor->user?->fname }} {{ $doctor->user?->lname }}</span>
+                    <span class="text-sm text-gray-500 ml-2">({{ $doctor->user?->email }})</span>
+                </li>
                 @endforeach
             </ul>
         </div>
@@ -40,10 +61,10 @@
             <h3 class="text-lg font-semibold mb-4">Secretaries</h3>
             <ul class="divide-y divide-gray-200">
                 @foreach($clinic->secretaries as $secretary)
-                    <li class="py-2">
-                        <span class="font-medium">{{ $secretary->user?->fname }} {{ $secretary->user?->lname }}</span>
-                        <span class="text-sm text-gray-500 ml-2">({{ $secretary->user?->email }})</span>
-                    </li>
+                <li class="py-2">
+                    <span class="font-medium">{{ $secretary->user?->fname }} {{ $secretary->user?->lname }}</span>
+                    <span class="text-sm text-gray-500 ml-2">({{ $secretary->user?->email }})</span>
+                </li>
                 @endforeach
             </ul>
         </div>

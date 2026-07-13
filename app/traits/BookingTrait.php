@@ -126,7 +126,7 @@ trait BookingTrait
     public function bookAppointment(int $doctorId, string $date, string $startTime, string $endTime, array $attributes = []): Appointment
     {
         return DB::transaction(function () use ($doctorId, $date, $startTime, $endTime, $attributes) {
-            if (Carbon::parse($date)->lte(Carbon::now()->addDay()->startOfDay())) {
+            if (Carbon::parse($date)->lte(Carbon::now()->startOfDay())) {
                 throw new Exception('Appointment date must be at least 1 day in advance.');
             }
 

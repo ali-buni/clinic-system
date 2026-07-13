@@ -9,7 +9,7 @@ Route::middleware(['auth:sanctum', 'throttle:100,1'])->prefix('ai')->group(funct
     Route::post('report/summarize', [MedicalReportController::class, 'summarize'])
         ->middleware(['throttle:15,1', 'checkaccess:role:doctor,patient', 'resourceAccess:owns:Patient_record:record_id']);
     Route::post('appointment/assist', [AppointmentAssistantController::class, 'assist'])
-        ->middleware(['throttle:15,1', 'checkaccess:role:patient,doctor,secretary']);
+        ->middleware(['throttle:15,1', 'checkaccess:role:patient']);
     Route::post('chat/patient', [PatientChatbotController::class, 'chat'])
         ->middleware(['throttle:15,1', 'checkaccess:role:patient', 'resourceAccess:patient_self:patient_id']);
     Route::get('chat/patient/history', [PatientChatbotController::class, 'history'])

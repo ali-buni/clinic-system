@@ -28,21 +28,33 @@ if ($patientToken) {
 section('Assistant');
 
 runTest('ai', 'assist-unauthenticated', 'POST', "$V1/ai/appointment/assist", ['Accept' => 'application/json'],
-    ['message' => 'Help me book']);
+    ['query' => 'I need help booking an appointment']);
 if ($patientToken) {
     runTest('ai', 'assist-validation', 'POST', "$V1/ai/appointment/assist", authHeaders($patientToken), []);
 }
 if ($patientToken) {
-    runTest('ai', 'assist-patient', 'POST', "$V1/ai/appointment/assist",
-        authHeaders($patientToken), ['message' => 'Book an appointment']);
+    runTest('ai', 'assist-patient-symptoms', 'POST', "$V1/ai/appointment/assist",
+        authHeaders($patientToken), ['query' => 'I have chest pain and shortness of breath']);
+}
+if ($patientToken) {
+    runTest('ai', 'assist-patient-specialty', 'POST', "$V1/ai/appointment/assist",
+        authHeaders($patientToken), ['query' => 'I want to see a cardiologist']);
+}
+if ($patientToken) {
+    runTest('ai', 'assist-patient-location', 'POST', "$V1/ai/appointment/assist",
+        authHeaders($patientToken), ['query' => 'I need a dermatologist in Riyadh']);
+}
+if ($patientToken) {
+    runTest('ai', 'assist-patient-arabic', 'POST', "$V1/ai/appointment/assist",
+        authHeaders($patientToken), ['query' => 'أعاني من صداع شديد']);
 }
 if ($doctorToken) {
     runTest('ai', 'assist-doctor', 'POST', "$V1/ai/appointment/assist",
-        authHeaders($doctorToken), ['message' => 'Show my schedule']);
+        authHeaders($doctorToken), ['query' => 'Show available slots for Dr. Ahmed']);
 }
 if ($secretaryToken) {
     runTest('ai', 'assist-secretary', 'POST', "$V1/ai/appointment/assist",
-        authHeaders($secretaryToken), ['message' => 'Find available slots']);
+        authHeaders($secretaryToken), ['query' => 'Find available appointments for cardiology']);
 }
 
 section('Chat');
