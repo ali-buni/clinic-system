@@ -34,11 +34,18 @@ class PatientChatbotController extends Controller
         }
     }
 
-    public function history(Request $request)
+    public function history()
+    {
+        $sessions = $this->service->history();
+
+        return ApiResponse::success($sessions, 'Chat sessions retrieved');
+    }
+
+    public function messages(Request $request)
     {
         $request->validate(['session_id' => 'required|string']);
 
-        $messages = $this->service->history($request->session_id);
+        $messages = $this->service->messages($request->session_id);
 
         if ($messages->isEmpty()) {
             return ApiResponse::error('No messages found for this session', 404);
@@ -47,6 +54,18 @@ class PatientChatbotController extends Controller
         return ApiResponse::success(
             ChatMessageResource::collection($messages),
             'Chat history retrieved'
+        );
+    }
+
+    public function clearHistory(Request $request)
+    {
+        $request->validate(['session_id' => 'nullable|string']);
+
+        $deleted = $this->service->clearHistory($request->session_id);
+
+        return ApiResponse::success(
+            ['deleted' => $deleted],
+            $deleted ? 'Chat history cleared' : 'No messages found'
         );
     }
 }

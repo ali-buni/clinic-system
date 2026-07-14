@@ -17,7 +17,8 @@ return new class extends Migration
             $table->morphs('chattable');
             $table->text('message');
             $table->text('response');
-            $table->string('session_id')->nullable()->index();
+            $table->string('session_id')->nullable()->index()->unique()
+            ->comment('Session ID for grouping messages in a conversation');
             $table->timestamps();
         });
     }
