@@ -37,7 +37,7 @@ class DoctorSeeder extends Seeder
                 [
                     'room_id' => $rooms->get($index % $rooms->count())->id,
                     'appointment_duration' => 30,
-                    'consultation_fee' => $faker->randomFloat(2, 120, 300),
+                    'consultation_fee' => mt_rand(12000, 30000) / 100,
                 ]
             );
         }
