@@ -20,7 +20,7 @@ class WorkHourSeeder extends Seeder
                     [
                         'start_time' => $shift['start'],
                         'end_time' => $shift['end'],
-                        'max_patients_per_day' => fake()->numberBetween(10, 20),
+                        'max_patients_per_day' => mt_rand(10, 20),
                         'is_active' => true,
                     ]
                 );
