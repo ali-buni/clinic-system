@@ -37,7 +37,7 @@ class SecretarySeeder extends Seeder
             );
 
             $secretary->rooms()->sync(
-                $rooms->random(fake()->numberBetween(1, 3))->pluck('id')
+                $rooms->random(mt_rand(1, 3))->pluck('id')
             );
         }
     }
