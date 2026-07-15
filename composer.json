@@ -7,7 +7,6 @@
     "require": {
         "php": "^8.2",
         "kayzer24/laravel-stripe-connect": "^0.0.1",
-        "knuckleswtf/scribe": "^5.11",
         "laravel/framework": "^11.0",
         "laravel/passport": "^13.7",
         "laravel/sanctum": "^4.0",
