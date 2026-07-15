@@ -16,7 +16,7 @@ class ScheduleOverrideSeeder extends Seeder
 
         foreach ($doctors as $doctor) {
             foreach ($overrideReasons as $override) {
-                $date = Carbon::now()->addDays(fake()->numberBetween(1, 60));
+                $date = Carbon::now()->addDays(mt_rand(1, 60));
                 Schedule_override::firstOrCreate(
                     ['doctor_id' => $doctor->id, 'override_date' => $date->format('Y-m-d')],
                     array_merge($override, [
