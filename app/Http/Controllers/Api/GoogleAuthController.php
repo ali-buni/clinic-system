@@ -41,8 +41,12 @@ class GoogleAuthController extends Controller
                 'profile_image' => $this->defaultUserImage(),
                 'password' => Hash::make(Str::random(16))
             ]);
+            $user->assignRole('patient');
             DownloadAndStoreImageJob::dispatch($user->id, $googleUser->getAvatar());
         } else {
+            if (! $user->hasRole('patient')) {
+                ApiResponse::error('UnAuthorized', 401);
+            }
             if (!$user->google_id) {
                 $user->update(['google_id' => $googleUser->getId()]);
             }
