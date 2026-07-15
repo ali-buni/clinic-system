@@ -5,8 +5,8 @@ use App\Http\Controllers\Ai\AppointmentAssistantController;
 use App\Http\Controllers\Ai\PatientChatbotController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum', 'throttle:100,1'])->prefix('ai')->group(function () {
-    Route::post('report/summarize', [MedicalReportController::class, 'summarize'])
+Route::middleware(['auth:sanctum', 'throttle:100,1'])->prefix('/ai')->group(function () {
+    Route::post('/report/summarize', [MedicalReportController::class, 'summarize'])
         ->middleware(['throttle:15,1', 'checkaccess:role:doctor,patient', 'resourceAccess:owns:Patient_record:record_id']);
     Route::post('appointment/assist', [AppointmentAssistantController::class, 'assist'])
         ->middleware(['throttle:15,1', 'checkaccess:role:patient']);
