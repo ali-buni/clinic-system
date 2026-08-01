@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Doctor;
+use App\Enums\WithdrawalStatus;
 use App\Models\DoctorWithdrawal;
 use App\Notifications\WithdrawalCompleted;
 use App\Services\StripeConnectService;
@@ -18,6 +18,7 @@ class ProcessStripeTransferJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 5;
+
     public array $backoff = [10, 30, 60, 120, 300];
 
     public function __construct(
@@ -31,11 +32,12 @@ class ProcessStripeTransferJob implements ShouldQueue
     {
         $withdrawal = DoctorWithdrawal::with('doctor')->findOrFail($this->withdrawalId);
 
-        if ($withdrawal->status !== 'processing') {
+        if ($withdrawal->status !== WithdrawalStatus::Processing) {
             Log::channel('structured')->info('Withdrawal already processed, skipping job', [
                 'withdrawal_id' => $withdrawal->id,
                 'status' => $withdrawal->status,
             ]);
+
             return;
         }
 
@@ -45,7 +47,7 @@ class ProcessStripeTransferJob implements ShouldQueue
         );
 
         $withdrawal->update([
-            'status' => 'completed',
+            'status' => WithdrawalStatus::Completed,
             'approved_by' => $this->approvedBy,
             'approved_at' => now(),
             'stripe_transfer_id' => $transferId,
@@ -57,7 +59,7 @@ class ProcessStripeTransferJob implements ShouldQueue
             $wallet->removePending((float) $withdrawal->amount);
         }
 
-        $withdrawal->doctor->notify(new WithdrawalCompleted($withdrawal));
+        $withdrawal->doctor->user->notify(new WithdrawalCompleted($withdrawal));
 
         Log::channel('structured')->info('Stripe transfer completed', [
             'withdrawal_id' => $withdrawal->id,

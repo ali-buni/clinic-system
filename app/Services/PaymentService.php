@@ -7,7 +7,6 @@ use App\Enums\PaymentMethodType;
 use App\Exceptions\PaymentExceedsBalanceException;
 use App\Jobs\ProcessStripeRefundJob;
 use App\Jobs\SyncDoctorWalletJob;
-use App\Models\Doctor;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Payment_method;
@@ -97,9 +96,15 @@ class PaymentService
                 throw new \RuntimeException("refund amount exceeds refundable balance of {$refundable}");
             }
 
+            $idempotencyKey = StripeGateway::refundIdempotencyKey($payment->id, $amount);
+
+            $existing = Refund::where('idempotency_key', $idempotencyKey)->first();
+            if ($existing) {
+                return $existing;
+            }
+
             $method = Payment_method::findOrFail($payment->payment_method_id);
             $gateway = $this->resolveGateway($method);
-            $result = $gateway->refundPayment($payment, $amount);
 
             $refund = Refund::create([
                 'payment_id' => $payment->id,
@@ -107,8 +112,15 @@ class PaymentService
                 'amount' => $amount,
                 'reason' => $reason,
                 'refunded_by' => $refundedBy,
-                'stripe_refund_id' => $result['stripe_refund_id'] ?? null,
+                'stripe_refund_id' => null,
+                'idempotency_key' => $idempotencyKey,
             ]);
+
+            $result = $gateway->refundPayment($payment, $amount, $idempotencyKey);
+
+            if (($result['stripe_refund_id'] ?? null) !== null) {
+                $refund->update(['stripe_refund_id' => $result['stripe_refund_id']]);
+            }
 
             $payment->refunded_amount = (float) $payment->refunded_amount + $amount;
             $payment->save();
@@ -158,7 +170,6 @@ class PaymentService
             }
 
             ProcessStripeRefundJob::dispatchSync($payment->id, $refundable, 'Auto-refund: invoice total decreased');
-
 
             $remainingRefund -= $refundable;
         }

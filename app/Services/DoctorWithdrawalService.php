@@ -6,8 +6,10 @@ use App\Enums\WithdrawalStatus;
 use App\Jobs\NotifyAdminsOfWithdrawalJob;
 use App\Jobs\ProcessStripeTransferJob;
 use App\Models\Doctor;
+use App\Models\DoctorWallet;
 use App\Models\DoctorWithdrawal;
 use App\Notifications\WithdrawalRejected;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 class DoctorWithdrawalService
@@ -18,16 +20,28 @@ class DoctorWithdrawalService
 
     public function requestWithdrawal(Doctor $doctor, float $amount): DoctorWithdrawal
     {
+        if (DB::getDriverName() === 'mysql' && DB::transactionLevel() === 0) {
+            DB::statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
+        }
+
         return DB::transaction(function () use ($doctor, $amount) {
-            if (!$doctor->stripe_connected_account_id) {
+            if (! $doctor->stripe_connected_account_id) {
                 throw new \RuntimeException('You must connect your Stripe account before requesting a withdrawal.');
             }
 
-            $this->earningsService->syncWalletBalance($doctor);
-            $wallet = $doctor->wallet;
+            try {
+                $this->earningsService->initializeWallet($doctor);
+            } catch (UniqueConstraintViolationException $e) {
+                // A concurrent request created the wallet first; nothing to do.
+            }
 
-            if (!$wallet || $wallet->getAvailableBalance() < $amount) {
-                throw new \RuntimeException('Insufficient balance. Available: $' . number_format($wallet?->getAvailableBalance() ?? 0, 2));
+            $wallet = DoctorWallet::where('doctor_id', $doctor->id)->lockForUpdate()->firstOrFail();
+
+
+            $wallet->update(['balance' => $this->earningsService->calculateAvailableBalance($doctor)]);
+
+            if ($wallet->getAvailableBalance() < $amount) {
+                throw new \RuntimeException('Insufficient balance. Available: $' . number_format($wallet->getAvailableBalance(), 2));
             }
 
             $wallet->deductFromBalance($amount);
@@ -48,6 +62,8 @@ class DoctorWithdrawalService
     public function approveWithdrawal(DoctorWithdrawal $withdrawal, int $approvedBy): DoctorWithdrawal
     {
         return DB::transaction(function () use ($withdrawal, $approvedBy) {
+            $withdrawal = DoctorWithdrawal::lockForUpdate()->findOrFail($withdrawal->id);
+
             if ($withdrawal->status !== WithdrawalStatus::Pending) {
                 throw new \RuntimeException('Only pending withdrawals can be approved.');
             }
@@ -67,8 +83,16 @@ class DoctorWithdrawalService
     public function rejectWithdrawal(DoctorWithdrawal $withdrawal, int $approvedBy, string $reason): DoctorWithdrawal
     {
         return DB::transaction(function () use ($withdrawal, $approvedBy, $reason) {
+            $withdrawal = DoctorWithdrawal::lockForUpdate()->findOrFail($withdrawal->id);
+
             if ($withdrawal->status !== WithdrawalStatus::Pending) {
                 throw new \RuntimeException('Only pending withdrawals can be rejected.');
+            }
+
+            $wallet = DoctorWallet::where('doctor_id', $withdrawal->doctor_id)->lockForUpdate()->first();
+            if ($wallet) {
+                $wallet->removePending((float) $withdrawal->amount);
+                $wallet->addToBalance((float) $withdrawal->amount);
             }
 
             $withdrawal->update([
@@ -78,13 +102,7 @@ class DoctorWithdrawalService
                 'rejection_reason' => $reason,
             ]);
 
-            $wallet = $withdrawal->doctor->wallet;
-            if ($wallet) {
-                $wallet->removePending((float) $withdrawal->amount);
-                $wallet->addToBalance((float) $withdrawal->amount);
-            }
-
-            $withdrawal->doctor->notify(new WithdrawalRejected($withdrawal));
+            $withdrawal->doctor->user->notify(new WithdrawalRejected($withdrawal));
 
             return $withdrawal;
         });

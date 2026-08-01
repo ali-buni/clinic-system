@@ -19,6 +19,7 @@ class Refund extends Model implements CipherSweetEncrypted
         'reason',
         'refunded_by',
         'stripe_refund_id',
+        'idempotency_key',
     ];
 
     protected $casts = [];
