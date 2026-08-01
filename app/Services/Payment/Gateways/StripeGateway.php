@@ -114,17 +114,28 @@ class StripeGateway implements PaymentGatewayInterface
         }
     }
 
-    public function refundPayment(Payment $payment, float $amount): array
+    public static function refundIdempotencyKey(int $paymentId, float $amount): string
+    {
+        return sprintf('refund-%d-%d', $paymentId, (int) round($amount * 100));
+    }
+
+    public function refundPayment(Payment $payment, float $amount, ?string $idempotencyKey = null): array
     {
         if (! $payment->stripe_payment_intent_id || $amount <= 0) {
             return ['stripe_refund_id' => null];
         }
 
         try {
-            $refund = $this->client->refunds->create([
+            $params = [
                 'payment_intent' => $payment->stripe_payment_intent_id,
                 'amount' => (int) round($amount * 100),
-            ]);
+            ];
+
+            if ($idempotencyKey !== null) {
+                $params['idempotency_key'] = $idempotencyKey;
+            }
+
+            $refund = $this->client->refunds->create($params);
 
             return ['stripe_refund_id' => $refund->id];
         } catch (ApiErrorException $e) {

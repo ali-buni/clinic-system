@@ -14,7 +14,7 @@ class CashGateway implements PaymentGatewayInterface
         return $type === PaymentMethodType::Cash;
     }
 
-    public function createPayment(Invoice $invoice, Payment $payment, float $amount): array
+    public function createPayment(Invoice $invoice, Payment $payment, float $amount, ?string $idempotencyKey = null): array
     {
         $payment->update(['paid_at' => now()]);
 
@@ -29,7 +29,7 @@ class CashGateway implements PaymentGatewayInterface
 
     public function cancelPayment(Payment $payment): void {}
 
-    public function refundPayment(Payment $payment, float $amount): array
+    public function refundPayment(Payment $payment, float $amount, ?string $idempotencyKey = null): array
     {
         return ['stripe_refund_id' => null];
     }
