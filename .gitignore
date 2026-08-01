@@ -28,3 +28,4 @@ scripts/tests/endpoint/*
 docs/Api/endpoint/*
 stripe.exe
 storage/app/firebase/*.json
+docs/*
