@@ -6,30 +6,30 @@ use App\Models\Patient_record;
 
 class PatientRecordService
 {
-
     public function getAllFiltered(array $filters)
     {
         $query = Patient_record::with([
             'patient',
             'doctor',
-        ]);
-        if (!empty($filters['status'])) {
+        ])->where('clinic_id', $this->callerClinicId());
+        if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
-        if (!empty($filters['date_from'])) {
+        if (! empty($filters['date_from'])) {
             $query->whereDate(
                 'created_at',
                 '>=',
                 $filters['date_from']
             );
         }
-        if (!empty($filters['date_to'])) {
+        if (! empty($filters['date_to'])) {
             $query->whereDate(
                 'created_at',
                 '<=',
                 $filters['date_to']
             );
         }
+
         return ModelFilter::filter(
             $query,
             $filters
@@ -55,7 +55,7 @@ class PatientRecordService
     public function getRecordsByRoom(array $roomIds)
     {
         return Patient_record::with(['patient', 'doctor'])
-            ->whereHas('doctor', fn($q) => $q->whereIn('room_id', $roomIds))
+            ->whereHas('doctor', fn ($q) => $q->whereIn('room_id', $roomIds))
             ->latest()
             ->get();
     }
@@ -73,5 +73,16 @@ class PatientRecordService
         return Patient_record::with(['diseases', 'prescriptions.items', 'doctor', 'patient'])
             ->where('id', $id)
             ->first();
+    }
+
+    private function callerClinicId(): ?int
+    {
+        $user = auth()->user();
+
+        return match (true) {
+            $user?->hasRole('owner') => $user->clinicOwner?->id,
+            $user?->hasRole('doctor') => $user->doctorProfile?->clinic_id,
+            default => null,
+        };
     }
 }
