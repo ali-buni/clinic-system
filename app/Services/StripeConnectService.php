@@ -84,7 +84,7 @@ class StripeConnectService
         return $accountUrl;
     }
 
-    public function createTransfer(Doctor $doctor, float $amount): string
+    public function createTransfer(Doctor $doctor, float $amount, ?string $idempotencyKey = null): string
     {
         $accountId = $doctor->stripe_connected_account_id;
 
@@ -93,14 +93,20 @@ class StripeConnectService
         }
 
         try {
-            $transfer = $this->client->transfers->create([
+            $params = [
                 'amount' => (int) round($amount * 100),
                 'currency' => config('services.stripe.currency', 'usd'),
                 'destination' => $accountId,
                 'metadata' => [
                     'doctor_id' => $doctor->id,
                 ],
-            ]);
+            ];
+
+            if ($idempotencyKey !== null) {
+                $params['idempotency_key'] = $idempotencyKey;
+            }
+
+            $transfer = $this->client->transfers->create($params);
 
             Log::channel('structured')->info('Stripe transfer created', [
                 'doctor_id' => $doctor->id,

@@ -43,7 +43,8 @@ class ProcessStripeTransferJob implements ShouldQueue
 
         $transferId = $stripeConnectService->createTransfer(
             $withdrawal->doctor,
-            (float) $withdrawal->amount
+            (float) $withdrawal->amount,
+            "withdrawal-{$withdrawal->id}"
         );
 
         $withdrawal->update([
