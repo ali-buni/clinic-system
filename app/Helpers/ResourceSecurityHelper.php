@@ -12,7 +12,7 @@ class ResourceSecurityHelper
             return null;
         }
 
-        if (!$requester) {
+        if (! $requester) {
             return null;
         }
 
@@ -28,20 +28,20 @@ class ResourceSecurityHelper
         return null;
     }
 
-    public static function maskEmail(?string $email, $requester, ?int $ownerUserId): ?string
+    public static function maskEmail(?string $email, $requester, ?int $ownerUserId, ?bool $reveal = null): ?string
     {
         if ($email === null) {
             return null;
         }
 
-        if (!$requester) {
+        if (! $requester) {
             return null;
         }
 
         $isOwner = $requester->id === $ownerUserId;
         $role = $requester->getRoleNames()->first();
 
-        if ($isOwner || in_array($role, ['doctor', 'secretary', 'admin', 'owner'])) {
+        if ($reveal ?? ($isOwner || in_array($role, ['doctor', 'secretary', 'admin', 'owner']))) {
             return $email;
         }
 
@@ -49,23 +49,23 @@ class ResourceSecurityHelper
         $name = $parts[0] ?? '';
         $domain = $parts[1] ?? '';
 
-        return Str::mask($name, '*', 1, max(0, strlen($name) - 2)) . '@' . $domain;
+        return Str::mask($name, '*', 1, max(0, strlen($name) - 2)).'@'.$domain;
     }
 
-    public static function maskPhone(?string $phone, $requester, ?int $ownerUserId): ?string
+    public static function maskPhone(?string $phone, $requester, ?int $ownerUserId, ?bool $reveal = null): ?string
     {
         if ($phone === null) {
             return null;
         }
 
-        if (!$requester) {
+        if (! $requester) {
             return null;
         }
 
         $isOwner = $requester->id === $ownerUserId;
         $role = $requester->getRoleNames()->first();
 
-        if ($isOwner || in_array($role, ['doctor', 'secretary', 'admin', 'owner'])) {
+        if ($reveal ?? ($isOwner || in_array($role, ['doctor', 'secretary', 'admin', 'owner']))) {
             return $phone;
         }
 
