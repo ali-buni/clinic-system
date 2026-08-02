@@ -61,14 +61,23 @@ class StripeGateway implements PaymentGatewayInterface
         ];
     }
 
-    public function confirmPayment(Payment $payment): void
+    public function confirmPayment(Payment $payment): bool
     {
         if (! $payment->stripe_session_id) {
-            return;
+            return false;
         }
 
         try {
             $session = Session::retrieve($payment->stripe_session_id);
+
+            if (! $session->payment_intent) {
+                Log::channel('structured')->warning('Stripe session has no payment intent for payment', [
+                    'payment_id' => $payment->id,
+                    'session_id' => $payment->stripe_session_id,
+                ]);
+
+                return false;
+            }
 
             $payment->update([
                 'stripe_payment_intent_id' => $session->payment_intent,
@@ -79,7 +88,11 @@ class StripeGateway implements PaymentGatewayInterface
                 'session_id' => $payment->stripe_session_id,
                 'error' => $e->getMessage(),
             ]);
+
+            return false;
         }
+
+        return true;
     }
 
     public function cancelPayment(Payment $payment): void

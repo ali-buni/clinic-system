@@ -10,7 +10,7 @@ interface PaymentGatewayInterface
 {
     public function createPayment(Invoice $invoice, Payment $payment, float $amount): array;
 
-    public function confirmPayment(Payment $payment): void;
+    public function confirmPayment(Payment $payment): bool;
 
     public function cancelPayment(Payment $payment): void;
 
