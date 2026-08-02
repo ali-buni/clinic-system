@@ -43,11 +43,18 @@ class WebhookController extends Controller
             return response()->json(['error' => 'Invalid signature'], 400);
         }
 
-        if ($this->isDuplicateEvent($event->id)) {
+        $claimed = DB::table('webhook_events')->insertOrIgnore([
+            'event_id' => $event->id,
+            'type' => $event->type,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        if ($claimed === 0) {
+            Log::channel('structured')->info('Duplicate Stripe event ignored', ['event_id' => $event->id]);
+
             return response()->json(['status' => 'duplicate_ignored'], 200);
         }
-
-        $this->storeEventId($event->id, $event->type);
 
         try {
             match ($event->type) {
@@ -62,6 +69,10 @@ class WebhookController extends Controller
                 'type' => $event->type,
                 'error' => $e->getMessage(),
             ]);
+
+            DB::table('webhook_events')->where('event_id', $event->id)->delete();
+
+            return response()->json(['error' => 'Processing failed'], 500);
         }
 
         return response()->json(['status' => 'ok'], 200);
@@ -103,20 +114,5 @@ class WebhookController extends Controller
     private function handleChargeRefunded(object $charge): void
     {
         Log::channel('structured')->info('Charge refunded', ['id' => $charge->id]);
-    }
-
-    private function isDuplicateEvent(string $eventId): bool
-    {
-        return DB::table('webhook_events')->where('event_id', $eventId)->exists();
-    }
-
-    private function storeEventId(string $eventId, string $type): void
-    {
-        DB::table('webhook_events')->insertOrIgnore([
-            'event_id' => $eventId,
-            'type' => $type,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
     }
 }
