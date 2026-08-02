@@ -44,6 +44,11 @@ class PaymentService
             if ($method->is_active !== true) {
                 throw new ModelNotFoundException('the payment method not found');
             }
+
+            if ($method->type === PaymentMethodType::Cash && ! auth()->user()?->hasAnyRole(['secretary', 'owner'])) {
+                throw new \RuntimeException('Cash payments can only be recorded by staff.');
+            }
+
             $payment = $invoice->payments()->create([
                 'payment_method_id' => $paymentMethodId,
                 'amount' => $amount,
