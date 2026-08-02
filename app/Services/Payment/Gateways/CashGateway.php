@@ -25,7 +25,10 @@ class CashGateway implements PaymentGatewayInterface
         ];
     }
 
-    public function confirmPayment(Payment $payment): void {}
+    public function confirmPayment(Payment $payment): bool
+    {
+        return true;
+    }
 
     public function cancelPayment(Payment $payment): void {}
 
