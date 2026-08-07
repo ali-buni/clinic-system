@@ -74,6 +74,8 @@ class AuthService
             $user->password = Hash::make($newPassword);
             $user->save();
 
+            $user->tokens()->delete();
+
             DB::commit();
 
             LogActivityJob::dispatch('auth', 'password reset', get_class($user), $user->id, null, [], 'updated');
@@ -155,6 +157,7 @@ class AuthService
 
         DB::transaction(function () use ($user, $newPassword, $verification) {
             $user->update(['password' => Hash::make($newPassword)]);
+            $user->tokens()->delete();
             $verification->delete();
         });
 
