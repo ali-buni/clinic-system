@@ -23,16 +23,18 @@ class InvoiceService
             throw new ModelNotFoundException('no completed appointment found.', 404);
         }
 
-        return DB::transaction(function () use ($data) {
+        $this->assertItemsBelongToClinic($data['invoice_items'], $appointment->clinic_id);
+
+        return DB::transaction(function () use ($data, $appointment) {
             $invoiceNumber = $this->generateInvoiceNumber();
 
             $totalCost = collect($data['invoice_items'])
                 ->sum(fn (array $item) => $item['price'] * $item['quantity']);
 
             $invoice = Invoice::create([
-                'clinic_id' => $data['clinic_id'],
-                'patient_id' => $data['patient_id'],
-                'appointment_id' => $data['appointment_id'],
+                'clinic_id' => $appointment->clinic_id,
+                'patient_id' => $appointment->patient_id,
+                'appointment_id' => $appointment->id,
                 'invoice_number' => $invoiceNumber,
                 'total_cost' => $totalCost,
                 'description' => $data['description'] ?? null,
@@ -133,6 +135,8 @@ class InvoiceService
             }
 
             if (! empty($data['updated_items'])) {
+                $this->assertItemsBelongToClinic($data['updated_items'], $invoice->clinic_id);
+
                 $totalCost = collect($data['updated_items'])
                     ->sum(fn (array $item) => $item['price'] * $item['quantity']);
 
@@ -206,6 +210,18 @@ class InvoiceService
             ->each(function ($invoice) {
                 $invoice->total_paid = $invoice->completedPayments->sum('amount');
             });
+    }
+
+    private function assertItemsBelongToClinic(array $items, int $clinicId): void
+    {
+        $foreignItemExists = Item::whereIn('id', collect($items)->pluck('item_id')->all())
+            ->whereNotNull('clinic_id')
+            ->where('clinic_id', '!=', $clinicId)
+            ->exists();
+
+        if ($foreignItemExists) {
+            throw new \InvalidArgumentException('Invoice item does not belong to the appointment clinic.');
+        }
     }
 
     private function generateInvoiceNumber(): string
