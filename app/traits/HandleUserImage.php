@@ -3,14 +3,14 @@
 namespace App\Traits;
 
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 
 trait HandleUserImage
 {
     public function uploadUserImage(UploadedFile $image): string
     {
-        $name = now()->format('Ymd_His') . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+        $name = now()->format('Ymd_His').'_'.uniqid().'.'.$image->guessExtension();
+
         return $image->storeAs('profile_images', $name, 'public');
     }
 
@@ -33,6 +33,6 @@ trait HandleUserImage
 
     public function getUserImageUrl(?string $path): string
     {
-        return asset('storage/' . ($path ?? $this->defaultUserImage()));
+        return asset('storage/'.($path ?? $this->defaultUserImage()));
     }
 }

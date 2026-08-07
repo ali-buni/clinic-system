@@ -17,7 +17,17 @@ class UserController extends Controller
     public function updateImage()
     {
         $data = request()->validate([
-            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'profile_image' => [
+                'required',
+                'image',
+                'mimes:jpeg,png,webp',
+                'max:2048',
+                function ($attribute, $value, $fail) {
+                    if (! @getimagesize($value->getRealPath())) {
+                        $fail('The profile image must be a valid image file.');
+                    }
+                },
+            ],
         ]);
 
         return $this->user_service->updateImage($data['profile_image']);
