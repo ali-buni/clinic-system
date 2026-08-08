@@ -20,7 +20,7 @@ class CheckResourceAccess
     public function handle(Request $request, Closure $next, ...$params)
     {
         if (! auth()->check()) {
-            return $next($request);
+            return ApiResponse::error('Unauthenticated.', 401);
         }
 
         $user = auth()->user();
@@ -39,8 +39,8 @@ class CheckResourceAccess
             'secretary_rooms' => $this->checkSecretaryRooms($user, $request, $args),
             'owns' => $this->checkOwns($user, $request, $args),
             'owner_clinic' => $this->checkOwnerClinic($user, $request, $args),
-            default => $next($request),
-        } ?? $next($request);
+            default => ApiResponse::error('Invalid resource access rule.', 500),
+        };
     }
 
     private function resolveParam(Request $request, string $name): mixed
@@ -52,7 +52,7 @@ class CheckResourceAccess
     {
         $value = $this->resolveParam($request, $paramName);
         if (is_null($value)) {
-            return null;
+            return ApiResponse::permissionDenied();
         }
 
         if ($user->hasRole('doctor')) {
@@ -60,6 +60,8 @@ class CheckResourceAccess
             if (! $doctorId || (int) $value !== $doctorId) {
                 return ApiResponse::permissionDenied();
             }
+
+            return null;
         }
 
         if ($user->hasRole('secretary')) {
@@ -75,6 +77,8 @@ class CheckResourceAccess
             if (! in_array($doctor->room_id, $assignedRoomIds)) {
                 return ApiResponse::permissionDenied();
             }
+
+            return null;
         }
 
         if ($user->hasRole('owner')) {
@@ -86,16 +90,18 @@ class CheckResourceAccess
             if (! $doctorModel || ! $doctorModel->clinic_id || (int) $doctorModel->clinic_id !== $ownedClinicId) {
                 return ApiResponse::permissionDenied();
             }
+
+            return null;
         }
 
-        return null;
+        return ApiResponse::permissionDenied();
     }
 
     private function checkPatientSelf($user, Request $request, string $paramName): ?JsonResponse
     {
         $value = $this->resolveParam($request, $paramName);
         if (is_null($value)) {
-            return null;
+            return ApiResponse::permissionDenied();
         }
 
         if ($user->hasRole('patient')) {
@@ -103,6 +109,8 @@ class CheckResourceAccess
             if (! $patientId || (int) $value !== $patientId) {
                 return ApiResponse::permissionDenied();
             }
+
+            return null;
         }
 
         if ($user->hasRole('owner')) {
@@ -117,6 +125,8 @@ class CheckResourceAccess
             if (! $patient->appointments()->where('clinic_id', $ownedClinicId)->exists()) {
                 return ApiResponse::permissionDenied();
             }
+
+            return null;
         }
 
         if ($user->hasRole('doctor')) {
@@ -131,6 +141,8 @@ class CheckResourceAccess
             if (! $patient->appointments()->where('doctor_id', $doctorId)->exists()) {
                 return ApiResponse::permissionDenied();
             }
+
+            return null;
         }
 
         if ($user->hasRole('secretary')) {
@@ -146,16 +158,18 @@ class CheckResourceAccess
             if (! $patient->appointments()->whereIn('room_id', $assignedRoomIds)->exists()) {
                 return ApiResponse::permissionDenied();
             }
+
+            return null;
         }
 
-        return null;
+        return ApiResponse::permissionDenied();
     }
 
     private function checkSecretaryRooms(User $user, Request $request, string $paramName): ?JsonResponse
     {
         $value = $this->resolveParam($request, $paramName);
         if (is_null($value)) {
-            return null;
+            return ApiResponse::permissionDenied();
         }
 
         if ($user->hasRole('owner')) {
@@ -172,6 +186,8 @@ class CheckResourceAccess
             if ($count !== count($requestedIds)) {
                 return ApiResponse::permissionDenied();
             }
+
+            return null;
         }
 
         if ($user->hasRole('secretary')) {
@@ -186,9 +202,25 @@ class CheckResourceAccess
             if (array_diff($requestedIds, $assignedIds)) {
                 return ApiResponse::permissionDenied();
             }
+
+            return null;
         }
 
-        return null;
+        if ($user->hasRole('doctor')) {
+            $doctor = $user->doctorProfile;
+            if (! $doctor || ! $doctor->room_id) {
+                return ApiResponse::permissionDenied();
+            }
+
+            $requestedIds = array_map('intval', is_array($value) ? $value : [(int) $value]);
+            if (array_diff($requestedIds, [(int) $doctor->room_id])) {
+                return ApiResponse::permissionDenied();
+            }
+
+            return null;
+        }
+
+        return ApiResponse::permissionDenied();
     }
 
     private function checkOwns(User $user, Request $request, string $args): ?JsonResponse
@@ -198,17 +230,17 @@ class CheckResourceAccess
         $paramName = $parts[1] ?? '';
 
         if (! $modelName || ! $paramName) {
-            return null;
+            return ApiResponse::error('Invalid resource access rule.', 500);
         }
 
         $value = $this->resolveParam($request, $paramName);
         if (is_null($value)) {
-            return null;
+            return ApiResponse::permissionDenied();
         }
 
         $modelClass = 'App\\Models\\'.$modelName;
         if (! class_exists($modelClass)) {
-            return null;
+            return ApiResponse::error('Unknown resource model.', 500);
         }
 
         $model = $modelClass::find((int) $value);
@@ -290,7 +322,7 @@ class CheckResourceAccess
             return null;
         }
 
-        return null;
+        return ApiResponse::permissionDenied();
     }
 
     private function resolveClinicId($model): ?int
@@ -311,7 +343,7 @@ class CheckResourceAccess
     private function checkOwnerClinic(User $user, Request $request, string $args): ?JsonResponse
     {
         if (! $user->hasRole('owner')) {
-            return null;
+            return ApiResponse::permissionDenied();
         }
 
         $ownedClinicId = $user->clinicOwner?->id;
@@ -326,7 +358,7 @@ class CheckResourceAccess
         if ($second === '') {
             $value = $this->resolveParam($request, $first);
             if (is_null($value)) {
-                return null;
+                return ApiResponse::permissionDenied();
             }
             if ((int) $value !== $ownedClinicId) {
                 return ApiResponse::permissionDenied();
@@ -339,12 +371,12 @@ class CheckResourceAccess
         $paramName = $second;
 
         if (! class_exists($modelClass)) {
-            return null;
+            return ApiResponse::error('Unknown resource model.', 500);
         }
 
         $value = $this->resolveParam($request, $paramName);
         if (is_null($value)) {
-            return null;
+            return ApiResponse::permissionDenied();
         }
 
         $model = $modelClass::find((int) $value);
