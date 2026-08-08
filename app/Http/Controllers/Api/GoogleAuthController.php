@@ -8,6 +8,7 @@ use App\Models\PatientInfo;
 use App\Models\User;
 use App\Services\ApiResponse;
 use App\Traits\HandleUserImage;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -37,19 +38,37 @@ class GoogleAuthController extends Controller
             ->first();
 
         if (! $user) {
-            $user = DB::transaction(function () use ($googleUser) {
-                $user = User::create([
-                    'fname' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
-                    'profile_image' => $this->defaultUserImage(),
-                    'password' => Hash::make(Str::random(16)),
-                ]);
-                $user->assignRole('patient');
-                PatientInfo::create(['user_id' => $user->id]);
+            if (User::where('email_hash', User::hashEmail($googleUser->getEmail()))->exists()) {
+                return ApiResponse::error('An account already exists with this email.', 422);
+            }
 
-                return $user;
-            });
+            try {
+                $user = DB::transaction(function () use ($googleUser) {
+                    try {
+                        $user = User::create([
+                            'fname' => $googleUser->getName(),
+                            'email' => $googleUser->getEmail(),
+                            'google_id' => $googleUser->getId(),
+                            'profile_image' => $this->defaultUserImage(),
+                            'password' => Hash::make(Str::random(16)),
+                        ]);
+                    } catch (QueryException $e) {
+                        if ($e->errorInfo[1] === 1062) {
+                            throw new \RuntimeException('duplicate_email');
+                        }
+                        throw $e;
+                    }
+                    $user->assignRole('patient');
+                    PatientInfo::create(['user_id' => $user->id]);
+
+                    return $user;
+                });
+            } catch (\RuntimeException $e) {
+                if ($e->getMessage() === 'duplicate_email') {
+                    return ApiResponse::error('An account already exists with this email.', 422);
+                }
+                throw $e;
+            }
 
             DownloadAndStoreImageJob::dispatch($user->id, $googleUser->getAvatar());
         } elseif (! $user->hasRole('patient')) {
