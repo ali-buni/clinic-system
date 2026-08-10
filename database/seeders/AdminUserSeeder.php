@@ -10,16 +10,17 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@clinic.com'],
-            [
-                'fname' => 'System',
-                'lname' => 'Admin',
-                'phone' => '0000000000',
-                'password' => Hash::make('password'),
-                'gender' => 'male',
-            ]
-        );
+        $admin = User::where('email_hash', User::hashEmail('admin@clinic.com'))->first()
+            ?? User::create(
+                [
+                    'email' => 'admin@clinic.com',
+                    'fname' => 'System',
+                    'lname' => 'Admin',
+                    'phone' => '0000000000',
+                    'password' => Hash::make('password'),
+                    'gender' => 'male',
+                ]
+            );
 
         $admin->assignRole('admin');
 

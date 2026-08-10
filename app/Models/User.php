@@ -76,10 +76,12 @@ class User extends Authenticatable implements CipherSweetEncrypted
         return hash_hmac('sha256', strtolower(trim($email)), config('app.key'));
     }
 
-    protected function setEmailHashAttribute(): void
+    protected function setEmailAttribute($value): void
     {
-        if ($this->email) {
-            $this->attributes['email_hash'] = static::hashEmail($this->email);
+        $this->attributes['email'] = $value;
+
+        if ($value) {
+            $this->attributes['email_hash'] = static::hashEmail($value);
         }
     }
 
