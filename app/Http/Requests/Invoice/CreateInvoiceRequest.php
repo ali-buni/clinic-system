@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Invoice;
 
 use App\Models\Appointment;
+use App\Models\Item;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CreateInvoiceRequest extends FormRequest
@@ -15,8 +16,6 @@ class CreateInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'clinic_id' => 'required|integer|exists:clinics,id',
-            'patient_id' => 'required|integer|exists:patient_infos,id',
             'appointment_id' => [
                 'required',
                 'integer',
@@ -30,7 +29,21 @@ class CreateInvoiceRequest extends FormRequest
             ],
             'description' => 'nullable|string|max:2000',
             'invoice_items' => 'required|array|min:1',
-            'invoice_items.*.item_id' => 'required|integer|exists:items,id',
+            'invoice_items.*.item_id' => [
+                'required',
+                'integer',
+                'exists:items,id',
+                function ($attribute, $value, $fail) {
+                    $appointment = Appointment::find($this->input('appointment_id'));
+                    if (! $appointment) {
+                        return;
+                    }
+                    $item = Item::find($value);
+                    if ($item && $item->clinic_id !== null && (int) $item->clinic_id !== (int) $appointment->clinic_id) {
+                        $fail('The item does not belong to the appointment clinic.');
+                    }
+                },
+            ],
             'invoice_items.*.quantity' => 'required|integer|min:1',
             'invoice_items.*.price' => 'required|numeric|min:0',
         ];
@@ -39,10 +52,6 @@ class CreateInvoiceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'clinic_id.required' => 'معرف العيادة مطلوب.',
-            'clinic_id.exists' => 'العيادة غير موجودة.',
-            'patient_id.required' => 'معرف المريض مطلوب.',
-            'patient_id.exists' => 'المريض غير موجود.',
             'appointment_id.required' => 'معرف الموعد مطلوب.',
             'invoice_items.required' => 'يجب إضافة عنصر واحد على الأقل للفاتورة.',
             'invoice_items.*.item_id.required' => 'معرف العنصر مطلوب.',

@@ -2,8 +2,9 @@
 
 namespace App\Http\Requests\Secretary;
 
+use App\Models\User;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
 
 class NewSecretaryRequest extends FormRequest
 {
@@ -18,14 +19,23 @@ class NewSecretaryRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'fname' => 'required|string|min:2|max:50',
             'lname' => 'required|string|min:2|max:50',
-            'email' => 'required|email|max:255|unique:users,email',
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    if (User::where('email_hash', User::hashEmail($value))->exists()) {
+                        $fail('This email is already registered.');
+                    }
+                },
+            ],
 
             'dob' => 'required|date|before:today',
             'gender' => 'required|in:male,female,unknown',

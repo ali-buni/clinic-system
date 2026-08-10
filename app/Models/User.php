@@ -18,7 +18,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements CipherSweetEncrypted
 {
-    use HasFactory, Notifiable, HasRoles, HasApiTokens, UsesCipherSweet;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable, UsesCipherSweet;
 
     /**
      * The attributes that are mass assignable.
@@ -71,6 +71,17 @@ class User extends Authenticatable implements CipherSweetEncrypted
             ->addBlindIndex('email', new BlindIndex('email_index'));  // Enables searching
     }
 
+    public static function hashEmail(string $email): string
+    {
+        return hash_hmac('sha256', strtolower(trim($email)), config('app.key'));
+    }
+
+    protected function setEmailHashAttribute(): void
+    {
+        if ($this->email) {
+            $this->attributes['email_hash'] = static::hashEmail($this->email);
+        }
+    }
 
     public function clinicOwner(): HasOne
     {
@@ -110,6 +121,6 @@ class User extends Authenticatable implements CipherSweetEncrypted
      */
     public function scopeByEmail(Builder $query, string $email): Builder
     {
-        return $query->whereBlind('email', 'email_index', $email);
+        return $query->where('email_hash', static::hashEmail($email));
     }
 }

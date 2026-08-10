@@ -61,14 +61,23 @@ class StripeGateway implements PaymentGatewayInterface
         ];
     }
 
-    public function confirmPayment(Payment $payment): void
+    public function confirmPayment(Payment $payment): bool
     {
         if (! $payment->stripe_session_id) {
-            return;
+            return false;
         }
 
         try {
             $session = Session::retrieve($payment->stripe_session_id);
+
+            if (! $session->payment_intent) {
+                Log::channel('structured')->warning('Stripe session has no payment intent for payment', [
+                    'payment_id' => $payment->id,
+                    'session_id' => $payment->stripe_session_id,
+                ]);
+
+                return false;
+            }
 
             $payment->update([
                 'stripe_payment_intent_id' => $session->payment_intent,
@@ -79,7 +88,11 @@ class StripeGateway implements PaymentGatewayInterface
                 'session_id' => $payment->stripe_session_id,
                 'error' => $e->getMessage(),
             ]);
+
+            return false;
         }
+
+        return true;
     }
 
     public function cancelPayment(Payment $payment): void
@@ -114,17 +127,28 @@ class StripeGateway implements PaymentGatewayInterface
         }
     }
 
-    public function refundPayment(Payment $payment, float $amount): array
+    public static function refundIdempotencyKey(int $paymentId, float $amount): string
+    {
+        return sprintf('refund-%d-%d', $paymentId, (int) round($amount * 100));
+    }
+
+    public function refundPayment(Payment $payment, float $amount, ?string $idempotencyKey = null): array
     {
         if (! $payment->stripe_payment_intent_id || $amount <= 0) {
             return ['stripe_refund_id' => null];
         }
 
         try {
-            $refund = $this->client->refunds->create([
+            $params = [
                 'payment_intent' => $payment->stripe_payment_intent_id,
                 'amount' => (int) round($amount * 100),
-            ]);
+            ];
+
+            if ($idempotencyKey !== null) {
+                $params['idempotency_key'] = $idempotencyKey;
+            }
+
+            $refund = $this->client->refunds->create($params);
 
             return ['stripe_refund_id' => $refund->id];
         } catch (ApiErrorException $e) {

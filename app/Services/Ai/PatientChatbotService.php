@@ -7,7 +7,6 @@ use App\Jobs\LogActivityJob;
 use App\Models\ChatMessage;
 use App\Models\PatientInfo;
 use App\Services\Ai\Contracts\AiProviderInterface;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,8 +18,8 @@ class PatientChatbotService
     public function chat(int $patientInfoId, string $message, ?string $sessionId): array
     {
         $patient = PatientInfo::with([
-            'appointments' => fn($q) => $q->latest()->limit(5),
-            'records' => fn($q) => $q->latest()->limit(5)->with(['diseases', 'prescriptions.items.medicine']),
+            'appointments' => fn ($q) => $q->latest()->limit(5),
+            'records' => fn ($q) => $q->latest()->limit(5)->with(['diseases', 'prescriptions.items.medicine']),
             'user',
         ])->findOrFail($patientInfoId);
 
@@ -43,7 +42,7 @@ class PatientChatbotService
             $messages[] = ['role' => 'assistant', 'content' => $msg->response];
         }
 
-        $messages[] = ['role' => 'user', 'content' => "Patient context: $context\n\nPatient query: $message"];
+        $messages[] = ['role' => 'user', 'content' => "Patient context: $context\n\nPatient query: <user_message>\n$message\n</user_message>"];
 
         $response = $this->ai->chat(
             messages: $messages,
@@ -57,7 +56,7 @@ class PatientChatbotService
             ]
         );
 
-        if (!$response) {
+        if (! $response) {
             Log::error('PatientChatbotService: AI provider returned null');
             $responseText = 'I apologize, but I am unable to process your request at this time. Please contact the clinic directly.';
         } else {
@@ -104,7 +103,7 @@ class PatientChatbotService
             ->orderBy('created_at', 'desc')
             ->get()
             ->groupBy('session_id')
-            ->map(fn($group) => [
+            ->map(fn ($group) => [
                 'session_id' => $group->first()->session_id,
                 'title' => $group->first()->message,
                 'last_message_at' => $group->last()->created_at,
@@ -156,25 +155,25 @@ class PatientChatbotService
     private function buildContext(PatientInfo $patient): string
     {
         return json_encode([
-            'patient_name' => ($patient->user?->fname . ' ' . $patient->user?->lname) ?? 'Valued Patient',
-            'upcoming_appointments' => $patient->appointments->map(fn($a) => [
+            'patient_name' => ($patient->user?->fname.' '.$patient->user?->lname) ?? 'Valued Patient',
+            'upcoming_appointments' => $patient->appointments->map(fn ($a) => [
                 'date' => $a->start_time?->format('Y-m-d'),
                 'time' => $a->start_time?->format('H:i'),
                 'status' => $a->status,
-                'doctor' => ($a->doctor?->user?->fname . ' ' . $a->doctor?->user?->lname) ?? 'N/A',
+                'doctor' => ($a->doctor?->user?->fname.' '.$a->doctor?->user?->lname) ?? 'N/A',
             ]),
-            'recent_records' => $patient->records->map(fn($r) => [
+            'recent_records' => $patient->records->map(fn ($r) => [
                 'diagnosis' => $r->diagnosis_summary,
                 'notes' => $r->notes,
-                'diseases' => $r->diseases->map(fn($d) => [
+                'diseases' => $r->diseases->map(fn ($d) => [
                     'en' => $d->en_name,
                     'ar' => $d->ar_name,
                 ]),
-                'prescriptions' => $r->prescriptions->map(fn($p) => [
+                'prescriptions' => $r->prescriptions->map(fn ($p) => [
                     'issued_at' => $p->issued_at?->format('Y-m-d'),
                     'valid_until' => $p->valid_until?->format('Y-m-d'),
                     'notes' => $p->notes,
-                    'items' => $p->items->map(fn($i) => [
+                    'items' => $p->items->map(fn ($i) => [
                         'medicine' => $i->medicine?->en_name,
                         'medicine_ar' => $i->medicine?->ar_name,
                         'dosage' => $i->dosage_instruction,

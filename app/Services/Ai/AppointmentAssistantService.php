@@ -5,8 +5,10 @@ namespace App\Services\Ai;
 use App\Constants\Prompt;
 use App\Models\Specialty;
 use App\Services\Ai\Contracts\AiProviderInterface;
+use App\Support\TextSanitizer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class AppointmentAssistantService
 {
@@ -18,8 +20,20 @@ class AppointmentAssistantService
     public function processRequest(array $data): array
     {
         $query = $data['query'] ?? '';
-        $patientId = $data['patient_id'] ?? auth()->user()?->patientProfile?->id;
-        $clinicId = $data['clinic_id'] ?? auth()->user()?->clinic_id;
+        $user = auth()->user();
+        $ownPatientId = $user?->patientProfile?->id;
+        $requestedPatientId = $data['patient_id'] ?? null;
+
+        if ($requestedPatientId !== null && $ownPatientId !== null && (int) $requestedPatientId !== (int) $ownPatientId) {
+            Log::channel('structured')->warning('AppointmentAssistant: patient_id mismatch rejected', [
+                'requested_patient_id' => $requestedPatientId,
+                'authenticated_patient_id' => $ownPatientId,
+                'user_id' => $user?->id,
+            ]);
+        }
+
+        $patientId = $ownPatientId;
+        $clinicId = $data['clinic_id'] ?? $user?->clinic_id;
 
         Log::channel('structured')->info('AppointmentAssistant: incoming request', [
             'query' => $query,
@@ -28,9 +42,15 @@ class AppointmentAssistantService
             'user_id' => auth()->id(),
         ]);
 
+        $confirmToken = $data['confirm_token'] ?? null;
+
+        if ($confirmToken) {
+            return $this->handleConfirmBooking(['confirm_token' => $confirmToken], $patientId);
+        }
+
         $parsed = $this->parseWithAi($query);
 
-        if (!$parsed || empty($parsed['action'])) {
+        if (! $parsed || empty($parsed['action'])) {
             Log::channel('structured')->warning('AppointmentAssistant: AI returned no action', [
                 'query' => $query,
                 'parsed' => $parsed,
@@ -72,14 +92,14 @@ class AppointmentAssistantService
             return Specialty::select('id', 'en_name', 'ar_name')->get();
         });
 
-        $specialtyList = $allSpecialties->map(fn($s) => [
+        $specialtyList = $allSpecialties->map(fn ($s) => [
             'id' => $s->id,
             'en_name' => $s->en_name,
             'ar_name' => $s->ar_name,
         ])->values()->toJson(JSON_PRETTY_PRINT);
 
         $locations = $this->booking->getAllLocations();
-        $locationList = collect($locations)->map(fn($l) => "{$l['name']} - {$l['city']} ({$l['governorate']}) ({$l['country']})")->implode("\n");
+        $locationList = collect($locations)->map(fn ($l) => "{$l['name']} - {$l['city']} ({$l['governorate']}) ({$l['country']})")->implode("\n");
 
         $isAr = $this->isArabic($query);
         $systemPrompt = $isAr
@@ -89,7 +109,7 @@ class AppointmentAssistantService
         $parsed = $this->ai->chatJson(
             messages: [
                 ['role' => 'system', 'content' => $systemPrompt],
-                ['role' => 'user', 'content' => $query],
+                ['role' => 'user', 'content' => "<user_message>\n{$query}\n</user_message>"],
             ],
             options: [
                 'options' => [
@@ -104,7 +124,7 @@ class AppointmentAssistantService
     private function executeAction(array $parsed, ?int $patientId, ?int $clinicId): array
     {
         $action = $parsed['action'];
-        $isAr = !empty($parsed['language']) && $parsed['language'] === 'ar';
+        $isAr = ! empty($parsed['language']) && $parsed['language'] === 'ar';
 
         Log::channel('structured')->info('AppointmentAssistant: executing action', [
             'action' => $action,
@@ -124,6 +144,9 @@ class AppointmentAssistantService
             case 'book_appointment':
                 return $this->handleBookAppointment($parsed, $patientId, $clinicId);
 
+            case 'confirm_booking':
+                return $this->handleConfirmBooking($parsed, $patientId);
+
             case 'ask_clarification':
                 return [
                     'result' => ['action' => 'ask_clarification', 'data' => []],
@@ -131,7 +154,7 @@ class AppointmentAssistantService
                         ['action' => 'describe_symptoms', 'description' => $isAr ? 'صف أعراضك' : 'Describe your symptoms'],
                         ['action' => 'select_specialty', 'description' => $isAr ? 'اختر تخصصاً طبياً' : 'Choose a medical specialty'],
                     ],
-                    'message' => $parsed['message'] ?? ($isAr ? 'كيف يمكنني مساعدتك؟' : 'How can I help you?'),
+                    'message' => isset($parsed['message']) ? TextSanitizer::html($parsed['message']) : ($isAr ? 'كيف يمكنني مساعدتك؟' : 'How can I help you?'),
                 ];
 
             default:
@@ -162,7 +185,7 @@ class AppointmentAssistantService
         foreach ($specialties as $s) {
             $nextSteps[] = [
                 'action' => 'select_specialty',
-                'description' => $isAr ? ($s['ar_name'] ?? $s['en_name'] ?? 'Unknown') : ($s['en_name'] ?? 'Unknown'),
+                'description' => $isAr ? TextSanitizer::html($s['ar_name'] ?? $s['en_name'] ?? 'Unknown') : TextSanitizer::html($s['en_name'] ?? 'Unknown'),
                 'params' => ['specialty_id' => $s['id']],
             ];
         }
@@ -189,7 +212,7 @@ class AppointmentAssistantService
         $specialtyId = $parsed['specialty_id'] ?? null;
         $location = $parsed['location'] ?? null;
 
-        if (!$specialtyId) {
+        if (! $specialtyId) {
             return [
                 'result' => ['action' => 'ask_clarification', 'data' => []],
                 'next_steps' => [],
@@ -201,7 +224,7 @@ class AppointmentAssistantService
         $result = $this->booking->getDoctorsBySpecialty((int) $specialtyId, $clinicId, $date, $location);
 
         $nextSteps = [];
-        if (!empty($result['doctors'])) {
+        if (! empty($result['doctors'])) {
             foreach ($result['doctors'] as $doctor) {
                 $nextSteps[] = [
                     'action' => 'select_doctor',
@@ -218,7 +241,7 @@ class AppointmentAssistantService
             ],
             'next_steps' => $nextSteps,
             'message' => empty($result['doctors'])
-                ? ($result['message'] ?? 'No doctors found.')
+                ? (isset($result['message']) ? TextSanitizer::html($result['message']) : 'No doctors found.')
                 : 'Available doctors:',
         ];
     }
@@ -228,7 +251,7 @@ class AppointmentAssistantService
         $doctorId = $parsed['doctor_id'] ?? null;
         $doctorName = $parsed['doctor_name'] ?? null;
 
-        if (!$doctorId && $doctorName) {
+        if (! $doctorId && $doctorName) {
             $doctor = $this->booking->findDoctorByName($doctorName);
             if ($doctor) {
                 $doctorId = $doctor->id;
@@ -236,12 +259,12 @@ class AppointmentAssistantService
                 return [
                     'result' => ['action' => 'ask_clarification', 'data' => []],
                     'next_steps' => [],
-                    'message' => "Doctor '{$doctorName}' not found. Please check the name.",
+                    'message' => "Doctor '".TextSanitizer::html($doctorName)."' not found. Please check the name.",
                 ];
             }
         }
 
-        if (!$doctorId) {
+        if (! $doctorId) {
             return [
                 'result' => ['action' => 'ask_clarification', 'data' => []],
                 'next_steps' => [],
@@ -253,7 +276,7 @@ class AppointmentAssistantService
         $date = $parsed['date'] ?? null;
         $time = $parsed['time'] ?? null;
 
-        if ($range === 'week' || (!$date && !$time)) {
+        if ($range === 'week' || (! $date && ! $time)) {
             $result = $this->booking->getDoctorSlotsForWeek((int) $doctorId);
         } elseif ($date) {
             $result = $this->booking->getDoctorSlots((int) $doctorId, $date);
@@ -262,7 +285,7 @@ class AppointmentAssistantService
         }
 
         $nextSteps = [];
-        if (!empty($result['available_slots'])) {
+        if (! empty($result['available_slots'])) {
             if (isset($result['available_slots'][0])) {
                 foreach ($result['available_slots'] as $slot) {
                     $nextSteps[] = [
@@ -276,7 +299,7 @@ class AppointmentAssistantService
                     foreach ($dayData['slots'] as $slot) {
                         $nextSteps[] = [
                             'action' => 'select_time',
-                            "description" => "{$dateKey} ({$dayData['day_name']}) {$slot['start']} - {$slot['end']}",
+                            'description' => "{$dateKey} ({$dayData['day_name']}) {$slot['start']} - {$slot['end']}",
                             'params' => ['date' => $dateKey, 'start_time' => $slot['start']],
                         ];
                     }
@@ -303,7 +326,7 @@ class AppointmentAssistantService
         $date = $parsed['date'] ?? null;
         $time = $parsed['time'] ?? $parsed['start_time'] ?? null;
 
-        if (!$doctorId && $doctorName) {
+        if (! $doctorId && $doctorName) {
             $doctor = $this->booking->findDoctorByName($doctorName);
             if ($doctor) {
                 $doctorId = $doctor->id;
@@ -311,25 +334,31 @@ class AppointmentAssistantService
                 return [
                     'result' => ['action' => 'ask_clarification', 'data' => []],
                     'next_steps' => [],
-                    'message' => "Doctor '{$doctorName}' not found.",
+                    'message' => TextSanitizer::html("Doctor '{$doctorName}' not found."),
                 ];
             }
         }
 
-        if (!$doctorId || !$date || !$time) {
+        if (! $doctorId || ! $date || ! $time) {
             $missing = [];
-            if (!$doctorId) $missing[] = 'doctor';
-            if (!$date) $missing[] = 'date';
-            if (!$time) $missing[] = 'time';
+            if (! $doctorId) {
+                $missing[] = 'doctor';
+            }
+            if (! $date) {
+                $missing[] = 'date';
+            }
+            if (! $time) {
+                $missing[] = 'time';
+            }
 
             return [
                 'result' => ['action' => 'ask_clarification', 'data' => []],
                 'next_steps' => [],
-                'message' => 'Missing information to book: ' . implode(', ', $missing) . '.',
+                'message' => 'Missing information to book: '.implode(', ', $missing).'.',
             ];
         }
 
-        if (!$patientId) {
+        if (! $patientId) {
             return [
                 'result' => ['action' => 'ask_clarification', 'data' => []],
                 'next_steps' => [],
@@ -337,21 +366,91 @@ class AppointmentAssistantService
             ];
         }
 
-        $result = $this->booking->bookAppointment(
-            doctorId: (int) $doctorId,
-            date: $date,
-            time: $time,
-            patientId: (int) $patientId,
-            clinicId: $clinicId,
-            typeId: isset($parsed['appointment_type_id']) ? (int) $parsed['appointment_type_id'] : null,
-            reason: $parsed['visit_reason'] ?? null,
-        );
+        $token = Str::random(32);
 
-        if (!empty($result['error'])) {
-            Log::channel('structured')->warning('AppointmentAssistant: booking failed', [
-                'doctor_id' => $doctorId,
+        Cache::put(
+            "appointment:intent:{$token}",
+            [
+                'patient_id' => (int) $patientId,
+                'clinic_id' => $clinicId,
+                'doctor_id' => (int) $doctorId,
                 'date' => $date,
                 'time' => $time,
+                'type_id' => isset($parsed['appointment_type_id']) ? (int) $parsed['appointment_type_id'] : null,
+                'reason' => $parsed['visit_reason'] ?? null,
+            ],
+            now()->addMinutes(10),
+        );
+
+        $doctor = $this->booking->findDoctorById((int) $doctorId);
+
+        Log::channel('structured')->info('AppointmentAssistant: booking intent created (awaiting confirmation)', [
+            'doctor_id' => $doctorId,
+            'date' => $date,
+            'time' => $time,
+            'patient_id' => $patientId,
+        ]);
+
+        return [
+            'result' => [
+                'action' => 'confirm_booking',
+                'data' => [
+                    'token' => $token,
+                    'summary' => [
+                        'doctor_name' => $doctor ? $doctor->user?->fname.' '.$doctor->user?->lname : null,
+                        'date' => $date,
+                        'time' => $time,
+                        'fee' => $doctor?->consultation_fee,
+                    ],
+                ],
+            ],
+            'next_steps' => [
+                ['action' => 'confirm_booking', 'description' => 'Confirm the appointment booking'],
+                ['action' => 'new_booking', 'description' => 'Change the booking details'],
+            ],
+            'message' => 'Please confirm your appointment booking before it is finalized.',
+        ];
+    }
+
+    private function handleConfirmBooking(array $parsed, ?int $patientId): array
+    {
+        $token = $parsed['confirm_token'] ?? null;
+
+        if (! $token || ! is_string($token)) {
+            return [
+                'result' => ['action' => 'ask_clarification', 'data' => []],
+                'next_steps' => [],
+                'message' => 'Missing confirmation token.',
+            ];
+        }
+
+        $intent = Cache::get("appointment:intent:{$token}");
+
+        if (! $intent || (int) ($intent['patient_id'] ?? 0) !== (int) $patientId) {
+            return [
+                'result' => ['action' => 'ask_clarification', 'data' => []],
+                'next_steps' => [],
+                'message' => 'Confirmation token is invalid or has expired. Please start a new booking.',
+            ];
+        }
+
+        $result = $this->booking->bookAppointment(
+            doctorId: (int) $intent['doctor_id'],
+            date: $intent['date'],
+            time: $intent['time'],
+            patientId: (int) $patientId,
+            clinicId: $intent['clinic_id'] ?? null,
+            typeId: $intent['type_id'] ?? null,
+            reason: $intent['reason'] ?? null,
+        );
+
+        Cache::forget("appointment:intent:{$token}");
+
+        if (! empty($result['error'])) {
+            Log::channel('structured')->warning('AppointmentAssistant: booking confirmation failed', [
+                'doctor_id' => $intent['doctor_id'],
+                'date' => $intent['date'],
+                'time' => $intent['time'],
                 'patient_id' => $patientId,
                 'error' => $result['error'],
             ]);
@@ -361,14 +460,14 @@ class AppointmentAssistantService
                 'next_steps' => [
                     ['action' => 'retry', 'description' => 'Try booking again'],
                 ],
-                'message' => $result['error'],
+                'message' => TextSanitizer::html($result['error']),
             ];
         }
 
-        Log::channel('structured')->info('AppointmentAssistant: booking successful', [
-            'doctor_id' => $doctorId,
-            'date' => $date,
-            'time' => $time,
+        Log::channel('structured')->info('AppointmentAssistant: booking confirmed', [
+            'doctor_id' => $intent['doctor_id'],
+            'date' => $intent['date'],
+            'time' => $intent['time'],
             'patient_id' => $patientId,
             'appointment_id' => $result['appointment']['id'] ?? null,
         ]);

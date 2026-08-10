@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Patient;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterPatientRequest extends FormRequest
@@ -16,7 +17,16 @@ class RegisterPatientRequest extends FormRequest
         return [
             'fname' => 'required|string|max:255',
             'lname' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    if (User::where('email_hash', User::hashEmail($value))->exists()) {
+                        $fail('This email is already registered.');
+                    }
+                },
+            ],
             'password' => 'required|string|min:8|confirmed',
             'dob' => 'nullable|date|before:today|after:1900-01-01',
             'gender' => 'nullable|in:male,female,other,unknown',
@@ -28,7 +38,7 @@ class RegisterPatientRequest extends FormRequest
             'chronic_conditions' => 'nullable|string|max:1000',
             'career' => 'nullable|string|max:255',
             'blood_type' => 'nullable|in:A+,A-,B+,B-,AB+,AB-,O+,O-',
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,webp|max:2048',
         ];
     }
 

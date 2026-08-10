@@ -7,7 +7,6 @@ use App\Enums\PaymentMethodType;
 use App\Exceptions\PaymentExceedsBalanceException;
 use App\Jobs\ProcessStripeRefundJob;
 use App\Jobs\SyncDoctorWalletJob;
-use App\Models\Doctor;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Payment_method;
@@ -45,6 +44,11 @@ class PaymentService
             if ($method->is_active !== true) {
                 throw new ModelNotFoundException('the payment method not found');
             }
+
+            if ($method->type === PaymentMethodType::Cash && ! auth()->user()?->hasAnyRole(['secretary', 'owner'])) {
+                throw new \RuntimeException('Cash payments can only be recorded by staff.');
+            }
+
             $payment = $invoice->payments()->create([
                 'payment_method_id' => $paymentMethodId,
                 'amount' => $amount,
@@ -70,7 +74,11 @@ class PaymentService
 
             $method = Payment_method::findOrFail($payment->payment_method_id);
             $gateway = $this->resolveGateway($method);
-            $gateway->confirmPayment($payment);
+            $confirmed = $gateway->confirmPayment($payment);
+
+            if (! $confirmed) {
+                throw new \RuntimeException('payment confirmation failed');
+            }
 
             $payment->update(['paid_at' => now()]);
 
@@ -97,9 +105,15 @@ class PaymentService
                 throw new \RuntimeException("refund amount exceeds refundable balance of {$refundable}");
             }
 
+            $idempotencyKey = StripeGateway::refundIdempotencyKey($payment->id, $amount);
+
+            $existing = Refund::where('idempotency_key', $idempotencyKey)->first();
+            if ($existing) {
+                return $existing;
+            }
+
             $method = Payment_method::findOrFail($payment->payment_method_id);
             $gateway = $this->resolveGateway($method);
-            $result = $gateway->refundPayment($payment, $amount);
 
             $refund = Refund::create([
                 'payment_id' => $payment->id,
@@ -107,8 +121,15 @@ class PaymentService
                 'amount' => $amount,
                 'reason' => $reason,
                 'refunded_by' => $refundedBy,
-                'stripe_refund_id' => $result['stripe_refund_id'] ?? null,
+                'stripe_refund_id' => null,
+                'idempotency_key' => $idempotencyKey,
             ]);
+
+            $result = $gateway->refundPayment($payment, $amount, $idempotencyKey);
+
+            if (($result['stripe_refund_id'] ?? null) !== null) {
+                $refund->update(['stripe_refund_id' => $result['stripe_refund_id']]);
+            }
 
             $payment->refunded_amount = (float) $payment->refunded_amount + $amount;
             $payment->save();
@@ -130,11 +151,11 @@ class PaymentService
         $invoice->loadMissing(['completedPayments.paymentMethod']);
 
         $cashPaid = $invoice->completedPayments
-            ->filter(fn($p) => $p->paymentMethod->type === PaymentMethodType::Cash)
+            ->filter(fn ($p) => $p->paymentMethod->type === PaymentMethodType::Cash)
             ->sum('amount');
 
         $stripePayments = $invoice->completedPayments
-            ->filter(fn($p) => in_array($p->paymentMethod->type, [PaymentMethodType::Stripe, PaymentMethodType::Card]) && $p->stripe_payment_intent_id)
+            ->filter(fn ($p) => in_array($p->paymentMethod->type, [PaymentMethodType::Stripe, PaymentMethodType::Card]) && $p->stripe_payment_intent_id)
             ->sortByDesc('paid_at');
 
         $stripePaid = $stripePayments->sum('amount');
@@ -158,7 +179,6 @@ class PaymentService
             }
 
             ProcessStripeRefundJob::dispatchSync($payment->id, $refundable, 'Auto-refund: invoice total decreased');
-
 
             $remainingRefund -= $refundable;
         }
