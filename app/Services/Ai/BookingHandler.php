@@ -18,7 +18,7 @@ class BookingHandler
     public function getSpecialtyWithDoctors(int $specialtyId, ?int $clinicId, string $date): array
     {
         $specialty = Specialty::find($specialtyId);
-        if (!$specialty) {
+        if (! $specialty) {
             return ['error' => 'Specialty not found', 'next_step' => 'error'];
         }
 
@@ -33,7 +33,11 @@ class BookingHandler
 
     public function getDoctorsBySpecialty(int $specialtyId, ?int $clinicId, string $date, ?string $location = null): array
     {
-        $query = Doctor::whereHas('specialties', fn($q) => $q->where('specialty_id', $specialtyId))
+        if (! $this->isValidDate($date)) {
+            return ['doctors' => [], 'message' => 'Invalid date format.'];
+        }
+
+        $query = Doctor::whereHas('specialties', fn ($q) => $q->where('specialty_id', $specialtyId))
             ->with(['user', 'clinic.location']);
 
         if ($clinicId) {
@@ -57,7 +61,7 @@ class BookingHandler
         $doctors = $query->get();
 
         if ($doctors->isEmpty()) {
-            return ['doctors' => [], 'message' => 'No doctors found for this specialty' . ($location ? " in {$location}" : '')];
+            return ['doctors' => [], 'message' => 'No doctors found for this specialty'.($location ? " in {$location}" : '')];
         }
 
         $result = [];
@@ -65,7 +69,7 @@ class BookingHandler
             $slots = [];
             try {
                 $slots = $this->appointmentService->getAvailableSlots($doctor->id, $date);
-                $slots = array_map(fn($s) => [
+                $slots = array_map(fn ($s) => [
                     'start' => date('H:i', strtotime($s['start'])),
                     'end' => date('H:i', strtotime($s['end'])),
                 ], $slots);
@@ -75,7 +79,7 @@ class BookingHandler
 
             $result[] = [
                 'id' => $doctor->id,
-                'name' => $doctor->user?->fname . ' ' . $doctor->user?->lname ?? 'Unknown',
+                'name' => $doctor->user?->fname.' '.$doctor->user?->lname ?? 'Unknown',
                 'bio' => $doctor->bio,
                 'fee' => $doctor->consultation_fee,
                 'clinic' => $doctor->clinic ? [
@@ -93,14 +97,18 @@ class BookingHandler
     public function getDoctorSlots(int $doctorId, string $date): array
     {
         $doctor = Doctor::with('user')->find($doctorId);
-        if (!$doctor) {
+        if (! $doctor) {
             return ['error' => 'Doctor not found', 'next_step' => 'error'];
+        }
+
+        if (! $this->isValidDate($date)) {
+            return ['error' => 'Invalid date format.', 'next_step' => 'error'];
         }
 
         $slots = [];
         try {
             $rawSlots = $this->appointmentService->getAvailableSlots($doctorId, $date);
-            $slots = array_map(fn($s) => [
+            $slots = array_map(fn ($s) => [
                 'start' => date('H:i', strtotime($s['start'])),
                 'end' => date('H:i', strtotime($s['end'])),
             ], $rawSlots);
@@ -111,7 +119,7 @@ class BookingHandler
         return [
             'doctor' => [
                 'id' => $doctor->id,
-                'name' => $doctor->user?->fname . ' ' . $doctor->user?->lname ?? 'Unknown',
+                'name' => $doctor->user?->fname.' '.$doctor->user?->lname ?? 'Unknown',
             ],
             'date' => $date,
             'available_slots' => $slots,
@@ -122,7 +130,7 @@ class BookingHandler
     public function getDoctorSlotsForWeek(int $doctorId): array
     {
         $doctor = Doctor::with('user')->find($doctorId);
-        if (!$doctor) {
+        if (! $doctor) {
             return ['error' => 'Doctor not found', 'next_step' => 'error'];
         }
 
@@ -135,12 +143,12 @@ class BookingHandler
 
             try {
                 $rawSlots = $this->appointmentService->getAvailableSlots($doctorId, $date);
-                $slots = array_map(fn($s) => [
+                $slots = array_map(fn ($s) => [
                     'start' => date('H:i', strtotime($s['start'])),
                     'end' => date('H:i', strtotime($s['end'])),
                 ], $rawSlots);
 
-                if (!empty($slots)) {
+                if (! empty($slots)) {
                     $weeklySlots[$date] = [
                         'day_name' => $dayName,
                         'slots' => $slots,
@@ -154,17 +162,21 @@ class BookingHandler
         return [
             'doctor' => [
                 'id' => $doctor->id,
-                'name' => $doctor->user?->fname . ' ' . $doctor->user?->lname ?? 'Unknown',
+                'name' => $doctor->user?->fname.' '.$doctor->user?->lname ?? 'Unknown',
             ],
             'available_slots' => $weeklySlots,
             'next_step' => 'select_time',
         ];
     }
 
+    public function findDoctorById(int $doctorId): ?Doctor
+    {
+        return Doctor::with('user')->find($doctorId);
+    }
+
     public function findDoctorByName(string $doctorName): ?Doctor
     {
         $words = array_filter(explode(' ', trim($doctorName)));
-
         if (empty($words)) {
             return null;
         }
@@ -199,7 +211,7 @@ class BookingHandler
         return Cache::remember('locations:all', 3600, function () {
             return Location::select('id', 'name', 'city', 'governorate', 'country')
                 ->get()
-                ->map(fn($l) => [
+                ->map(fn ($l) => [
                     'id' => $l->id,
                     'name' => $l->name,
                     'city' => $l->city,
@@ -220,12 +232,18 @@ class BookingHandler
         ?string $reason = null,
     ): array {
         $doctor = Doctor::with('user')->find($doctorId);
-        if (!$doctor) {
+        if (! $doctor) {
             return ['error' => 'Doctor not found', 'next_step' => 'error'];
         }
 
         $typeId = $typeId ?? 1;
         $appointmentType = Appointment_type::find($typeId);
+
+        $validationError = $this->validateSlot($doctorId, $date, $time, $clinicId, $typeId);
+        if ($validationError) {
+            return $validationError;
+        }
+
         $slotMultiplier = $appointmentType?->types ?? 1;
         $slotMinutes = $doctor->appointment_duration ?? 30;
         $totalMinutes = $slotMultiplier * $slotMinutes;
@@ -257,7 +275,7 @@ class BookingHandler
             return [
                 'appointment' => [
                     'id' => $appointment->id,
-                    'doctor_name' => $doctor->user?->fname . ' ' . $doctor->user?->lname ?? 'Unknown',
+                    'doctor_name' => $doctor->user?->fname.' '.$doctor->user?->lname ?? 'Unknown',
                     'date' => $date,
                     'start_time' => $startTime,
                     'end_time' => $endTime,
@@ -271,7 +289,83 @@ class BookingHandler
                 'patient_id' => $patientId,
                 'error' => $e->getMessage(),
             ]);
+
             return ['error' => $e->getMessage(), 'next_step' => 'retry'];
         }
+    }
+
+    public function validateSlot(int $doctorId, string $date, string $time, ?int $clinicId = null, ?int $typeId = null): ?array
+    {
+        $doctor = Doctor::with('user')->find($doctorId);
+        if (! $doctor) {
+            return ['error' => 'Doctor not found', 'next_step' => 'error'];
+        }
+
+        if ($clinicId && (int) $doctor->clinic_id !== (int) $clinicId) {
+            return ['error' => 'The selected doctor does not belong to your clinic.', 'next_step' => 'error'];
+        }
+
+        if (! $this->isValidDate($date)) {
+            return ['error' => 'Invalid or past date provided.', 'next_step' => 'error'];
+        }
+
+        if (! $this->isValidTime($time)) {
+            return ['error' => 'Invalid time provided.', 'next_step' => 'error'];
+        }
+
+        if ($typeId !== null && ! Appointment_type::whereKey($typeId)->exists()) {
+            return ['error' => 'Invalid appointment type.', 'next_step' => 'error'];
+        }
+
+        $available = $this->availableStartTimes($doctorId, $date);
+
+        if ($available === null) {
+            return ['error' => 'Unable to verify slot availability. Please try again.', 'next_step' => 'retry'];
+        }
+
+        if (! in_array($time, $available, true)) {
+            return ['error' => 'The requested time is not available for this doctor.', 'next_step' => 'error'];
+        }
+
+        return null;
+    }
+
+    private function availableStartTimes(int $doctorId, string $date): ?array
+    {
+        try {
+            $slots = $this->appointmentService->getAvailableSlots($doctorId, $date);
+        } catch (\Throwable $e) {
+            Log::warning("getAvailableSlots failed for doctor {$doctorId} on {$date}", ['error' => $e->getMessage()]);
+
+            return null;
+        }
+
+        return array_map(fn ($s) => date('H:i', strtotime($s['start'])), $slots);
+    }
+
+    private function isValidDate(string $date): bool
+    {
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return false;
+        }
+
+        $parsed = \DateTime::createFromFormat('Y-m-d', $date);
+        $errors = \DateTime::getLastErrors();
+        if (! $parsed || ($errors['warning_count'] ?? 0) > 0 || ($errors['error_count'] ?? 0) > 0) {
+            return false;
+        }
+
+        return $date >= now()->toDateString();
+    }
+
+    private function isValidTime(string $time): bool
+    {
+        if (! preg_match('/^\d{1,2}:\d{2}(:\d{2})?$/', $time)) {
+            return false;
+        }
+
+        $parsed = \DateTime::createFromFormat('H:i', substr($time, 0, 5));
+
+        return $parsed !== false && \DateTime::getLastErrors() === ['warning_count' => 0, 'error_count' => 0];
     }
 }

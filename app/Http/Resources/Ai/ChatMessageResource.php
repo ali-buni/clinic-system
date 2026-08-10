@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Ai;
 
+use App\Support\TextSanitizer;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -11,8 +12,8 @@ class ChatMessageResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'message' => $this->message,
-            'response' => $this->response,
+            'message' => TextSanitizer::html($this->message),
+            'response' => TextSanitizer::html($this->response),
             'session_id' => $this->session_id,
             'created_at' => $this->created_at,
         ];

@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -15,29 +14,17 @@ return new class extends Migration
         });
 
         DB::transaction(function () {
-            foreach (User::withTrashed()->cursor() as $user) {
-                if (! $user->email || $user->email_hash) {
-                    continue;
-                }
-
-                $user->withoutEvents(function () use ($user) {
-                    $user->forceFill(['email_hash' => User::hashEmail($user->email)])->save();
+            DB::table('users')
+                ->whereNotNull('email')
+                ->whereNull('email_hash')
+                ->orderBy('id')
+                ->chunkById(500, function ($rows) {
+                    foreach ($rows as $row) {
+                        DB::table('users')
+                            ->where('id', $row->id)
+                            ->update(['email_hash' => hash_hmac('sha256', strtolower(trim($row->email)), config('app.key'))]);
+                    }
                 });
-            }
-
-            $duplicates = DB::table('users')
-                ->select('email_hash', DB::raw('MIN(id) as keep_id'))
-                ->whereNotNull('email_hash')
-                ->groupBy('email_hash')
-                ->havingRaw('COUNT(*) > 1')
-                ->get();
-
-            foreach ($duplicates as $dup) {
-                DB::table('users')
-                    ->where('email_hash', $dup->email_hash)
-                    ->where('id', '!=', $dup->keep_id)
-                    ->update(['email' => null, 'email_hash' => null]);
-            }
         });
 
         Schema::table('users', function (Blueprint $table) {
