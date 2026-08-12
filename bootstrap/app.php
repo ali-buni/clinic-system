@@ -29,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api/stripe/webhook',
         ]);
 
-        $middleware->appendToGroup('api', AddCorrelationId::class);
+        // $middleware->appendToGroup('api', AddCorrelationId::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (UnauthorizedException $e) {
