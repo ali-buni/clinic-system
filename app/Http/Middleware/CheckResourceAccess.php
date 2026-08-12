@@ -33,7 +33,7 @@ class CheckResourceAccess
             return $next($request);
         }
 
-        return match ($rule) {
+        $response = match ($rule) {
             'doctor_self' => $this->checkDoctorSelf($user, $request, $args),
             'patient_self' => $this->checkPatientSelf($user, $request, $args),
             'secretary_rooms' => $this->checkSecretaryRooms($user, $request, $args),
@@ -41,6 +41,8 @@ class CheckResourceAccess
             'owner_clinic' => $this->checkOwnerClinic($user, $request, $args),
             default => ApiResponse::error('Invalid resource access rule.', 500),
         };
+
+        return $response ?? $next($request);
     }
 
     private function resolveParam(Request $request, string $name): mixed
