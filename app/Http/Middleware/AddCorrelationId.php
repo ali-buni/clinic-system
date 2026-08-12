@@ -10,16 +10,22 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AddCorrelationId
 {
-    public function handle(Request $request, Closure $next): Response
+    public function handle($request, Closure $next): Response
     {
-        $correlationId = $request->header('X-Correlation-ID', (string) Str::uuid());
+        $correlationId = (string) Str::uuid();
 
-        $request->headers->set('X-Correlation-ID', $correlationId);
+        if ($request instanceof Request) {
+            $correlationId = $request->header('X-Correlation-ID', $correlationId);
+            $request->headers->set('X-Correlation-ID', $correlationId);
+        }
+
         Log::withContext(['correlation_id' => $correlationId]);
 
         $response = $next($request);
 
-        $response->headers->set('X-Correlation-ID', $correlationId);
+        if (is_object($response) && property_exists($response, 'headers')) {
+            $response->headers->set('X-Correlation-ID', $correlationId);
+        }
 
         return $response;
     }

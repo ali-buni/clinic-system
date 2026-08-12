@@ -45,7 +45,24 @@ class CheckResourceAccess
 
     private function resolveParam(Request $request, string $name): mixed
     {
-        return $request->route($name) ?? $request->input($name);
+        $param = $request->route($name) ?? $request->input($name);
+
+        if ($param == null) {
+            $user = auth()->user();
+
+            if ($user->hasRole('doctor')) {
+                $param = $user->doctorProfile?->id;
+            } elseif ($user->hasRole('patient')) {
+                $param = $user->patientProfile?->id;
+            } elseif ($user->hasRole('owner')) {
+                $param = $user->clinicOwner?->id;
+            } else if ($user->hasRole('secretary')) {
+                $param = $user->secretaryProfile?->id;
+            } else {
+                $param = null;
+            }
+        }
+        return $param;
     }
 
     private function checkDoctorSelf(User $user, Request $request, string $paramName): ?JsonResponse
@@ -238,7 +255,7 @@ class CheckResourceAccess
             return ApiResponse::permissionDenied();
         }
 
-        $modelClass = 'App\\Models\\'.$modelName;
+        $modelClass = 'App\\Models\\' . $modelName;
         if (! class_exists($modelClass)) {
             return ApiResponse::error('Unknown resource model.', 500);
         }
@@ -367,7 +384,7 @@ class CheckResourceAccess
             return null;
         }
 
-        $modelClass = 'App\\Models\\'.$first;
+        $modelClass = 'App\\Models\\' . $first;
         $paramName = $second;
 
         if (! class_exists($modelClass)) {

@@ -110,6 +110,16 @@ class User extends Authenticatable implements CipherSweetEncrypted
         return $this->hasMany(Verification_code::class);
     }
 
+    public function fcmTokens(): HasMany
+    {
+        return $this->hasMany(FcmToken::class);
+    }
+
+    public function routeNotificationForFcm(): array
+    {
+        return $this->fcmTokens()->pluck('fcm_token')->all();
+    }
+
     /**
      * Scope: Find user by phone number.
      */
