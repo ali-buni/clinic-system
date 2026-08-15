@@ -34,6 +34,7 @@ class ClinicResource extends JsonResource
 
             'doctors' => $this->doctors->loadMissing(['specialties', 'user'])->map(function ($doctor) {
                 return [
+                    'id' => $doctor->id,
                     'name' => $doctor->user->fname . ' ' . $doctor->user->lname,
                     'specialities' => $doctor->specialties->map(function ($specialty) {
                         return $specialty->only(['ar_name', 'en_name']);
@@ -44,6 +45,7 @@ class ClinicResource extends JsonResource
             }),
             'secretaries' => $this->secretaries->loadMissing('user')->map(function ($secretary) {
                 return [
+                    'id' => $secretary->id,
                     'name' => $secretary->user->fname . ' ' . $secretary->user->lname,
                     'phone' => $secretary->user->phone,
                     'room_ids' => $secretary->rooms->pluck('id'),
