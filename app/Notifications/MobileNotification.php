@@ -13,7 +13,9 @@ class MobileNotification extends Notification
     use Queueable;
 
     protected string $title;
+
     protected string $body;
+
     protected array $data;
 
     public function __construct(string $title, string $body, array $data = [])
@@ -25,7 +27,7 @@ class MobileNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return [FcmChannel::class];
+        return ['database', FcmChannel::class];
     }
 
     public function toFcm(object $notifiable): FcmMessage
@@ -41,6 +43,10 @@ class MobileNotification extends Notification
 
     public function toArray(object $notifiable): array
     {
-        return [];
+        return [
+            'title' => $this->title,
+            'body' => $this->body,
+            'data' => $this->data,
+        ];
     }
 }

@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Events\SendMsgEvent;
 use App\Models\Appointment;
 use App\Models\User;
+use App\Notifications\MobileNotification;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -39,10 +40,22 @@ class SendAppointmentStatusNotificationJob implements ShouldQueue
         $recipients = $this->resolveRecipients($appointment);
 
         foreach ($recipients as $recipient) {
-            if ($recipient && $recipient->phone) {
+            if (! $recipient || ! $recipient->getKey()) {
+                continue;
+            }
+
+            $recipient->notify(new MobileNotification(
+                $this->resolveTitle(),
+                $message,
+                [
+                    'appointment_id' => $this->appointmentId,
+                    'type' => $this->action,
+                    'message' => $message,
+                ]
+            ));
+
+            if ($recipient->phone) {
                 event(new SendMsgEvent($recipient->phone, $message));
-                // TODO: notify to app notification
-                // $this->notifyToApp($recipient, $message);
             }
         }
 
@@ -84,6 +97,20 @@ class SendAppointmentStatusNotificationJob implements ShouldQueue
                 ? "Payment reminder: You have an unpaid invoice for your appointment on {$scheduleLabel}. Please complete payment before the appointment."
                 : 'Payment reminder: You have an unpaid invoice for your upcoming appointment. Please complete payment.',
             default => 'Appointment status update: '.$this->action.($scheduleLabel ? " for {$scheduleLabel}." : '.'),
+        };
+    }
+
+    private function resolveTitle(): string
+    {
+        return match ($this->action) {
+            'booked' => 'Appointment Booked',
+            'updated' => 'Appointment Updated',
+            'cancelled' => 'Appointment Cancelled',
+            'completed' => 'Appointment Completed',
+            'confirmed' => 'Appointment Confirmed',
+            'reminder' => 'Appointment Reminder',
+            'payment_reminder' => 'Payment Reminder',
+            default => 'Appointment Update',
         };
     }
 
