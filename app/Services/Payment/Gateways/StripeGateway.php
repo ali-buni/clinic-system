@@ -144,11 +144,12 @@ class StripeGateway implements PaymentGatewayInterface
                 'amount' => (int) round($amount * 100),
             ];
 
+            $options = [];
             if ($idempotencyKey !== null) {
-                $params['idempotency_key'] = $idempotencyKey;
+                $options['idempotency_key'] = $idempotencyKey;
             }
 
-            $refund = $this->client->refunds->create($params);
+            $refund = $this->client->refunds->create($params, $options);
 
             return ['stripe_refund_id' => $refund->id];
         } catch (ApiErrorException $e) {

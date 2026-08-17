@@ -21,7 +21,7 @@ class SendStripeAccountLink extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $name = $this->doctor->user->fname . ' ' . $this->doctor->user->lname ?? 'Doctor';
+        $name = trim(($this->doctor->user->fname ?? '') . ' ' . ($this->doctor->user->lname ?? '')) ?: 'Doctor';
         return (new MailMessage)
             ->subject('Stripe Account Link')
             ->line("Dear $name,")

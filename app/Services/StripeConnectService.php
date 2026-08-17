@@ -11,28 +11,37 @@ use Stripe\StripeClient;
 
 class StripeConnectService
 {
+    private const STRIPE_V2_VERSION = '2026-07-29.preview';
+
     private StripeClient $client;
 
     public function __construct()
     {
         Stripe::setApiKey(config('services.stripe.secret'));
-        $this->client = new StripeClient(config('services.stripe.secret'));
+        $this->client = new StripeClient(['api_key' => config('services.stripe.secret'), 'stripe_version' => self::STRIPE_V2_VERSION]);
     }
 
     public function createConnectedAccount(Doctor $doctor): string
     {
         try {
-            $account = $this->client->accounts->create([
-                'type' => 'express',
-                'email' => $doctor->user->email,
+            $account = $this->client->v2->core->accounts->create([
+                'contact_email' => $doctor->user->email,
                 'metadata' => [
-                    'doctor_id' => $doctor->id,
-                    'user_id' => $doctor->user_id,
+                    'doctor_id' => (string) $doctor->id,
+                    'user_id' => (string) $doctor->user_id,
                 ],
-                'capabilities' => [
-                    'transfers' => ['requested' => true],
+                'configuration' => [
+                    'recipient' => [
+                        'capabilities' => [
+                            'stripe_balance' => [
+                                'stripe_transfers' => [
+                                    'requested' => true,
+                                ],
+                            ],
+                        ],
+                    ],
                 ],
-            ]);
+            ], ['stripe_version' => self::STRIPE_V2_VERSION]);
 
             $doctor->update(['stripe_connected_account_id' => $account->id]);
 
@@ -47,19 +56,22 @@ class StripeConnectService
                 'doctor_id' => $doctor->id,
                 'error' => $e->getMessage(),
             ]);
-            throw new \RuntimeException('Failed to create Stripe connected account: '.$e->getMessage());
+            throw new \RuntimeException('Failed to create Stripe connected account: ' . $e->getMessage());
         }
     }
 
     public function generateAccountLink(string $accountId): string
     {
         try {
-            $accountLink = $this->client->accountLinks->create([
+            $accountLink = $this->client->v2->core->accountLinks->create([
                 'account' => $accountId,
-                'refresh_url' => url('/doctor/withdrawals/stripe/refresh'),
-                'return_url' => url('/doctor/withdrawals/stripe/return'),
-                'type' => 'account_onboarding',
-            ]);
+                'use_case' => [
+                    'type' => 'account_onboarding',
+                    'configurations' => ['recipient'],
+                    'refresh_url' => url('/doctor/withdrawals/stripe/refresh'),
+                    'return_url' => url('/doctor/withdrawals/stripe/return'),
+                ],
+            ], ['stripe_version' => self::STRIPE_V2_VERSION]);
 
             return $accountLink->url;
         } catch (ApiErrorException $e) {
@@ -67,7 +79,7 @@ class StripeConnectService
                 'account_id' => $accountId,
                 'error' => $e->getMessage(),
             ]);
-            throw new \RuntimeException('Failed to generate Stripe onboarding link: '.$e->getMessage());
+            throw new \RuntimeException('Failed to generate Stripe onboarding link: ' . $e->getMessage());
         }
     }
 
@@ -80,7 +92,14 @@ class StripeConnectService
         }
 
         $accountUrl = $this->generateAccountLink($accountId);
+
+        Log::channel('structured')->info('Stripe onboarding URL generated, sending notification', [
+            'doctor_id' => $doctor->id,
+            'stripe_account_id' => $accountId,
+        ]);
+
         $doctor->user->notify(new SendStripeAccountLink($accountUrl, $doctor));
+
         return $accountUrl;
     }
 
@@ -102,11 +121,12 @@ class StripeConnectService
                 ],
             ];
 
+            $options = [];
             if ($idempotencyKey !== null) {
-                $params['idempotency_key'] = $idempotencyKey;
+                $options['idempotency_key'] = $idempotencyKey;
             }
 
-            $transfer = $this->client->transfers->create($params);
+            $transfer = $this->client->transfers->create($params, $options);
 
             Log::channel('structured')->info('Stripe transfer created', [
                 'doctor_id' => $doctor->id,
@@ -123,27 +143,34 @@ class StripeConnectService
                 'destination' => $accountId,
                 'error' => $e->getMessage(),
             ]);
-            throw new \RuntimeException('Stripe transfer failed: '.$e->getMessage());
+            throw new \RuntimeException('Stripe transfer failed: ' . $e->getMessage());
         }
     }
 
     public function getAccountStatus(string $accountId): array
     {
         try {
-            $account = $this->client->accounts->retrieve($accountId);
+            $account = $this->client->v2->core->accounts->retrieve($accountId, [
+                'include' => ['configuration.recipient'],
+            ], ['stripe_version' => self::STRIPE_V2_VERSION]);
+
+            $recipientConfig = $account->configuration->recipient ?? null;
+            $transfersStatus = $recipientConfig?->capabilities?->stripe_balance?->stripe_transfers?->status ?? null;
 
             return [
                 'id' => $account->id,
-                'charges_enabled' => $account->charges_enabled,
-                'payouts_enabled' => $account->payouts_enabled,
-                'details_submitted' => $account->details_submitted,
+                'closed' => $account->closed ?? false,
+                'applied_configurations' => $account->applied_configurations ?? [],
+                'recipient_configured' => $recipientConfig?->applied ?? false,
+                'transfers_enabled' => $transfersStatus === 'active',
+                'requirements' => $account->requirements ?? null,
             ];
         } catch (ApiErrorException $e) {
             Log::channel('structured')->error('Failed to retrieve Stripe account status', [
                 'account_id' => $accountId,
                 'error' => $e->getMessage(),
             ]);
-            throw new \RuntimeException('Failed to retrieve account status: '.$e->getMessage());
+            throw new \RuntimeException('Failed to retrieve account status: ' . $e->getMessage());
         }
     }
 }

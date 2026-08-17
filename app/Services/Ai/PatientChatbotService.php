@@ -7,6 +7,7 @@ use App\Jobs\LogActivityJob;
 use App\Models\ChatMessage;
 use App\Models\PatientInfo;
 use App\Services\Ai\Contracts\AiProviderInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -170,8 +171,8 @@ class PatientChatbotService
                     'ar' => $d->ar_name,
                 ]),
                 'prescriptions' => $r->prescriptions->map(fn ($p) => [
-                    'issued_at' => $p->issued_at?->format('Y-m-d'),
-                    'valid_until' => $p->valid_until?->format('Y-m-d'),
+                    'issued_at' => $p->issued_at ? Carbon::parse($p->issued_at)->format('Y-m-d') : null,
+                    'valid_until' => $p->valid_until ? Carbon::parse($p->valid_until)->format('Y-m-d') : null,
                     'notes' => $p->notes,
                     'items' => $p->items->map(fn ($i) => [
                         'medicine' => $i->medicine?->en_name,

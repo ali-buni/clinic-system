@@ -30,7 +30,7 @@ class ChatMessage extends Model
         return $this->morphTo();
     }
 
-    public function GenerateSessionId(int $patientInfoId, int $userId): string
+    public static function GenerateSessionId(int $patientInfoId, int $userId): string
     {
         return "patient_{$patientInfoId}_user_{$userId}_" . now()->timestamp;
     }

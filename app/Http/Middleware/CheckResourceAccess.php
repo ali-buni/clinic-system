@@ -60,8 +60,6 @@ class CheckResourceAccess
                 $param = $user->clinicOwner?->id;
             } else if ($user->hasRole('secretary')) {
                 $param = $user->secretaryProfile?->id;
-            } else {
-                $param = null;
             }
         }
         return $param;
