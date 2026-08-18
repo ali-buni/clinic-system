@@ -53,6 +53,7 @@ class PaymentService
                 'payment_method_id' => $paymentMethodId,
                 'amount' => $amount,
                 'paid_at' => $method->type === PaymentMethodType::Cash ? now() : null,
+                'refunded_amount' => 0,
             ]);
             $this->syncInvoiceStatus($invoice);
 
@@ -151,11 +152,11 @@ class PaymentService
         $invoice->loadMissing(['completedPayments.paymentMethod']);
 
         $cashPaid = $invoice->completedPayments
-            ->filter(fn ($p) => $p->paymentMethod->type === PaymentMethodType::Cash)
+            ->filter(fn($p) => $p->paymentMethod->type === PaymentMethodType::Cash)
             ->sum('amount');
 
         $stripePayments = $invoice->completedPayments
-            ->filter(fn ($p) => in_array($p->paymentMethod->type, [PaymentMethodType::Stripe, PaymentMethodType::Card]) && $p->stripe_payment_intent_id)
+            ->filter(fn($p) => in_array($p->paymentMethod->type, [PaymentMethodType::Stripe, PaymentMethodType::Card]) && $p->stripe_payment_intent_id)
             ->sortByDesc('paid_at');
 
         $stripePaid = $stripePayments->sum('amount');
