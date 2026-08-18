@@ -41,11 +41,27 @@ class ProcessStripeTransferJob implements ShouldQueue
             return;
         }
 
-        $transferId = $stripeConnectService->createTransfer(
-            $withdrawal->doctor,
-            (float) $withdrawal->amount,
-            "withdrawal-{$withdrawal->id}"
-        );
+        try {
+            $transferId = $stripeConnectService->createTransfer(
+                $withdrawal->doctor,
+                (float) $withdrawal->amount,
+                "withdrawal-{$withdrawal->id}"
+            );
+        } catch (\RuntimeException $e) {
+            $message = $e->getMessage();
+
+            $withdrawal->update([
+                'status' => WithdrawalStatus::Failed,
+                'rejection_reason' => $message,
+            ]);
+
+            Log::channel('structured')->warning('Withdrawal marked failed (non-retryable)', [
+                'withdrawal_id' => $withdrawal->id,
+                'reason' => $message,
+            ]);
+
+            return;
+        }
 
         $withdrawal->update([
             'status' => WithdrawalStatus::Completed,

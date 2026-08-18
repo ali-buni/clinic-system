@@ -41,7 +41,7 @@
                     </td>
                     <td class="px-4 py-3 text-sm font-medium">${{ number_format($withdrawal->amount, 2) }}</td>
                     <td class="px-4 py-3 text-sm">
-                        @switch($withdrawal->status)
+                        @switch($withdrawal->status->value)
                             @case('pending')
                                 <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>
                                 @break

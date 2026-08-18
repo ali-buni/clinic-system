@@ -12,7 +12,7 @@
         <div>
             <dt class="text-sm text-gray-500">Status</dt>
             <dd class="font-medium">
-                @switch($withdrawal->status)
+                @switch($withdrawal->status->value)
                     @case('pending')
                         <span class="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Pending</span>
                         @break
@@ -76,5 +76,50 @@
     <div class="mt-6 flex gap-2">
         <a href="{{ route('admin.withdrawals.index') }}" class="bg-gray-400 text-white px-6 py-2 rounded hover:bg-gray-500">Back to List</a>
     </div>
+
+    @if($withdrawal->doctor)
+    <div class="mt-6 border-t pt-4">
+        <h3 class="text-sm font-medium text-gray-700 mb-3">Link Stripe Account</h3>
+        <form id="link-stripe-form" class="flex gap-2 items-end">
+            @csrf
+            <div class="flex-1">
+                <label for="stripe_account_id" class="block text-sm text-gray-500 mb-1">Stripe Account ID</label>
+                <input type="text" name="stripe_account_id" id="stripe_account_id" required pattern="acct_.*"
+                       value="{{ $withdrawal->doctor->stripe_connected_account_id ?? '' }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                       placeholder="acct_...">
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 whitespace-nowrap">Save</button>
+        </form>
+        <p id="link-stripe-message" class="mt-2 text-sm hidden"></p>
+    </div>
+    @endif
 </div>
+
+<script>
+document.getElementById('link-stripe-form')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const msg = document.getElementById('link-stripe-message');
+    const accountId = document.getElementById('stripe_account_id').value;
+
+    try {
+        const response = await fetch('{{ route("admin.doctors.link-stripe", $withdrawal->doctor->id) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ stripe_account_id: accountId }),
+        });
+        const data = await response.json();
+        msg.textContent = data.message || (response.ok ? 'Stripe account linked successfully.' : 'Failed to link account.');
+        msg.className = 'mt-2 text-sm ' + (response.ok ? 'text-green-600' : 'text-red-600');
+    } catch {
+        msg.textContent = 'Request failed.';
+        msg.className = 'mt-2 text-sm text-red-600';
+    }
+    msg.classList.remove('hidden');
+});
+</script>
 @endsection

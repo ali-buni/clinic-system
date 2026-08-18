@@ -18,7 +18,7 @@ class StripeConnectService
     public function __construct()
     {
         Stripe::setApiKey(config('services.stripe.secret'));
-        $this->client = new StripeClient(['api_key' => config('services.stripe.secret'), 'stripe_version' => self::STRIPE_V2_VERSION]);
+        $this->client = new StripeClient(['api_key' => config('services.stripe.secret')]);
     }
 
     public function createConnectedAccount(Doctor $doctor): string
@@ -111,6 +111,19 @@ class StripeConnectService
             throw new \RuntimeException('Doctor does not have a Stripe connected account.');
         }
 
+        $status = $this->getAccountStatus($accountId);
+
+        if ($status['closed']) {
+            throw new \RuntimeException('Stripe account is closed.');
+        }
+
+        if (! $status['transfers_enabled']) {
+            throw new \RuntimeException(
+                'Stripe account is not ready for transfers. '
+                . 'The doctor must complete Stripe onboarding and have the transfers capability enabled.'
+            );
+        }
+
         try {
             $params = [
                 'amount' => (int) round($amount * 100),
@@ -145,6 +158,24 @@ class StripeConnectService
             ]);
             throw new \RuntimeException('Stripe transfer failed: ' . $e->getMessage());
         }
+    }
+
+    public function linkAccount(Doctor $doctor, string $accountId): void
+    {
+        try {
+            $this->client->v2->core->accounts->retrieve($accountId, [
+                'include' => ['configuration.recipient'],
+            ], ['stripe_version' => self::STRIPE_V2_VERSION, 'stripe_context' => $accountId]);
+        } catch (ApiErrorException $e) {
+            throw new \RuntimeException('Invalid Stripe account ID: ' . $e->getMessage());
+        }
+
+        $doctor->update(['stripe_connected_account_id' => $accountId]);
+
+        Log::channel('structured')->info('Stripe account linked', [
+            'doctor_id' => $doctor->id,
+            'stripe_account_id' => $accountId,
+        ]);
     }
 
     public function getAccountStatus(string $accountId): array
