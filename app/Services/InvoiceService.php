@@ -29,7 +29,7 @@ class InvoiceService
             $invoiceNumber = $this->generateInvoiceNumber();
 
             $totalCost = collect($data['invoice_items'])
-                ->sum(fn (array $item) => $item['price'] * $item['quantity']);
+                ->sum(fn(array $item) => $item['price'] * $item['quantity']);
 
             $invoice = Invoice::create([
                 'clinic_id' => $appointment->clinic_id,
@@ -41,7 +41,7 @@ class InvoiceService
                 'status' => InvoiceStatus::Draft->value,
             ]);
 
-            $items = collect($data['invoice_items'])->mapWithKeys(fn ($item) => [
+            $items = collect($data['invoice_items'])->mapWithKeys(fn($item) => [
                 $item['item_id'] => [
                     'price' => $item['price'],
                     'quantity' => $item['quantity'],
@@ -64,7 +64,7 @@ class InvoiceService
             $invoiceNumber = $this->generateInvoiceNumber();
 
             $consultationItem = Item::where('item_name', 'Consultation Fee')
-                ->where(fn ($q) => $q->where('clinic_id', $appointment->clinic_id)
+                ->where(fn($q) => $q->where('clinic_id', $appointment->clinic_id)
                     ->orWhereNull('clinic_id'))
                 ->firstOrFail();
 
@@ -98,7 +98,7 @@ class InvoiceService
             $invoice->update(['total_cost' => $newTotalCost]);
 
             $consultationItem = Item::where('item_name', 'Consultation Fee')
-                ->where(fn ($q) => $q->where('clinic_id', $appointment->clinic_id)
+                ->where(fn($q) => $q->where('clinic_id', $appointment->clinic_id)
                     ->orWhereNull('clinic_id'))
                 ->first();
 
@@ -138,9 +138,9 @@ class InvoiceService
                 $this->assertItemsBelongToClinic($data['updated_items'], $invoice->clinic_id);
 
                 $totalCost = collect($data['updated_items'])
-                    ->sum(fn (array $item) => $item['price'] * $item['quantity']);
+                    ->sum(fn(array $item) => $item['price'] * $item['quantity']);
 
-                $syncData = collect($data['updated_items'])->mapWithKeys(fn ($item) => [
+                $syncData = collect($data['updated_items'])->mapWithKeys(fn($item) => [
                     $item['item_id'] => [
                         'price' => $item['price'],
                         'quantity' => $item['quantity'],
@@ -169,9 +169,9 @@ class InvoiceService
     {
         $invoices = Invoice::query()
             ->with(['completedPayments'])
-            ->when($filters['status'] ?? null, fn ($q, $s) => $q->where('status', $s))
-            ->when($filters['date_from'] ?? null, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
-            ->when($filters['date_to'] ?? null, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))
+            ->when($filters['status'] ?? null, fn($q, $s) => $q->where('status', $s))
+            ->when($filters['date_from'] ?? null, fn($q, $d) => $q->whereDate('created_at', '>=', $d))
+            ->when($filters['date_to'] ?? null, fn($q, $d) => $q->whereDate('created_at', '<=', $d))
             ->where('clinic_id', $filters['clinic_id'])
             ->orderBy('created_at', 'desc')
             ->get()
@@ -194,7 +194,7 @@ class InvoiceService
 
     public function getRoomsInvoices(array $roomIds): Collection
     {
-        return Invoice::whereHas('appointment', fn ($q) => $q->whereIn('room_id', $roomIds))
+        return Invoice::whereHas('appointment', fn($q) => $q->whereIn('room_id', $roomIds))
             ->with(['completedPayments'])
             ->get()
             ->each(function ($invoice) {
@@ -204,8 +204,9 @@ class InvoiceService
 
     public function getDoctorInvoices(int $doctorId): Collection
     {
-        return Invoice::whereHas('appointment', fn ($q) => $q->where('doctor_id', $doctorId))
+        return Invoice::whereHas('appointment', fn($q) => $q->where('doctor_id', $doctorId))
             ->with(['completedPayments'])
+            ->orderBy('created_at', 'desc')
             ->get()
             ->each(function ($invoice) {
                 $invoice->total_paid = $invoice->completedPayments->sum('amount');
@@ -228,7 +229,7 @@ class InvoiceService
     {
         return DB::transaction(function () {
             $year = now()->year;
-            $prefix = 'INV-'.$year.'-';
+            $prefix = 'INV-' . $year . '-';
 
             DB::statement('
             INSERT INTO invoice_sequences (year, last_number, created_at, updated_at)
@@ -238,7 +239,7 @@ class InvoiceService
 
             $number = DB::getPdo()->lastInsertId();
 
-            return $prefix.str_pad((string) $number, 6, '0', STR_PAD_LEFT);
+            return $prefix . str_pad((string) $number, 6, '0', STR_PAD_LEFT);
         });
     }
 }

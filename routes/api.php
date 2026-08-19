@@ -52,6 +52,7 @@ Route::prefix('/v1/clinic-system')->group(function () {
 });
 
 Route::fallback(function () {
+    logger()->warning('API endpoint not found', ['url' => request()->fullUrl(), 'method' => request()->method(), 'ip' => request()->ip()]);
     return response()->json([
         'success' => false,
         'message' => 'Endpoint not found.',

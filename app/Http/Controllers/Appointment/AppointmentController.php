@@ -203,6 +203,8 @@ class AppointmentController extends Controller
         }
     }
 
+    
+
     public function doctorAppointments($doctorId, FilterRequest $request)
     {
         $validated = $request->validated();

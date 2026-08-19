@@ -101,19 +101,19 @@ class AppointmentService
 
     public function getAppointment(int $id): Appointment
     {
-        return Appointment::with(['doctor', 'patient', 'room', 'type'])->findOrFail($id);
+        return Appointment::with(['doctor', 'patient', 'room', 'type', 'invoices'])->findOrFail($id);
     }
 
     public function getPatientAppointments(int $patientId, array $data): LengthAwarePaginator
     {
-        $q = Appointment::where('patient_id', $patientId)->with(['doctor', 'patient', 'room', 'type']);
+        $q = Appointment::where('patient_id', $patientId)->with(['doctor', 'patient', 'room', 'type', 'invoices']);
 
         return ModelFilter::filter($q, $data);
     }
 
     public function getDoctorAppointments(int $doctorId, array $data): LengthAwarePaginator
     {
-        $q = Appointment::where('doctor_id', $doctorId)->with(['patient', 'clinic', 'room', 'type']);
+        $q = Appointment::where('doctor_id', $doctorId)->with(['patient', 'clinic', 'room', 'type', 'invoices']);
 
         return ModelFilter::filter($q, $data);
     }
@@ -121,14 +121,14 @@ class AppointmentService
     public function getClinicAppointments(int $clinicId, array $data): LengthAwarePaginator
     {
         $q = Appointment::where('clinic_id', $clinicId)
-            ->with(['doctor', 'patient', 'room', 'type']);
+            ->with(['doctor', 'patient', 'room', 'type', 'invoices']);
 
         return ModelFilter::filter($q, $data);
     }
 
     public function getRoomAppointments(array $roomIds, array $data): LengthAwarePaginator
     {
-        $q = Appointment::whereIn('room_id', $roomIds)->with(['doctor', 'patient', 'room', 'type']);
+        $q = Appointment::whereIn('room_id', $roomIds)->with(['doctor', 'patient', 'room', 'type', 'invoices']);
 
         return ModelFilter::filter($q, $data);
     }
@@ -138,7 +138,7 @@ class AppointmentService
         $date = $date ? Carbon::parse($date) : Carbon::today();
 
         return Appointment::where('doctor_id', $doctorId)
-            ->with(['doctor', 'patient', 'type', 'room'])
+            ->with(['doctor', 'patient', 'type', 'room', 'invoices'])
             ->whereDate('start_time', $date)->orderBy('start_time', 'asc')->get();
     }
 
@@ -146,7 +146,7 @@ class AppointmentService
     {
         $date = $date ? Carbon::parse($date)->toDateString() : Carbon::today()->toDateString();
         $appointments = Appointment::where('clinic_id', $clinicId)
-            ->with(['doctor', 'patient', 'room', 'type'])
+            ->with(['doctor', 'patient', 'room', 'type', 'invoices'])
             ->whereDate('start_time', $date)
             ->orderBy('start_time', 'asc')
             ->get();

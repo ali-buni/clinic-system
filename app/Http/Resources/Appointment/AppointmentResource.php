@@ -51,6 +51,16 @@ class AppointmentResource extends JsonResource
             'cancel_reason' => ResourceSecurityHelper::gateField('cancel_reason', $this->cancel_reason, $requester, $ownerId),
             'notes' => $this->notes,
             'created_at' => Carbon::parse($this->created_at)->format('Y-m-d'),
+
+            'invoices' => $this->whenLoaded('invoices', function () {
+                return $this->invoices->map(function ($invoice) {
+                    return [
+                        'id' => $invoice->id,
+                        'amount' => $invoice->total_cost,
+                        'status' => $invoice->status,
+                    ];
+                });
+            }),
         ];
     }
 }
