@@ -7,7 +7,10 @@ Route::middleware(['auth:sanctum', 'throttle:100,1'])->prefix('/doctors')->contr
     Route::post('/update', 'update')
         ->middleware(['checkaccess:role:doctor']);
     Route::get('/{id}/info', 'info')
-        ->middleware(['checkaccess:role:owner,secretary,doctor', 'resourceAccess:doctor_self:id']);
+        ->middleware([
+            'checkaccess:role:owner,secretary,doctor,patient',
+            //  'resourceAccess:doctor_self:id'
+        ]);
     Route::get('filter', 'index')
         ->middleware(['checkaccess:role:owner,secretary']);
     Route::delete('/{id}/leave', 'destroy')

@@ -6,7 +6,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'throttle:100,1'])->prefix('/patients')->controller(PatientController::class)->group(function () {
     Route::get('/', 'index')
-        ->middleware(['checkaccess:role:owner', 'checkaccess:permission:manage patients']);
+        ->middleware([
+            'checkaccess:role:owner,secretary',
+            // 'checkaccess:permission:manage patients'
+        ]);
     Route::get('/trashed', 'indexTrashed')
         ->middleware(['checkaccess:role:owner']);
     Route::get('/{patientId}', 'show')
@@ -21,6 +24,6 @@ Route::middleware(['auth:sanctum', 'throttle:100,1'])->prefix('/patients')->cont
         ->middleware(['checkaccess:role:owner']);
 });
 Route::middleware(['auth:sanctum', 'throttle:100,1'])->prefix('/patients')->controller(PatientDoctorSearchController::class)->group(function () {
-        Route::get('/search/doctors', 'search')
-            ->middleware(['checkaccess:role:patient']);
+    Route::get('/search/doctors', 'search')
+        ->middleware(['checkaccess:role:patient']);
 });

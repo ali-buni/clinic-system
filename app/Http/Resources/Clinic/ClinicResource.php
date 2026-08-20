@@ -19,10 +19,10 @@ class ClinicResource extends JsonResource
             'title' => $this->title,
             'location' => $this->location,
             'phone' => $this->phone,
-            'country' => $this->whenLoaded('location', fn() => $this->location->country),
-            'governorate' => $this->whenLoaded('location', fn() => $this->location->governorate),
-            'city' => $this->whenLoaded('location', fn() => $this->location->city),
-            'location_name' => $this->whenLoaded('location', fn() => $this->location->name),
+            'country' => $this->whenLoaded('location', fn() => $this->getRelation('location')->country),
+            'governorate' => $this->whenLoaded('location', fn() => $this->getRelation('location')->governorate),
+            'city' => $this->whenLoaded('location', fn() => $this->getRelation('location')->city),
+            'location_name' => $this->whenLoaded('location', fn() => $this->getRelation('location')->name),
             'rooms_count' => $this->whenLoaded('rooms', function () {
                 return [
                     'total' => $this->rooms->count(),
