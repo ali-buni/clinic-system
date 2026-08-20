@@ -124,20 +124,27 @@ class AnalyticsController extends Controller
 
     public function getPredictiveReport(Request $request, PredictiveService $pre): JsonResponse
     {
-        $clinicId = $this->resolveClinicId($request);
-        $validated = $request->validate(array_merge($this->periodRule(), $this->dateRangeRules()));
-        $period = $this->resolvePeriod($validated);
-        [$from, $to] = $this->resolveDateRange($validated);
+        try {
+            $clinicId = $this->resolveClinicId($request);
+            $validated = $request->validate(array_merge($this->periodRule(), $this->dateRangeRules()));
+            $period = $this->resolvePeriod($validated);
+            [$from, $to] = $this->resolveDateRange($validated);
 
-        return $this->respond('success', null, [
-            'from'                  => $from,
-            'to'                    => $to,
-            'crowding'              => $pre->getCrowdingRisk($clinicId, $from, $to),
-            'no_show_prediction'    => $pre->getNoShowPrediction($clinicId, $from, $to),
-            'busy_hours'            => $pre->getBusyHours($clinicId, $period, $from, $to),
-            'utilization_forecast'  => $pre->getUtilizationForecast($clinicId, $period, $from, $to),
-            'ai_insight'            => $pre->getAiInsight($clinicId, $period, $from, $to),
-        ]);
+            return $this->respond('success', null, [
+                'from'                  => $from,
+                'to'                    => $to,
+                'crowding'              => $pre->getCrowdingRisk($clinicId, $from, $to),
+                'no_show_prediction'    => $pre->getNoShowPrediction($clinicId, $from, $to),
+                'busy_hours'            => $pre->getBusyHours($clinicId, $period, $from, $to),
+                'utilization_forecast'  => $pre->getUtilizationForecast($clinicId, $period, $from, $to),
+                'ai_insight'            => $pre->getAiInsight($clinicId, $period, $from, $to),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to load predictive analytics: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function askAnalytics(Request $request, NLAService $nla, OperationalService $ops, FinancialService $fin, MedicalAnalyticsService $med): JsonResponse

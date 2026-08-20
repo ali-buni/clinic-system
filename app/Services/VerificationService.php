@@ -71,14 +71,22 @@ class VerificationService
 
         $role = $user->getRoleNames()->first() ?? 'patient';
 
+        $roleId = $user->hasRole('owner') ? $user->clinicOwner?->id : ($user->hasRole('doctor') ? $user->doctorProfile?->id : ($user->hasRole('patient') ? $user->patientProfile?->id : ($user->hasRole('secretary') ? $user->secretaryProfile?->id : null)));
+        $data = [
+            'token' => $token,
+            'id' => $user->id,
+            'role' => $role,
+            'name' => $user->fname . ' ' . $user->lname,
+            'role_id' => $roleId,
+        ];
+
+        if ($role === 'owner') {
+            $data['clinic_id'] = $user->clinicOwner?->id;
+        }
+
         return $this->apiResponse->success(
-            [
-                'token' => $token,
-                'id' => $user->id,
-                'role' => $role,
-                'name' => $user->fname.' '.$user->lname,
-            ],
-            ucfirst($type).' verified successfully.'
+            $data,
+            ucfirst($type) . ' verified successfully.'
         );
     }
 
@@ -175,11 +183,11 @@ class VerificationService
 
             return $this->apiResponse->success(
                 null,
-                ucfirst($type).' verification code sent successfully.'
+                ucfirst($type) . ' verification code sent successfully.'
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::channel('structured')->error("Failed to send {$type} verification code: ".$e->getMessage());
+            Log::channel('structured')->error("Failed to send {$type} verification code: " . $e->getMessage());
 
             return $this->apiResponse->error(
                 'Failed to send verification code. Please try again.',

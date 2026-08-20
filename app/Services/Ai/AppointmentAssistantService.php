@@ -126,6 +126,16 @@ class AppointmentAssistantService
         $action = $parsed['action'];
         $isAr = ! empty($parsed['language']) && $parsed['language'] === 'ar';
 
+        if (isset($parsed['specialty_id'])) {
+            $parsed['specialty_id'] = (int) $parsed['specialty_id'];
+        }
+        if (isset($parsed['doctor_id'])) {
+            $parsed['doctor_id'] = (int) $parsed['doctor_id'];
+        }
+        if (isset($parsed['appointment_type_id'])) {
+            $parsed['appointment_type_id'] = (int) $parsed['appointment_type_id'];
+        }
+
         Log::channel('structured')->info('AppointmentAssistant: executing action', [
             'action' => $action,
             'parsed' => $parsed,
@@ -181,11 +191,18 @@ class AppointmentAssistantService
             ];
         }
 
+        $normalizedSpecialties = array_map(fn ($s) => [
+            'id' => (int) ($s['id'] ?? $s['specialty_id'] ?? 0),
+            'en_name' => $s['en_name'] ?? 'Unknown',
+            'ar_name' => $s['ar_name'] ?? 'غير معروف',
+            'reason' => $s['reason'] ?? '',
+        ], $specialties);
+
         $nextSteps = [];
-        foreach ($specialties as $s) {
+        foreach ($normalizedSpecialties as $s) {
             $nextSteps[] = [
                 'action' => 'select_specialty',
-                'description' => $isAr ? TextSanitizer::html($s['ar_name'] ?? $s['en_name'] ?? 'Unknown') : TextSanitizer::html($s['en_name'] ?? 'Unknown'),
+                'description' => $isAr ? TextSanitizer::html($s['ar_name'] ?: $s['en_name']) : TextSanitizer::html($s['en_name']),
                 'params' => ['specialty_id' => $s['id']],
             ];
         }
@@ -198,7 +215,7 @@ class AppointmentAssistantService
             'result' => [
                 'action' => 'suggest_specialties',
                 'data' => [
-                    'specialties' => $specialties,
+                    'specialties' => $normalizedSpecialties,
                     'extracted_symptoms' => $symptoms,
                 ],
             ],
@@ -372,7 +389,7 @@ class AppointmentAssistantService
             "appointment:intent:{$token}",
             [
                 'patient_id' => (int) $patientId,
-                'clinic_id' => $clinicId,
+                'clinic_id' => $clinicId !== null ? (int) $clinicId : null,
                 'doctor_id' => (int) $doctorId,
                 'date' => $date,
                 'time' => $time,
