@@ -35,6 +35,13 @@ class SecretaryResource extends JsonResource
                 'dob' => $canViewFull ? Carbon::parse($this->user->dob)->format('Y-m-d') : null,
                 'gender' => $this->user->gender,
             ];
+        }), $this->whenLoaded('rooms', function () {
+            return [
+                'rooms' => $this->rooms->map(fn ($room) => [
+                    'id' => $room->id,
+                    'name' => $room->name,
+                ]),
+            ];
         }));
     }
 }

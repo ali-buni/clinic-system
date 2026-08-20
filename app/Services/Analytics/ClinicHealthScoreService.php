@@ -26,7 +26,7 @@ class ClinicHealthScoreService
 
         $financialHealth = $this->getFinancialHealth($clinicId, $fromDate, $toDate);
         $operationalHealth = $this->getOperationalHealth($clinicId, $fromDate, $toDate);
-        $patientHealth = $this->getPatientHealth($clinicId, $fromDate, $toDate);
+        $patientHealth = $this->getPatientHealth($clinicId, $period, $fromDate, $toDate);
 
         $weights = $this->normalizeWeights([
             'financial' => (float) $this->settings->get('weight_financial', 0.35),
@@ -136,16 +136,16 @@ class ClinicHealthScoreService
         ];
     }
 
-    private function getPatientHealth(int $clinicId, ?Carbon $from, ?Carbon $to): array
+    private function getPatientHealth(int $clinicId, string $period, ?Carbon $from, ?Carbon $to): array
     {
         $totalPatients = Appointment::where('clinic_id', $clinicId)
             ->whereNotNull('patient_id')
-            ->when($from, fn ($q) => $q->where('created_at', '>=', $from))
-            ->when($to, fn ($q) => $q->where('created_at', '<=', $to))
+            ->when($from, fn ($q) => $q->where('start_time', '>=', $from))
+            ->when($to, fn ($q) => $q->where('start_time', '<=', $to))
             ->distinct('patient_id')
             ->count('patient_id');
 
-        $retentionMetrics = $this->patientService->getRetentionMetrics($clinicId, $from ? 'total' : 'total');
+        $retentionMetrics = $this->patientService->getRetentionMetrics($clinicId, $period);
         $retentionRate = $this->parsePercent($retentionMetrics['retention_rate'] ?? '0%');
 
         $lostPatients = $this->patientService->getLostPatients($clinicId, 6, 'total');
@@ -225,7 +225,7 @@ class ClinicHealthScoreService
         $fair = (float) $this->settings->get('threshold_fair', 40);
 
         if ($score >= $excellent) {
-            return 'Excellent';
+            return 'excellent';
         }
         if ($score >= $good) {
             return 'good';
@@ -234,7 +234,7 @@ class ClinicHealthScoreService
             return 'fair';
         }
 
-        return 'need enhance';
+        return 'need_enhance';
     }
 
     private function generateRecommendations(array $financial, array $operational, array $patient): array

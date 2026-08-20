@@ -174,12 +174,13 @@ class InvoiceService
             ->when($filters['date_to'] ?? null, fn($q, $d) => $q->whereDate('created_at', '<=', $d))
             ->where('clinic_id', $filters['clinic_id'])
             ->orderBy('created_at', 'desc')
-            ->get()
-            ->each(function ($invoice) {
-                $invoice->total_paid = $invoice->completedPayments->sum('amount');
-            });
+            ->paginate($perPage, page: $filters['page'] ?? 1);
 
-        return $invoices->paginate($perPage, page: $filters['page'] ?? 1);
+        $invoices->each(function ($invoice) {
+            $invoice->total_paid = $invoice->completedPayments->sum('amount');
+        });
+
+        return $invoices;
     }
 
     public function getPatientInvoices(int $patientId): Collection

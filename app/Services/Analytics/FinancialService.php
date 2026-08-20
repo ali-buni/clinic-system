@@ -63,7 +63,7 @@ class FinancialService
     {
         $period = $this->normalizePeriod($period);
 
-        $invoices = Invoice::whereHas('appointment', fn ($q) => $q->where('clinic_id', $clinicId))
+        $invoices = Invoice::where('clinic_id', $clinicId)
             ->where('status', 'paid')
             ->with(['appointment.doctor.user']);
         $this->applyDateRange($invoices, $from, $to);

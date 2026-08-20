@@ -15,7 +15,7 @@ class MedicalAnalyticsService
             ->where('pr.clinic_id', $clinicId)
             ->select(['d.ar_name', 'd.en_name'])
             ->selectRaw('COUNT(*) as cases_count')
-            ->groupBy('d.id', 'd.ar_name')
+            ->groupBy('d.id', 'd.ar_name', 'd.en_name')
             ->orderByDesc('cases_count')
             ->limit($limit)
             ->get();

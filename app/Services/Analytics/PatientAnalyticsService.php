@@ -39,7 +39,7 @@ class PatientAnalyticsService
 
         $appts = Appointment::where('clinic_id', $clinicId)
             ->where('status', 'completed')
-            ->get(['patient_id', 'created_at']);
+            ->get(['patient_id', 'start_time']);
 
         $periodKey = match ($period) {
             'year' => fn($d) => Carbon::parse($d)->format('Y'),
