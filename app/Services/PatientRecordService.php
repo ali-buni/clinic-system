@@ -40,6 +40,7 @@ class PatientRecordService
     {
         return Patient_record::with(['doctor', 'patient'])
             ->where('patient_id', $patientId)
+            ->orderBy('created_at', 'desc')
             ->get();
     }
 
@@ -55,7 +56,7 @@ class PatientRecordService
     public function getRecordsByRoom(array $roomIds)
     {
         return Patient_record::with(['patient', 'doctor'])
-            ->whereHas('doctor', fn ($q) => $q->whereIn('room_id', $roomIds))
+            ->whereHas('doctor', fn($q) => $q->whereIn('room_id', $roomIds))
             ->latest()
             ->get();
     }

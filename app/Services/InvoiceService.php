@@ -187,6 +187,7 @@ class InvoiceService
     {
         return Invoice::where('patient_id', $patientId)
             ->with(['completedPayments'])
+            ->orderBy('created_at', 'desc')
             ->get()
             ->each(function ($invoice) {
                 $invoice->total_paid = $invoice->completedPayments->sum('amount');
