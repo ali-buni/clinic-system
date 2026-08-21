@@ -244,9 +244,9 @@ class BookingHandler
             return $validationError;
         }
 
-        $slotMultiplier = $appointmentType?->types ?? 1;
-        $slotMinutes = $doctor->appointment_duration ?? 30;
-        $totalMinutes = $slotMultiplier * $slotMinutes;
+        $slotMultiplier = (int) ($appointmentType?->types ?? 1);
+        $slotMinutes = (int) ($doctor->appointment_duration ?? 30);
+        $totalMinutes = max(1, $slotMultiplier) * $slotMinutes;
 
         $startTime = $time;
         $endTime = date('H:i', strtotime($time) + $totalMinutes * 60);

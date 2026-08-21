@@ -453,11 +453,11 @@ class AppointmentAssistantService
 
         $result = $this->booking->bookAppointment(
             doctorId: (int) $intent['doctor_id'],
-            date: $intent['date'],
-            time: $intent['time'],
+            date: (string) $intent['date'],
+            time: (string) $intent['time'],
             patientId: (int) $patientId,
-            clinicId: $intent['clinic_id'] ?? null,
-            typeId: $intent['type_id'] ?? null,
+            clinicId: isset($intent['clinic_id']) ? (int) $intent['clinic_id'] : null,
+            typeId: isset($intent['type_id']) ? (int) $intent['type_id'] : null,
             reason: $intent['reason'] ?? null,
         );
 
