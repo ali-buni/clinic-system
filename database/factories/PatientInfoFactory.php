@@ -12,11 +12,8 @@ class PatientInfoFactory extends Factory
 
     public function definition(): array
     {
-        $user = User::factory()->create();
-        $user->assignRole('patient');
-
         return [
-            'user_id' => $user->id,
+            'user_id' => User::factory(),
             'nationality' => fake()->country(),
             'address' => fake()->address(),
             'marital_status' => fake()->randomElement(['married', 'single', 'other']),
@@ -26,5 +23,12 @@ class PatientInfoFactory extends Factory
             'career' => fake()->jobTitle(),
             'blood_type' => fake()->randomElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (PatientInfo $patientInfo) {
+            $patientInfo->user->assignRole('patient');
+        });
     }
 }

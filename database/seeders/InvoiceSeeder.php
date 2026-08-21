@@ -8,6 +8,7 @@ use App\Models\Invoice;
 use App\Models\Item;
 use App\Models\Payment;
 use App\Models\Payment_method;
+use App\Models\Refund;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -28,7 +29,22 @@ class InvoiceSeeder extends Seeder
             if ($appointment->invoices()->exists()) continue;
 
             $invoiceStatus = $statusMap[$appointment->status] ?? 'draft';
-            $totalCost = $appointment->doctor->consultation_fee ?? fake()->randomFloat(2, 80, 500);
+            $consultationFee = $appointment->doctor->consultation_fee ?? fake()->randomFloat(2, 80, 500);
+
+            $attachData = [];
+            Item::inRandomOrder()
+                ->take(fake()->numberBetween(1, 3))
+                ->each(function ($item) use (&$attachData) {
+                    $attachData[$item->id] = [
+                        'quantity' => fake()->numberBetween(1, 3),
+                        'price' => fake()->randomFloat(2, 10, 200),
+                    ];
+                });
+
+            $itemsTotal = collect($attachData)->sum(
+                fn(array $pivot) => $pivot['price'] * $pivot['quantity']
+            );
+            $totalCost = round($consultationFee + $itemsTotal, 2);
 
             $invoice = Invoice::create([
                 'clinic_id' => $clinic->id,
@@ -41,12 +57,8 @@ class InvoiceSeeder extends Seeder
                 'created_at' => $appointment->start_time,
             ]);
 
-            $itemIds = Item::inRandomOrder()->take(fake()->numberBetween(1, 3))->pluck('id');
-            foreach ($itemIds as $itemId) {
-                $invoice->items()->attach($itemId, [
-                    'quantity' => fake()->numberBetween(1, 3),
-                    'price' => fake()->randomFloat(2, 10, 200),
-                ]);
+            foreach ($attachData as $itemId => $pivot) {
+                $invoice->items()->attach($itemId, $pivot);
             }
 
             if ($invoiceStatus === 'paid') {
@@ -57,6 +69,27 @@ class InvoiceSeeder extends Seeder
                     'paid_at' => $appointment->start_time,
                     'refunded_amount' => 0,
                 ]);
+            } elseif ($invoiceStatus === 'refunded') {
+                $payment = Payment::firstOrCreate(
+                    ['invoice_id' => $invoice->id],
+                    [
+                        'payment_method_id' => $paymentMethods->random()->id,
+                        'amount' => $totalCost,
+                        'paid_at' => $appointment->start_time,
+                        'refunded_amount' => $totalCost,
+                    ]
+                );
+
+                Refund::firstOrCreate(
+                    ['idempotency_key' => 'seed-refund-' . $invoice->id],
+                    [
+                        'payment_id' => $payment->id,
+                        'invoice_id' => $invoice->id,
+                        'amount' => $totalCost,
+                        'reason' => 'No-show refund',
+                        'refunded_by' => $clinic->user_id,
+                    ]
+                );
             }
         }
     }

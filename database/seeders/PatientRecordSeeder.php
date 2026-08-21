@@ -30,6 +30,22 @@ class PatientRecordSeeder extends Seeder
         foreach ($appointments as $i => $appointment) {
             if ($appointment->record()->exists()) continue;
 
+            if (in_array($appointment->status, ['scheduled', 'confirmed'])) {
+                Patient_record::create([
+                    'clinic_id' => $clinic->id,
+                    'patient_id' => $appointment->patient_id,
+                    'doctor_id' => $appointment->doctor_id,
+                    'appointment_id' => $appointment->id,
+                    'diagnosis_summary' => null,
+                    'description' => 'Scheduled visit - pending examination.',
+                    'status' => 'open',
+                    'notes' => null,
+                ]);
+                continue;
+            }
+
+            if ($appointment->status !== 'completed') continue;
+
             $record = Patient_record::create([
                 'clinic_id' => $clinic->id,
                 'patient_id' => $appointment->patient_id,

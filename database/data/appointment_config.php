@@ -2,8 +2,8 @@
 
 return [
     'target_count' => 200,
-    'date_from' => '2026-03-01',
-    'date_to' => '2026-07-10',
+    'days_past' => 120,
+    'days_future' => 30,
     'max_per_doctor_per_day' => 2,
     'working_days' => [0, 1, 2, 3, 4],
 ];

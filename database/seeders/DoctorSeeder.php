@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Clinic;
 use App\Models\Doctor;
 use App\Models\Room;
+use App\Models\Specialty;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -32,14 +33,20 @@ class DoctorSeeder extends Seeder
             );
             $user->assignRole('doctor');
 
-            Doctor::firstOrCreate(
+            $doctor = Doctor::firstOrCreate(
                 ['user_id' => $user->id, 'clinic_id' => $clinic->id],
                 [
                     'room_id' => $rooms->get($index % $rooms->count())->id,
                     'appointment_duration' => 30,
-                    'consultation_fee' => mt_rand(12000, 30000) / 100,
+                    'bio' => $data['bio'],
+                    'consultation_fee' => $data['consultation_fee'],
                 ]
             );
+
+            $specialty = Specialty::where('en_name', $data['specialty'])->first();
+            if ($specialty) {
+                $doctor->specialties()->sync([$specialty->id => ['is_primary' => true]]);
+            }
         }
     }
 }

@@ -17,6 +17,7 @@ class AppointmentFactory extends Factory
     {
         $start = fake()->dateTimeBetween('+1 days', '+30 days');
         $duration = fake()->randomElement([20, 30, 45, 60]);
+        $status = fake()->randomElement(['scheduled', 'completed', 'cancelled', 'no_show']);
 
         return [
             'clinic_id' => Clinic::factory(),
@@ -25,10 +26,10 @@ class AppointmentFactory extends Factory
             'appointment_type_id' => Appointment_type::factory(),
             'start_time' => $start,
             'end_time' => (clone $start)->modify("+{$duration} minutes"),
-            'status' => fake()->randomElement(['scheduled', 'completed', 'cancelled', 'no_show']),
-            'cancel_reason' => 'no cancel',
+            'status' => $status,
+            'cancel_reason' => in_array($status, ['cancelled', 'no_show']) ? fake()->sentence() : null,
             'visit_reason' => fake()->sentence(),
-            'visit_in_time' => fake()->boolean(75),
+            'visit_in_time' => $status === 'completed' ? fake()->boolean(75) : null,
         ];
     }
 }

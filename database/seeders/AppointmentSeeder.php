@@ -10,13 +10,15 @@ use App\Models\PatientInfo;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Database\Seeder;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 class AppointmentSeeder extends Seeder
 {
     public function run(): void
     {
         $config = require __DIR__ . '/../data/appointment_config.php';
-        $statusMaps = require __DIR__ . '/../data/status_maps.php';
+        $visitReasons = require __DIR__ . '/../data/visit_reasons.php';
+        $cancelReasons = require __DIR__ . '/../data/cancel_reasons.php';
 
         $clinic = Clinic::first();
         if (!$clinic) return;
@@ -25,17 +27,23 @@ class AppointmentSeeder extends Seeder
         $patients = PatientInfo::all();
         $appointmentTypes = Appointment_type::all();
 
-        $pool = $statusMaps['appointment_pool'];
-        $statusPool = [];
-        foreach ($pool as $status => $count) {
-            $statusPool = array_merge($statusPool, array_fill(0, $count, $status));
-        }
-        shuffle($statusPool);
+        $pastStatusPool = array_merge(
+            array_fill(0, 5, 'completed'),
+            array_fill(0, 2, 'cancelled'),
+            array_fill(0, 2, 'no_show')
+        );
+        $futureStatusPool = array_merge(
+            array_fill(0, 3, 'scheduled'),
+            ['confirmed']
+        );
 
         $created = 0;
         $usedSlots = [];
 
-        $period = CarbonPeriod::create($config['date_from'], $config['date_to']);
+        $period = CarbonPeriod::create(
+            Carbon::now()->subDays($config['days_past'])->startOfDay(),
+            Carbon::now()->addDays($config['days_future'])->startOfDay()
+        );
         $workingDays = collect($period)->filter(
             fn($date) =>
             in_array((int)$date->format('w'), $config['working_days'])
@@ -63,21 +71,29 @@ class AppointmentSeeder extends Seeder
                         ->setTime(intdiv($slotMin, 60), $slotMin % 60);
                     $endTime = (clone $startTime)->addMinutes($doctor->appointment_duration ?? 30);
 
-                    $status = $statusPool[$created];
-                    Appointment::create([
-                        'clinic_id' => $clinic->id,
-                        'doctor_id' => $doctor->id,
-                        'room_id' => $doctor->room_id,
-                        'patient_id' => $patients->random()->id,
-                        'appointment_type_id' => $appointmentTypes->random()->id,
-                        'start_time' => $startTime,
-                        'end_time' => $endTime,
-                        'status' => $status,
-                        'cancel_reason' => in_array($status, ['cancelled', 'no_show']) ? fake()->sentence() : null,
-                        'visit_reason' => fake()->sentence(3),
-                        'visit_in_time' => $status === 'completed' ? fake()->boolean(80) : null,
-                    ]);
-                    $created++;
+                    $statusPool = $startTime->isPast() ? $pastStatusPool : $futureStatusPool;
+                    $status = $statusPool[array_rand($statusPool)];
+
+                    try {
+                        Appointment::create([
+                            'clinic_id' => $clinic->id,
+                            'doctor_id' => $doctor->id,
+                            'room_id' => $doctor->room_id,
+                            'patient_id' => $patients->random()->id,
+                            'appointment_type_id' => $appointmentTypes->random()->id,
+                            'start_time' => $startTime,
+                            'end_time' => $endTime,
+                            'status' => $status,
+                            'cancel_reason' => in_array($status, ['cancelled', 'no_show'])
+                                ? $cancelReasons[array_rand($cancelReasons)]
+                                : null,
+                            'visit_reason' => $visitReasons[array_rand($visitReasons)],
+                            'visit_in_time' => $status === 'completed' ? fake()->boolean(80) : null,
+                        ]);
+                        $created++;
+                    } catch (UniqueConstraintViolationException) {
+                        continue;
+                    }
                 }
             }
         }
