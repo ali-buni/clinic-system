@@ -90,13 +90,14 @@ class GoogleAuthController extends Controller
     protected function respondWithToken(string $token, User $user)
     {
         $role = $user->getRoleNames()->first();
-
+        $roleId = $user->hasRole('owner') ? $user->clinicOwner?->id : ($user->hasRole('doctor') ? $user->doctorProfile?->id : ($user->hasRole('patient') ? $user->patientProfile?->id : ($user->hasRole('secretary') ? $user->secretaryProfile?->id : null)));
         return ApiResponse::success([
             'access_token' => $token,
             'token_type' => 'bearer',
             'id' => $user->id,
             'name' => $user->fname,
             'role' => $role,
+            'roleId' => $roleId,
             // 'expires_in' => Auth::guard('api')->factory()->getTTL() * 60,
         ]);
     }
