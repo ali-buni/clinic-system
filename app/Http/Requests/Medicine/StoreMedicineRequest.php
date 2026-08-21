@@ -8,20 +8,21 @@ class StoreMedicineRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() && $this->user()->hasRole('doctor');
+        return true;
     }
 
     public function rules(): array
     {
+
         return [
             'api_medicine_id' => 'nullable|string',
 
-            'ar_name'         => 'required_without:en_name|string|max:255|nullable',
-            'en_name'         => 'required_without:ar_name|string|max:255|nullable',
+            'ar_name'         => ['nullable', 'string', 'max:255', 'required_without:en_name'],
+            'en_name'         => ['nullable', 'string', 'max:255', 'required_without:ar_name'],
 
             'generic_name_ar' => 'nullable|string|max:255',
             'generic_name_en' => 'nullable|string|max:255',
-            'strength'        => 'nullable|string|max:50',
+            'strength'        => 'nullable|string|max:5000',
 
             'form'            => 'nullable|in:tablet,capsule,syrup,injection,ointment',
         ];

@@ -7,5 +7,5 @@ Route::prefix('medicines')->controller(MedicineController::class)->group(functio
     Route::get('search', 'searchMedicine')
         ->middleware(['auth:sanctum', 'throttle:100,1']);
     Route::post('/', 'store')
-        ->middleware(['auth:sanctum', 'throttle:100,1', 'checkaccess:role:doctor,secretary,owner', 'checkaccess:permission:manage m/d']);
+        ->middleware(['auth:sanctum', 'throttle:100,1', 'checkaccess:role:doctor,secretary,owner']);
 });
