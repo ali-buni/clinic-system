@@ -10,6 +10,7 @@ use App\Models\Payment;
 use App\Models\Payment_method;
 use App\Models\Refund;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class InvoiceSeeder extends Seeder
@@ -22,75 +23,76 @@ class InvoiceSeeder extends Seeder
         $clinic = Clinic::first();
         if (!$clinic) return;
 
-        $appointments = Appointment::all();
+        $appointments = Appointment::with(['doctor', 'invoices'])->get();
+        if ($appointments->isEmpty()) return;
+
         $paymentMethods = Payment_method::all();
+        $items = Item::all();
 
-        foreach ($appointments as $appointment) {
-            if ($appointment->invoices()->exists()) continue;
+        DB::transaction(function () use ($appointments, $paymentMethods, $items, $clinic, $statusMap) {
+            foreach ($appointments as $appointment) {
+                if ($appointment->invoices->isNotEmpty()) continue;
 
-            $invoiceStatus = $statusMap[$appointment->status] ?? 'draft';
-            $consultationFee = $appointment->doctor->consultation_fee ?? fake()->randomFloat(2, 80, 500);
+                $invoiceStatus = $statusMap[$appointment->status] ?? 'draft';
+                $consultationFee = $appointment->doctor->consultation_fee ?? fake()->randomFloat(2, 80, 500);
 
-            $attachData = [];
-            Item::inRandomOrder()
-                ->take(fake()->numberBetween(1, 3))
-                ->each(function ($item) use (&$attachData) {
-                    $attachData[$item->id] = [
+                $attachData = $items
+                    ->random(fake()->numberBetween(1, max(1, min(3, $items->count()))))
+                    ->mapWithKeys(fn($item) => [$item->id => [
                         'quantity' => fake()->numberBetween(1, 3),
                         'price' => fake()->randomFloat(2, 10, 200),
-                    ];
-                });
+                    ]])
+                    ->all();
 
-            $itemsTotal = collect($attachData)->sum(
-                fn(array $pivot) => $pivot['price'] * $pivot['quantity']
-            );
-            $totalCost = round($consultationFee + $itemsTotal, 2);
+                $itemsTotal = collect($attachData)->sum(
+                    fn(array $pivot) => $pivot['price'] * $pivot['quantity']
+                );
+                $totalCost = round($consultationFee + $itemsTotal, 2);
 
-            $invoice = Invoice::create([
-                'clinic_id' => $clinic->id,
-                'patient_id' => $appointment->patient_id,
-                'appointment_id' => $appointment->id,
-                'invoice_number' => 'INV-' . strtoupper(Str::random(8)),
-                'status' => $invoiceStatus,
-                'total_cost' => $totalCost,
-                'description' => 'Appointment invoice - ' . $appointment->status,
-                'created_at' => $appointment->start_time,
-            ]);
-
-            foreach ($attachData as $itemId => $pivot) {
-                $invoice->items()->attach($itemId, $pivot);
-            }
-
-            if ($invoiceStatus === 'paid') {
-                Payment::create([
-                    'invoice_id' => $invoice->id,
-                    'payment_method_id' => $paymentMethods->random()->id,
-                    'amount' => $totalCost,
-                    'paid_at' => $appointment->start_time,
-                    'refunded_amount' => 0,
+                $invoice = Invoice::create([
+                    'clinic_id' => $clinic->id,
+                    'patient_id' => $appointment->patient_id,
+                    'appointment_id' => $appointment->id,
+                    'invoice_number' => 'INV-' . strtoupper(Str::random(8)),
+                    'status' => $invoiceStatus,
+                    'total_cost' => $totalCost,
+                    'description' => 'Appointment invoice - ' . $appointment->status,
+                    'created_at' => $appointment->start_time,
                 ]);
-            } elseif ($invoiceStatus === 'refunded') {
-                $payment = Payment::firstOrCreate(
-                    ['invoice_id' => $invoice->id],
-                    [
+
+                $invoice->items()->attach($attachData);
+
+                if ($invoiceStatus === 'paid') {
+                    Payment::create([
+                        'invoice_id' => $invoice->id,
                         'payment_method_id' => $paymentMethods->random()->id,
                         'amount' => $totalCost,
                         'paid_at' => $appointment->start_time,
-                        'refunded_amount' => $totalCost,
-                    ]
-                );
+                        'refunded_amount' => 0,
+                    ]);
+                } elseif ($invoiceStatus === 'refunded') {
+                    $payment = Payment::firstOrCreate(
+                        ['invoice_id' => $invoice->id],
+                        [
+                            'payment_method_id' => $paymentMethods->random()->id,
+                            'amount' => $totalCost,
+                            'paid_at' => $appointment->start_time,
+                            'refunded_amount' => $totalCost,
+                        ]
+                    );
 
-                Refund::firstOrCreate(
-                    ['idempotency_key' => 'seed-refund-' . $invoice->id],
-                    [
-                        'payment_id' => $payment->id,
-                        'invoice_id' => $invoice->id,
-                        'amount' => $totalCost,
-                        'reason' => 'No-show refund',
-                        'refunded_by' => $clinic->user_id,
-                    ]
-                );
+                    Refund::firstOrCreate(
+                        ['idempotency_key' => 'seed-refund-' . $invoice->id],
+                        [
+                            'payment_id' => $payment->id,
+                            'invoice_id' => $invoice->id,
+                            'amount' => $totalCost,
+                            'reason' => 'No-show refund',
+                            'refunded_by' => $clinic->user_id,
+                        ]
+                    );
+                }
             }
-        }
+        });
     }
 }

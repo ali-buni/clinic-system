@@ -14,15 +14,22 @@ class ClinicResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $this->load('location');
+        $location = $this->location()->first();
+        $country = $location ? $location->country : null;
+        $governorate = $location ? $location->governorate : null;
+        $city = $location ? $location->city : null;
+        $name = $location ? $location->name : null;
+
         return [
             'id' => $this->id,
             'title' => $this->title,
             'location' => $this->location,
             'phone' => $this->phone,
-            'country' => $this->whenLoaded('location', fn() => $this->getRelation('location')->country),
-            'governorate' => $this->whenLoaded('location', fn() => $this->getRelation('location')->governorate),
-            'city' => $this->whenLoaded('location', fn() => $this->getRelation('location')->city),
-            'location_name' => $this->whenLoaded('location', fn() => $this->getRelation('location')->name),
+            'country' => $country,
+            'governorate' => $governorate,
+            'city' => $city,
+            'location_name' => $name,
             'rooms_count' => $this->whenLoaded('rooms', function () {
                 return [
                     'total' => $this->rooms->count(),

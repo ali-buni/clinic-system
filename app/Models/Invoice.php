@@ -40,7 +40,7 @@ class Invoice extends Model implements CipherSweetEncrypted
         $encryptedRow
             ->addField('invoice_number')
             ->addField('total_cost')
-            ->addField('description')
+            ->addOptionalTextField('description')
             ->addBlindIndex('invoice_number', new BlindIndex('invoice_number_index'))
             ->addBlindIndex('description', new BlindIndex('description_index'));
     }

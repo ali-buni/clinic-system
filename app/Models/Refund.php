@@ -33,7 +33,7 @@ class Refund extends Model implements CipherSweetEncrypted
     {
         $encryptedRow
             ->addField('amount')
-            ->addField('stripe_refund_id');
+            ->addOptionalTextField('stripe_refund_id');
     }
 
     public function payment(): BelongsTo
