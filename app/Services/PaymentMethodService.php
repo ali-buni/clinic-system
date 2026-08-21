@@ -10,7 +10,7 @@ class PaymentMethodService
     public function getActiveMethods(): Collection
     {
         return Payment_method::where('is_active', true)
-            ->get(['id', 'ar_name', 'en_name', 'type']);
+            ->get(['id', 'ar_name', 'en_name', 'type', 'is_active']);
     }
 
     public function createMethod(array $data): Payment_method
