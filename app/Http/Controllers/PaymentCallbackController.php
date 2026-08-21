@@ -6,24 +6,40 @@ use App\Enums\InvoiceStatus;
 use App\Models\Invoice;
 use App\Models\Payment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PaymentCallbackController extends Controller
 {
     public function success(Request $request)
     {
-        $sessionId = $request->query('session_id');
-        $invoiceId = $request->query('invoice_id');
+        try {
+            $sessionId = $request->query('session_id');
+            $invoiceId = $request->query('invoice_id');
 
-        $payment = $sessionId
-            ? Payment::whereBlind('stripe_session_id', 'stripe_session_id_index', $sessionId)->first()
-            : null;
-        Payment::where('invoice_id', $invoiceId)
-            ->update(['paid_at' => now()]);
+            if (! $invoiceId) {
+                return view('payment.failed', ['error' => 'Invoice ID is missing in the callback.']);
+            }
 
-        $invoice = Invoice::findOrFail($invoiceId);
-        $this->syncInvoiceStatus($invoice);
+            $payment = $sessionId
+                ? Payment::whereBlind('stripe_session_id', 'stripe_session_id_index', $sessionId)
+                ->where('invoice_id', $invoiceId)
+                ->first()
+                : null;
 
-        return view('payment.success', compact('payment'));
+            if (! $payment) {
+                return view('payment.failed', ['error' => 'Payment not found for the provided session ID and invoice ID.']);
+            }
+
+            $payment->update(['paid_at' => now()]);
+
+            $invoice = Invoice::find($invoiceId);
+
+            $this->syncInvoiceStatus($invoice);
+            return view('payment.success', compact('payment', 'invoice'));
+        } catch (\Exception $e) {
+            logger('Payment success callback error: ' . $e->getMessage());
+            return view('payment.failed');
+        }
     }
 
     public function failed(Request $request)

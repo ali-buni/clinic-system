@@ -25,6 +25,8 @@ class InvoiceSeeder extends Seeder
         $paymentMethods = Payment_method::all();
 
         foreach ($appointments as $appointment) {
+            if ($appointment->invoices()->exists()) continue;
+
             $invoiceStatus = $statusMap[$appointment->status] ?? 'draft';
             $totalCost = $appointment->doctor->consultation_fee ?? fake()->randomFloat(2, 80, 500);
 

@@ -43,7 +43,7 @@ class StripeGateway implements PaymentGatewayInterface
                 'quantity' => 1,
             ]],
             'mode' => 'payment',
-            'success_url' => config('services.stripe.success_url') . '?session_id={CHECKOUT_SESSION_ID}&invoice_id=' . $invoice->id,
+            'success_url' => $this->successUrl($invoice),
             'cancel_url' => config('services.stripe.cancel_url'),
             'metadata' => [
                 'invoice_id' => (string) $invoice->id,
@@ -58,7 +58,13 @@ class StripeGateway implements PaymentGatewayInterface
         return [
             'payment_url' => $session->url,
             'session_id' => $session->id,
+            'invoice_id' => $invoice->id,
         ];
+    }
+
+    private function successUrl(Invoice $invoice): string
+    {
+        return config('services.stripe.success_url') . '?session_id={CHECKOUT_SESSION_ID}' . '&invoice_id=' . $invoice->id;
     }
 
     public function confirmPayment(Payment $payment): bool

@@ -58,6 +58,8 @@ return [
     */
     'paths' => [
         'api/*',
+        'web/*',
+        'resources/*',
         'storage/*',
         'public/*',
         'images/*',

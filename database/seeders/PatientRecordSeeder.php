@@ -28,6 +28,8 @@ class PatientRecordSeeder extends Seeder
         $medicines = Medicine::all();
 
         foreach ($appointments as $i => $appointment) {
+            if ($appointment->record()->exists()) continue;
+
             $record = Patient_record::create([
                 'clinic_id' => $clinic->id,
                 'patient_id' => $appointment->patient_id,
