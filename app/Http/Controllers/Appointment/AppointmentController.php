@@ -203,10 +203,11 @@ class AppointmentController extends Controller
         }
     }
 
-    
+
 
     public function doctorAppointments($doctorId, FilterRequest $request)
     {
+        logger()->info('Fetching doctor appointments', ['doctorId' => $doctorId, 'requestData' => $request->all()]);
         $validated = $request->validated();
         try {
             $data = $this->appointmentService->getDoctorAppointments((int) $doctorId, $validated);

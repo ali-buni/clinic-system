@@ -26,6 +26,7 @@
             <tr>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Doctor</th>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Account ID</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Requested</th>
@@ -39,6 +40,7 @@
                     <td class="px-4 py-3 text-sm">
                         {{ $withdrawal->doctor?->user?->fname }} {{ $withdrawal->doctor?->user?->lname }}
                     </td>
+                    <td class="px-4 py-3 text-sm font-mono text-xs break-all">{{ $withdrawal->stripe_connected_account_id }}</td>
                     <td class="px-4 py-3 text-sm font-medium">${{ number_format($withdrawal->amount, 2) }}</td>
                     <td class="px-4 py-3 text-sm">
                         @switch($withdrawal->status->value)
@@ -66,7 +68,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6" class="px-4 py-8 text-center text-gray-500">No withdrawal requests found.</td>
+                    <td colspan="7" class="px-4 py-8 text-center text-gray-500">No withdrawal requests found.</td>
                 </tr>
             @endforelse
         </tbody>

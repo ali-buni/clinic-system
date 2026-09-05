@@ -14,14 +14,15 @@ class UpdateDoctorAction
         return DB::transaction(function () use ($doctor, $data) {
 
             if (isset($data['specialties'])) {
-                $doctor->specialties()->syncWithoutDetaching($data['specialties']);
+                $doctor->specialties()->sync($data['specialties']);
                 activity()
                     ->performedOn($doctor)
                     ->withProperties(['specialty_ids' => $data['specialties']])
                     ->event('updated')
                     ->log('doctor specialties synced');
                 Log::channel('structured')->info('doctor specialties synced', [
-                    'doctor_id' => $doctor->id, 'specialty_ids' => $data['specialties'],
+                    'doctor_id' => $doctor->id,
+                    'specialty_ids' => $data['specialties'],
                 ]);
                 unset($data['specialties']);
             }
@@ -45,7 +46,8 @@ class UpdateDoctorAction
                 ->event('updated')
                 ->log('doctor updated via UpdateDoctorAction');
             Log::channel('structured')->info('doctor updated via UpdateDoctorAction', [
-                'doctor_id' => $doctor->id, 'updated_fields' => array_keys($data),
+                'doctor_id' => $doctor->id,
+                'updated_fields' => array_keys($data),
             ]);
 
             return true;

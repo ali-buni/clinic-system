@@ -37,9 +37,17 @@ class GetOrCreateMedicineAction
 
             return $medicine;
         }
-        $existing = Medicine::where('en_name', $data['en_name'] ?? null)
-            ->orWhere('ar_name', $data['ar_name'] ?? null)
-            ->first();
+        $existing = null;
+        if (!empty($data['en_name']) || !empty($data['ar_name'])) {
+            $dedupQuery = Medicine::query();
+            if (!empty($data['en_name'])) {
+                $dedupQuery->where('en_name', $data['en_name']);
+            }
+            if (!empty($data['ar_name'])) {
+                $dedupQuery->orWhere('ar_name', $data['ar_name']);
+            }
+            $existing = $dedupQuery->first();
+        }
 
         if ($existing) {
             return $existing;

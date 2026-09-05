@@ -4,10 +4,10 @@ namespace App\Services;
 
 use App\Enums\WithdrawalStatus;
 use App\Jobs\NotifyAdminsOfWithdrawalJob;
-use App\Jobs\ProcessStripeTransferJob;
 use App\Models\Doctor;
 use App\Models\DoctorWallet;
 use App\Models\DoctorWithdrawal;
+use App\Notifications\WithdrawalCompleted;
 use App\Notifications\WithdrawalRejected;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
@@ -69,12 +69,18 @@ class DoctorWithdrawalService
             }
 
             $withdrawal->update([
-                'status' => WithdrawalStatus::Processing,
+                'status' => WithdrawalStatus::Completed,
                 'approved_by' => $approvedBy,
                 'approved_at' => now(),
+                'processed_at' => now(),
             ]);
 
-            ProcessStripeTransferJob::dispatch($withdrawal->id, $approvedBy);
+            $wallet = DoctorWallet::where('doctor_id', $withdrawal->doctor_id)->lockForUpdate()->first();
+            if ($wallet) {
+                $wallet->removePending((float) $withdrawal->amount);
+            }
+
+            $withdrawal->doctor->user->notify(new WithdrawalCompleted($withdrawal));
 
             return $withdrawal;
         });

@@ -18,12 +18,17 @@ class MedicineController extends Controller
 {
     public function searchMedicine(FilterRequest $request, MedicineApiService $apiService): JsonResponse
     {
+        $query = (string) $request->query('query', '');
+
         $filters = $request->validated();
-        $query = Medicine::query();
+        $filters['search'] = $query;
+        $filters['column'] = 'en_name,ar_name,generic_name_en,generic_name_ar';
 
-        $local = ModelFilter::filter($query, $filters);
+        $queryBuilder = Medicine::query();
 
-        $apiResults = $apiService->searchMedicines($request->query('query'));
+        $local = ModelFilter::filter($queryBuilder, $filters);
+
+        $apiResults = $apiService->searchMedicines($query);
 
         return ApiResponse::success(array_merge($local->items(), $apiResults), 'Medicines search results retrieved successfully.');
     }

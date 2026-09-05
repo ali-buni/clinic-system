@@ -42,6 +42,7 @@ Route::prefix('/v1/clinic-system')->group(function () {
     require __DIR__ . '/v1/secretaries.php';
     require __DIR__ . '/v1/patients.php';
     require __DIR__ . '/v1/users.php';
+    require __DIR__ . '/v1/notifications.php';
     require __DIR__ . '/v1/doctors.php';
     require __DIR__ . '/v1/appointments.php';
     require __DIR__ . '/v1/patient_records.php';

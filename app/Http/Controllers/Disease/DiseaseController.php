@@ -17,14 +17,19 @@ class DiseaseController extends Controller
 {
     public function searchDisease(FilterRequest $request, DiseaseApiService $apiService): JsonResponse
     {
+        $query = (string) $request->query('query', '');
+
         $filters = $request->validated();
-        $query = Disease::query();
+        $filters['search'] = $query;
+        $filters['column'] = 'en_name,ar_name,code';
 
-        $diseases = ModelFilter::filter($query, $filters);
-        $results = $apiService->searchDiseases($request->query('query'));
+        $queryBuilder = Disease::query();
 
-        if (empty($results) && empty($diseases->items())) {
-            return ApiResponse::error('no diseases found');
+        $diseases = ModelFilter::filter($queryBuilder, $filters);
+        $results = $apiService->searchDiseases($query);
+
+        if ($diseases->isEmpty() && empty($results)) {
+            return ApiResponse::success([], 'No diseases found.');
         }
         return ApiResponse::success(array_merge($diseases->items(), $results), 'Diseases search results retrieved successfully.');
     }

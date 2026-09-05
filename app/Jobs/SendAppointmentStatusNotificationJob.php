@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Events\SendMsgEvent;
 use App\Models\Appointment;
-use App\Models\User;
 use App\Notifications\MobileNotification;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -150,10 +149,9 @@ class SendAppointmentStatusNotificationJob implements ShouldQueue
                     ->filter()
                     ->all() ?? [],
             ))),
-            'secretary' => $appointment->clinic ? User::where('clinic_id', $appointment->clinic_id)
-                ->where('role', 'secretary')
-                ->get()
-                ->all() : [],
+            'secretary' => $appointment->clinic
+                ? $appointment->clinic->secretaries->map(fn ($secretary) => $secretary->user)->filter()->values()->all()
+                : [],
             'all' => array_filter([
                 $appointment->doctor?->user,
                 $appointment->patient?->user,
